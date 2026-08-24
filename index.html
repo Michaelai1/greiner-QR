@@ -4583,6 +4583,238 @@ ${photoUrls}`;
         validateTransportForm();
         validateCheckinForm();
     </script>
+
+    <!-- ================= NextGen field-submission integration ================= -->
+    <!-- Greiner crew forms (JHA / Hot Work / Aerial / Forklift) submit to the
+         NextGen backend under a server-authenticated field ticket. No n8n. The
+         PDF is generated here and stored via the private-bucket edge function.
+         All identity (inspector + job) is derived server-side from the ticket;
+         URL-provided inspector/job values are never trusted. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+    (function () {
+      'use strict';
+      var CREEKSIDE_URL = 'https://gvfolfzseqwhhimbxgjv.supabase.co';
+      var ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2Zm9sZnpzZXF3aGhpbWJ4Z2p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMzQzOTcsImV4cCI6MjA5OTcxMDM5N30.ZpJWG4a0evolcjxr36IDaA4o0pjRjw1cCGOWV9ofDE0';
+      var EDGE = CREEKSIDE_URL + '/functions/v1/field-pdf';
+      var DASH = 'https://greiner.creeksidesafety.com/index.html';
+      var TICKET_KEY = 'ng_field_ticket';
+      var TITLES = { aerial_platform: 'Aerial Platform Inspection', forklift: 'Forklift Inspection', jha: 'Job Hazard Analysis (JHA)', hot_work_permit: 'Hot Work Permit' };
+      var OPENERS = { jha: 'openJhaForm', hotwork: 'openHotWorkForm', aerial: 'openAerialInspectionForm', forklift: 'openForkliftInspectionForm' };
+      var NG = window.NG = { active: false, ticket: null, user: '', job: null, last: null };
+      function esc(s) { return String(s == null ? '' : s); }
+      function toast(type, title, msg) { if (typeof showToast === 'function') showToast(type, title, msg); }
+
+      function rpc(fn, body) {
+        return fetch(CREEKSIDE_URL + '/rest/v1/rpc/' + fn, {
+          method: 'POST', headers: { apikey: ANON, Authorization: 'Bearer ' + ANON, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        }).then(function (r) { return r.text().then(function (t) { var j = null; try { j = t ? JSON.parse(t) : null; } catch (e) {} if (!r.ok) throw new Error((j && (j.message || j.error)) || ('request failed (' + r.status + ')')); return j; }); });
+      }
+      function edge(body) {
+        return fetch(EDGE, { method: 'POST', headers: { apikey: ANON, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+          .then(function (r) { return r.json().then(function (j) { if (!r.ok || (j && j.error)) throw new Error((j && j.error) || ('failed (' + r.status + ')')); return j; }); });
+      }
+      function storeTicket(t) { try { localStorage.setItem(TICKET_KEY, JSON.stringify({ ticket: t, at: Date.now() })); } catch (e) {} }
+      function loadTicket() { try { var s = JSON.parse(localStorage.getItem(TICKET_KEY) || 'null'); if (s && s.ticket && (Date.now() - s.at) < 11 * 3600 * 1000) return s.ticket; } catch (e) {} return null; }
+
+      var params = new URLSearchParams(location.search);
+      var urlTicket = params.get('ticket');
+      var ngform = (params.get('ngform') || '').toLowerCase();
+      var asset = params.get('asset');
+      var ticket = urlTicket || loadTicket();
+
+      // Crew forms now REQUIRE an authenticated field session: kill the n8n
+      // inspection webhook outright and intercept every inspection submit below,
+      // with or without a ticket. Non-inspection flows are left untouched.
+      try { if (typeof CONFIG !== 'undefined' && CONFIG) CONFIG.WEBHOOK_INSPECTION = ''; } catch (e) {}
+
+      // never leave the ticket in history / referrer
+      if (urlTicket) { try { var u = new URL(location.href); u.searchParams.delete('ticket'); history.replaceState(null, '', u.toString()); } catch (e) {} }
+
+      if (ticket) { NG.active = true; NG.ticket = ticket; storeTicket(ticket); }
+
+      function setLock(sel, val) {
+        document.querySelectorAll(sel).forEach(function (el) {
+          if (val != null) el.value = val;
+          el.readOnly = true; el.style.background = '#eef1f5'; el.style.color = '#374151';
+          var g = el.closest('.form-group'); if (g) g.classList.remove('error');
+        });
+      }
+      function applyLocks() {
+        if (NG.user) setLock('[name="inspector_name"],[name="aerial_inspector_name"],[name="fl_inspector_name"],[name="jhaAnalysisBy"],[name="jha_prepared_by"],[name="hw_permit_issued_by"]', NG.user);
+        if (NG.job) setLock('[name="aerialJobsite"],[name="forkliftJobsite"],[name="jhaLocation"],[name="hotWorkLocation"]', NG.job.name + (NG.job.job_number ? ' (' + NG.job.job_number + ')' : ''));
+      }
+      function prefillAsset(a) {
+        var el = document.querySelector('[name="aerialVehicleId"],[name="forkliftVehicleId"]');
+        if (el) { el.value = a; var g = el.closest('.form-group'); if (g) g.classList.remove('error'); }
+      }
+
+      // re-apply locks whenever an inspection view is shown (forms reset on open)
+      var _showView = window.showView;
+      window.showView = function (v) { if (typeof _showView === 'function') _showView(v); if (NG.active && /inspection/i.test(v)) setTimeout(applyLocks, 0); };
+
+      // route inspection submissions to NextGen; everything else unchanged
+      var _handleSaveData = window.handleSaveData;
+      window.handleSaveData = function (url, payload, submitBtn, label) {
+        if (payload && payload.form_type === 'inspection') {
+          if (!NG.ticket) {
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = label || 'Submit'; }
+            toast('error', 'Sign in required', 'Open this form from your Purdue dashboard.');
+            return Promise.reject(new Error('no field session'));
+          }
+          return ngSubmit(payload, submitBtn, label);
+        }
+        return _handleSaveData ? _handleSaveData(url, payload, submitBtn, label) : Promise.resolve();
+      };
+
+      function ngSubmit(payload, submitBtn, label) {
+        var subtype = payload.inspection_subtype || 'jha';
+        var title = TITLES[subtype] || 'Field Inspection';
+        return rpc('cs_portal_field_submit', {
+          p_token: NG.ticket, p_form_type: subtype, p_form_title: title,
+          p_asset_id: payload.asset_id || null, p_fields: payload.fields || {},
+          p_photos: [], p_signature: payload.signature || null,
+          p_has_defects: !!payload.has_defects, p_defect_count: payload.defect_count || 0, p_pdf_path: null
+        }).then(function (res) {
+          return generatePdf(title, payload, res).then(function (pdf) {
+            return edge({ action: 'upload', ticket: NG.ticket, id: res.id, pdf_base64: pdf.base64 }).then(function () {
+              NG.last = { blob: pdf.blob, filename: pdf.filename, id: res.id, title: title, when: new Date() };
+              renderCompletion();
+            });
+          });
+        }).catch(function (e) {
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = label || 'Submit'; }
+          if (/insufficient scope|invalid token|not a field user/i.test(e.message || '')) {
+            try { localStorage.removeItem(TICKET_KEY); } catch (_) {}
+            toast('error', 'Session expired', 'Open this form again from your Purdue dashboard.');
+          } else {
+            toast('error', 'Submit failed', e.message || 'Please try again.');
+          }
+          throw e;
+        });
+      }
+
+      // ---------- professional Greiner PDF ----------
+      function humanizeKey(k) {
+        return String(k).replace(/^(aerial_|forklift_|fl_|jha_?|hw_|hotwork_|hot_work_)/i, '')
+          .replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').replace(/\s+/g, ' ').trim()
+          .replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+      }
+      function fmtVal(v) {
+        if (v === true) return 'Yes'; if (v === false) return 'No';
+        var s = String(v == null ? '' : v).trim(), low = s.toLowerCase();
+        var map = { yes: 'Yes', no: 'No', pass: 'Pass', fail: 'Fail', defect: 'DEFECT', ok: 'OK', na: 'N/A', 'n/a': 'N/A' };
+        return map[low] || s;
+      }
+      function valColor(v) { var low = String(v).toLowerCase(); if (low === 'defect' || low === 'fail') return [200, 30, 30]; if (low === 'pass' || low === 'ok' || low === 'yes') return [30, 120, 50]; return [40, 40, 40]; }
+
+      function generatePdf(title, payload, res) {
+        return new Promise(function (resolve) {
+          var JS = window.jspdf && window.jspdf.jsPDF;
+          if (!JS) { resolve({ base64: '', blob: new Blob([], { type: 'application/pdf' }), filename: 'record.pdf' }); return; }
+          var doc = new JS({ unit: 'pt', format: 'letter' });
+          var W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
+          var M = 48, y = M, navy = [15, 23, 42], gray = [110, 110, 110], line = [214, 214, 214];
+          var job = NG.job || {};
+          function footer() { doc.setFontSize(8); doc.setTextColor(150); doc.text('Powered by NextGen Safety', M, H - 26); doc.text('Generated ' + new Date().toLocaleString(), W - M, H - 26, { align: 'right' }); }
+          function ensure(h) { if (y + h > H - 44) { footer(); doc.addPage(); y = M; } }
+
+          doc.setFillColor(navy[0], navy[1], navy[2]); doc.rect(0, 0, W, 66, 'F');
+          doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(17); doc.text('GREINER BROTHERS', M, 30);
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(205, 205, 205); doc.text('Safety Record', M, 48);
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(12.5); doc.setTextColor(255); doc.text(title, W - M, 40, { align: 'right' });
+          y = 90;
+
+          var meta = [['Project / Job', (job.name || '') + (job.job_number ? ' · ' + job.job_number : '')], ['Submitted by', NG.user || ''], ['Date', new Date().toLocaleDateString()], ['Time', new Date().toLocaleTimeString()]];
+          if (payload.asset_id) meta.push(['Equipment / Asset', payload.asset_id]);
+          doc.setFontSize(10);
+          meta.forEach(function (row) { ensure(18); doc.setTextColor(gray[0], gray[1], gray[2]); doc.setFont('helvetica', 'bold'); doc.text(row[0] + ':', M, y); doc.setTextColor(30, 30, 30); doc.setFont('helvetica', 'normal'); doc.text(String(row[1] || '—'), M + 130, y); y += 18; });
+          y += 8;
+
+          ensure(26); var flagged = !!payload.has_defects;
+          doc.setFillColor.apply(doc, flagged ? [250, 235, 235] : [234, 245, 238]); doc.roundedRect(M, y - 2, 250, 22, 4, 4, 'F');
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor.apply(doc, flagged ? [200, 30, 30] : [30, 120, 50]);
+          doc.text(flagged ? ('FLAGGED · ' + (payload.defect_count || 0) + ' defect item(s)') : 'PASS · No defects flagged', M + 12, y + 12.5); y += 36;
+
+          var fields = payload.fields || {}, photos = [];
+          ensure(22); doc.setDrawColor(line[0], line[1], line[2]); doc.line(M, y, W - M, y); y += 16;
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(navy[0], navy[1], navy[2]); doc.text('Responses', M, y); y += 18;
+
+          Object.keys(fields).forEach(function (k) {
+            var v = fields[k];
+            if (v == null || v === '') return;
+            if (typeof v === 'string' && v.indexOf('data:image') === 0) { photos.push({ label: humanizeKey(k), data: v }); return; }
+            if (Array.isArray(v)) { v.forEach(function (it) { if (typeof it === 'string' && it.indexOf('data:image') === 0) photos.push({ label: humanizeKey(k), data: it }); }); var strs = v.filter(function (it) { return typeof it === 'string' && it.indexOf('data:image') !== 0; }); if (!strs.length) return; v = strs.join(', '); }
+            if (typeof v === 'object') return;
+            var label = humanizeKey(k), val = fmtVal(v);
+            ensure(16);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(95, 95, 95);
+            var ll = doc.splitTextToSize(label, 230); doc.text(ll, M, y);
+            doc.setTextColor.apply(doc, valColor(v)); doc.setFont('helvetica', 'bold');
+            var vl = doc.splitTextToSize(val, W - M - 260); doc.text(vl, M + 250, y);
+            y += Math.max(ll.length, vl.length) * 12.5 + 5;
+          });
+
+          if (photos.length) {
+            ensure(24); y += 6; doc.setDrawColor(line[0], line[1], line[2]); doc.line(M, y, W - M, y); y += 16;
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(navy[0], navy[1], navy[2]); doc.text('Photos', M, y); y += 14;
+            photos.forEach(function (p) { ensure(126); try { doc.addImage(p.data, 'JPEG', M, y, 150, 112); } catch (e) { try { doc.addImage(p.data, 'PNG', M, y, 150, 112); } catch (_) {} } doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(95, 95, 95); doc.text(doc.splitTextToSize(p.label, W - M - 170), M + 162, y + 14); y += 122; });
+          }
+          footer();
+          var base64 = doc.output('datauristring').split(',')[1];
+          var blob = doc.output('blob');
+          var fname = (title + ' - ' + (job.name || 'Greiner') + ' - ' + new Date().toISOString().slice(0, 10) + '.pdf').replace(/[\/\\?%*:|"<>]/g, '-');
+          resolve({ base64: base64, blob: blob, filename: fname });
+        });
+      }
+
+      // ---------- completion screen ----------
+      function renderCompletion() {
+        var view = document.getElementById('successView'); if (!view || !NG.last) return;
+        var done = document.getElementById('doneBtn'); if (done) done.style.display = 'none';
+        var ra = document.getElementById('reportAnotherLink'); if (ra) ra.style.display = 'none';
+        var job = NG.job || {};
+        var box = document.getElementById('ngActions');
+        if (!box) { box = document.createElement('div'); box.id = 'ngActions'; box.style.cssText = 'margin-top:18px;display:flex;flex-direction:column;gap:10px'; view.appendChild(box); }
+        box.innerHTML =
+          '<div style="text-align:center;color:#6b7280;font-size:13px;margin-bottom:2px">' + esc(NG.last.title) + ' · ' + esc(job.name || '') + ' · ' + NG.last.when.toLocaleString() + '</div>' +
+          '<button class="submit-button" id="ngView">View PDF</button>' +
+          '<button class="submit-button" id="ngDownload" style="background:#fff;color:#0f172a;border:1px solid #d1d5db">Download PDF</button>' +
+          '<button class="submit-button" id="ngShare" style="background:#fff;color:#0f172a;border:1px solid #d1d5db">Share / Send PDF</button>' +
+          '<a href="' + DASH + '" class="submit-button" style="background:#b48c28;text-align:center;text-decoration:none;display:block">Back to Purdue</a>';
+        var blob = NG.last.blob;
+        document.getElementById('ngView').onclick = function () { window.open(URL.createObjectURL(blob), '_blank'); };
+        document.getElementById('ngDownload').onclick = function () { var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = NG.last.filename; document.body.appendChild(a); a.click(); a.remove(); };
+        document.getElementById('ngShare').onclick = function () {
+          var file = new File([blob], NG.last.filename, { type: 'application/pdf' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({ files: [file], title: NG.last.title, text: NG.last.title + ' — ' + (job.name || '') }).catch(function () {});
+            return;
+          }
+          var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = NG.last.filename; document.body.appendChild(a); a.click(); a.remove();
+          toast('success', 'Ready to send', 'PDF downloaded — attach it to a text or email.');
+        };
+        window.showView('success');
+      }
+
+      // ---------- boot: validate ticket, auto-open form, lock identity ----------
+      if (ticket) {
+        rpc('cs_portal_field_home', { p_token: ticket }).then(function (home) {
+          NG.user = home.user || '';
+          NG.job = (home.jobs && home.jobs[0]) || null;
+          applyLocks();
+          var opener = OPENERS[ngform];
+          if (opener && typeof window[opener] === 'function') { window[opener](); applyLocks(); }
+          if (asset) prefillAsset(asset);
+        }).catch(function () {
+          try { localStorage.removeItem(TICKET_KEY); } catch (e) {}
+          NG.active = false; NG.ticket = null;
+          toast('error', 'Session expired', 'Open this form again from your Purdue dashboard to sign in.');
+        });
+      }
+    })();
+    </script>
     <div id="toast-container"></div>
 </body>
 </html>
