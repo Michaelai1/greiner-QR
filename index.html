@@ -4642,7 +4642,10 @@ ${photoUrls}`;
         });
       }
       function applyLocks() {
-        if (NG.user) setLock('[name="inspector_name"],[name="aerial_inspector_name"],[name="fl_inspector_name"],[name="jhaAnalysisBy"],[name="jha_prepared_by"],[name="hw_permit_issued_by"]', NG.user);
+        // Authoritative submitter identity comes from the authenticated field
+        // session — prefill AND lock the inspector name + typed signature so a
+        // record can't carry a conflicting inspector (e.g. "Michael") (§11).
+        if (NG.user) setLock('[name="aerialInspectorName"],[name="forkliftInspectorName"],[name="jhaAnalysisBy"],[name="aerialSignature"],[name="forkliftSignature"]', NG.user);
         if (NG.job) setLock('[name="aerialJobsite"],[name="forkliftJobsite"],[name="jhaLocation"],[name="hotWorkLocation"]', NG.job.name + (NG.job.job_number ? ' (' + NG.job.job_number + ')' : ''));
       }
       function prefillAsset(a) {
@@ -4715,6 +4718,8 @@ ${photoUrls}`;
       function fmtResp(v) {
         if (v === true) return 'Yes'; if (v === false) return 'No';
         var s = String(v == null ? '' : v).trim(), low = s.toLowerCase();
+        // never surface browser file-picker noise like "C:\fakepath\img.jpg" (§8)
+        if (/^[a-z]:\\fakepath\\/i.test(s) || /^c:\\fakepath/i.test(low)) return '';
         var map = { yes: 'Yes', no: 'No', pass: 'Pass', fail: 'Fail', safe: 'Safe', defect: 'DEFECT', unsafe: 'UNSAFE', ok: 'OK', na: 'N/A', 'n/a': 'N/A', complete: 'Complete', incomplete: 'Incomplete' };
         return map[low] || s;
       }
@@ -4722,7 +4727,15 @@ ${photoUrls}`;
 
       // Build the portable document model from the live form.
       function extractDoc(form, subtype, payload) {
-        var sections = [], flaggedList = [], seenNames = {};
+        var sections = [], flaggedList = [], seenNames = {}, signoffItems = [];
+        var isEquip = subtype === 'aerial_platform' || subtype === 'forklift';
+        // Equipment identity/asset fields already print in the document header —
+        // don't repeat them as body items (PDF polish §12).
+        var META_SKIP = { aerialVehicleId: 1, aerialDate: 1, aerialInspectorName: 1, aerialJobsite: 1,
+          forkliftVehicleId: 1, forkliftDate: 1, forkliftInspectorName: 1, forkliftJobsite: 1 };
+        // Comments + typed signature belong in a closing sign-off block (§13).
+        var SIGNOFF = { aerialComments: 'Comments', aerialSignature: 'Signed by',
+          forkliftComments: 'Comments', forkliftSignature: 'Signed by' };
         function noteFor(grp) {
           var t = grp.querySelector('textarea, input[name*="note" i], input[name*="Note"]');
           // a checklist item's own value isn't a note; only textareas / explicit note fields
@@ -4756,12 +4769,17 @@ ${photoUrls}`;
           var title = tEl ? tEl.textContent.replace(/\*/g, '').trim() : '';
           var items = [];
           Array.prototype.forEach.call(sec.querySelectorAll('.form-group'), function (grp) {
+            // A defect's "describe what went wrong" + photo are nested inside the
+            // checklist row; skip them as standalone items — they attach to the
+            // parent inspection check as its note + photo (§5/§6/§9).
+            if (grp.closest('.inspection-defect-detail')) return;
             var lEl = grp.querySelector('.inspection-checklist-label') || grp.querySelector('.form-label');
             var label = lEl ? lEl.textContent.replace(/\*/g, '').trim() : '';
             if (!label) return;
             var response = '', rtype = 'text', flagged = false, name = '';
             var radios = grp.querySelectorAll('input[type=radio]');
-            var main = grp.querySelector('input:not([type=radio]):not([type=hidden]), select, textarea');
+            // exclude file inputs so a raw "C:\fakepath\..." value never appears (§8)
+            var main = grp.querySelector('input:not([type=radio]):not([type=hidden]):not([type=file]), select, textarea');
             if (radios.length) {
               var ck = grp.querySelector('input[type=radio]:checked');
               response = ck ? ck.value : ''; rtype = 'choice'; flagged = isFlag(response);
@@ -4772,13 +4790,19 @@ ${photoUrls}`;
               else { response = main.value; rtype = main.type || (main.tagName === 'TEXTAREA' ? 'text' : 'text'); flagged = isFlag(response); }
             } else return;
             if (name) seenNames[name] = 1;
+            if (META_SKIP[name]) return;              // already shown in the header
             var notes = noteFor(grp);
             var photos = name ? photosFor([name]) : [];
             var it = { label: label, response: response, type: rtype, notes: notes, flagged: flagged, photos: photos };
+            if (SIGNOFF[name]) { it.label = SIGNOFF[name]; signoffItems.push(it); return; }
             if (flagged) flaggedList.push(label);
             items.push(it);
           });
-          if (items.length) sections.push({ title: title || 'Details', items: items });
+          if (items.length) {
+            var t = title || 'Details';
+            if (isEquip && /checklist/i.test(t)) t = 'Inspection Checklist';
+            sections.push({ title: t, items: items });
+          }
         });
         // any leftover photos in the payload not mapped to an item -> a Photos section
         var extra = [], f = (payload && payload.fields) || {};
@@ -4788,7 +4812,8 @@ ${photoUrls}`;
             if (!used) extra.push(u);
           });
         });
-        if (extra.length) sections.push({ title: 'Photos', items: [{ label: 'Attached photos', response: '', type: 'photos', notes: '', flagged: false, photos: extra }] });
+        if (extra.length) sections.push({ title: 'Photos', items: [{ label: 'Attached photos', response: '', type: 'photos', notes: '', flagged: false, photos: extra }], aux: true });
+        if (signoffItems.length) sections.push({ title: 'Final Comments & Sign-off', items: signoffItems, aux: true, signoff: true });
         return {
           title: (TITLES[subtype] || 'Field Inspection'), subtype: subtype,
           meta: {
@@ -4798,7 +4823,9 @@ ${photoUrls}`;
             submitted_at: new Date().toISOString()
           },
           sections: sections, flagged: flaggedList,
-          counts: { items: sections.reduce(function (n, s) { return n + s.items.filter(function (i) { return i.type !== 'photos'; }).length; }, 0), flagged: flaggedList.length }
+          // Count real inspection checks — not header metadata, photos or the
+          // sign-off block (§7).
+          counts: { items: sections.reduce(function (n, s) { return s.aux ? n : n + s.items.filter(function (i) { return i.type !== 'photos'; }).length; }, 0), flagged: flaggedList.length }
         };
       }
 
@@ -4810,6 +4837,7 @@ ${photoUrls}`;
         var W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
         var M = 46, y = M, navy = [15, 23, 42], gray = [110, 110, 110], line = [222, 222, 222];
         var flagged = dmodel.counts.flagged > 0;
+        var isEquip = dmodel.subtype === 'aerial_platform' || dmodel.subtype === 'forklift';
         function footer() {
           doc.setFontSize(8); doc.setTextColor(150);
           doc.text(NGDOC.footer, M, H - 24);
@@ -4840,11 +4868,24 @@ ${photoUrls}`;
           y += 17;
         });
         y += 6;
-        // status + summary
+        // status + summary — equipment reads as a pass/defect inspection; other
+        // record types (JHA, hot work) get a neutral "completed" summary (§7).
         ensure(28);
-        doc.setFillColor.apply(doc, flagged ? [250, 234, 234] : [234, 245, 238]); doc.roundedRect(M, y - 2, 300, 22, 4, 4, 'F');
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor.apply(doc, flagged ? [200, 30, 30] : [30, 120, 50]);
-        doc.text((flagged ? 'FLAGGED — ACTION REQUIRED' : 'PASS — NO DEFECTS') + '  ·  ' + dmodel.counts.items + ' items, ' + dmodel.counts.flagged + ' flagged', M + 12, y + 12.5);
+        var badgeFill, badgeColor, badgeText;
+        if (isEquip) {
+          badgeFill = flagged ? [250, 234, 234] : [234, 245, 238];
+          badgeColor = flagged ? [200, 30, 30] : [30, 120, 50];
+          badgeText = (flagged ? 'FLAGGED — ACTION REQUIRED' : 'PASS — NO DEFECTS') + '  ·  ' +
+            dmodel.counts.items + ' inspection check' + (dmodel.counts.items === 1 ? '' : 's') +
+            ' · ' + dmodel.counts.flagged + ' defect' + (dmodel.counts.flagged === 1 ? '' : 's');
+        } else {
+          badgeFill = [237, 242, 249]; badgeColor = [40, 60, 100];
+          badgeText = 'COMPLETED  ·  ' + dmodel.counts.items + ' item' + (dmodel.counts.items === 1 ? '' : 's') + ' documented';
+        }
+        var badgeW = Math.min(W - 2 * M, doc.getStringUnitWidth(badgeText) * 11 + 30);
+        doc.setFillColor.apply(doc, badgeFill); doc.roundedRect(M, y - 2, badgeW, 22, 4, 4, 'F');
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor.apply(doc, badgeColor);
+        doc.text(badgeText, M + 12, y + 12.5);
         y += 34;
         if (flagged) {
           ensure(18); doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); doc.setTextColor(150, 30, 30); doc.text('Items requiring attention', M, y); y += 15;
@@ -4854,19 +4895,30 @@ ${photoUrls}`;
         }
         // sections -> every item
         dmodel.sections.forEach(function (sec) {
-          ensure(30);
+          // Keep a section heading with the start of its first item so a heading
+          // never sits alone at the bottom of a page (§14).
+          var first = (sec.items || []).filter(function (i) { return i.type !== 'photos'; })[0];
+          var firstEst = first ? (doc.splitTextToSize('1. ' + first.label, W - 2 * M - 130).length * 12 + (first.notes ? 24 : 0) + 10) : 24;
+          ensure(30 + firstEst);
           doc.setFillColor(241, 243, 247); doc.rect(M, y - 2, W - 2 * M, 20, 'F');
           doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.setTextColor(navy[0], navy[1], navy[2]);
           doc.text(sec.title, M + 8, y + 12); y += 28;
-          sec.items.forEach(function (it, idx) {
+          var numbered = !sec.aux, seq = 0;
+          sec.items.forEach(function (it) {
             if (it.type === 'photos') { renderPhotos(it.photos); return; }
+            if (numbered) seq++;
             var resp = fmtResp(it.response);
             var respColor = it.flagged ? [200, 30, 30] : (/^(yes|pass|safe|ok|complete|n\/a)$/i.test(resp) ? [30, 120, 50] : [40, 40, 40]);
             // short values sit to the right of the question; long / free-text
             // responses go on their own line below so nothing overlaps.
             var shortResp = resp && resp.length <= 22 && it.type !== 'text' && it.type !== 'textarea';
-            var labelLines = doc.splitTextToSize((idx + 1) + '. ' + it.label, W - 2 * M - (shortResp ? 130 : 6));
-            ensure(labelLines.length * 12 + (shortResp ? 0 : 14) + (it.notes ? 24 : 6) + 6);
+            var labelLines = doc.splitTextToSize((numbered ? seq + '. ' : '') + it.label, W - 2 * M - (shortResp ? 130 : 6));
+            // Keep the whole item — label, response, notes and its first photo —
+            // together on one page so a defect never separates from its evidence (§10/§14).
+            var respBlock = shortResp ? 0 : (resp ? doc.splitTextToSize((it.flagged ? 'FLAGGED — ' : '') + resp, W - 2 * M - 12).length * 12 + 4 : 0);
+            var notesBlock = it.notes ? doc.splitTextToSize('Notes: ' + it.notes, W - 2 * M - 10).length * 11 + 6 : 0;
+            var photoBlock = (it.photos && it.photos.length) ? 124 : 0;
+            ensure(labelLines.length * 12 + 6 + respBlock + notesBlock + photoBlock);
             doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(35, 35, 35);
             doc.text(labelLines, M, y);
             if (shortResp) {
@@ -4876,14 +4928,13 @@ ${photoUrls}`;
             } else if (resp) {
               y += labelLines.length * 12 + 2;
               var rl = doc.splitTextToSize((it.flagged ? 'FLAGGED — ' : '') + resp, W - 2 * M - 12);
-              ensure(rl.length * 12 + 2);
               doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor.apply(doc, respColor);
               doc.text(rl, M + 12, y); y += rl.length * 12 + 4;
             } else {
               y += labelLines.length * 12 + 4;
             }
             if (it.notes) {
-              var nl = doc.splitTextToSize('Notes: ' + it.notes, W - 2 * M - 10); ensure(nl.length * 11 + 4);
+              var nl = doc.splitTextToSize((it.flagged ? 'Notes / what went wrong: ' : 'Notes: ') + it.notes, W - 2 * M - 10);
               doc.setFont('helvetica', 'italic'); doc.setFontSize(9); doc.setTextColor(90, 90, 90);
               doc.text(nl, M + 10, y); y += nl.length * 11 + 4;
             }
