@@ -4854,18 +4854,28 @@ ${photoUrls}`;
           doc.text(sec.title, M + 8, y + 12); y += 28;
           sec.items.forEach(function (it, idx) {
             if (it.type === 'photos') { renderPhotos(it.photos); return; }
-            var labelLines = doc.splitTextToSize((idx + 1) + '. ' + it.label, W - 2 * M - 90);
-            ensure(labelLines.length * 12 + (it.notes ? 26 : 8) + 6);
+            var resp = fmtResp(it.response);
+            var respColor = it.flagged ? [200, 30, 30] : (/^(yes|pass|safe|ok|complete|n\/a)$/i.test(resp) ? [30, 120, 50] : [40, 40, 40]);
+            // short values sit to the right of the question; long / free-text
+            // responses go on their own line below so nothing overlaps.
+            var shortResp = resp && resp.length <= 22 && it.type !== 'text' && it.type !== 'textarea';
+            var labelLines = doc.splitTextToSize((idx + 1) + '. ' + it.label, W - 2 * M - (shortResp ? 130 : 6));
+            ensure(labelLines.length * 12 + (shortResp ? 0 : 14) + (it.notes ? 24 : 6) + 6);
             doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(35, 35, 35);
             doc.text(labelLines, M, y);
-            // response, right-aligned, colored
-            var resp = fmtResp(it.response);
-            if (resp) {
-              doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
-              doc.setTextColor.apply(doc, it.flagged ? [200, 30, 30] : (/^(yes|pass|safe|ok|complete|n\/a)$/i.test(resp) ? [30, 120, 50] : [40, 40, 40]));
-              doc.text((it.flagged ? resp + '  ⚑' : resp), W - M, y, { align: 'right' });
+            if (shortResp) {
+              doc.setTextColor.apply(doc, respColor);
+              doc.text(it.flagged ? resp + '  (FLAGGED)' : resp, W - M, y, { align: 'right' });
+              y += labelLines.length * 12 + 4;
+            } else if (resp) {
+              y += labelLines.length * 12 + 2;
+              var rl = doc.splitTextToSize((it.flagged ? 'FLAGGED — ' : '') + resp, W - 2 * M - 12);
+              ensure(rl.length * 12 + 2);
+              doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor.apply(doc, respColor);
+              doc.text(rl, M + 12, y); y += rl.length * 12 + 4;
+            } else {
+              y += labelLines.length * 12 + 4;
             }
-            y += labelLines.length * 12 + 4;
             if (it.notes) {
               var nl = doc.splitTextToSize('Notes: ' + it.notes, W - 2 * M - 10); ensure(nl.length * 11 + 4);
               doc.setFont('helvetica', 'italic'); doc.setFontSize(9); doc.setTextColor(90, 90, 90);
