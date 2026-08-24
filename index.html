@@ -4730,13 +4730,22 @@ ${photoUrls}`;
           if (t && /note/i.test(t.name || '') && t.value.trim()) return t.value.trim();
           return '';
         }
+        // Photos are stored either as raw data URLs or as {filename,mime,data_url}
+        // objects (photosToPayload). Handle both, single or array.
+        function photoUrls(v) {
+          var out = [];
+          (Array.isArray(v) ? v : [v]).forEach(function (u) {
+            if (typeof u === 'string' && u.indexOf('data:image') === 0) out.push(u);
+            else if (u && typeof u === 'object' && typeof u.data_url === 'string' && u.data_url.indexOf('data:image') === 0) out.push(u.data_url);
+          });
+          return out;
+        }
         function photosFor(names) {
           var out = [], f = (payload && payload.fields) || {};
           names.forEach(function (nm) {
             Object.keys(f).forEach(function (k) {
               if (k.indexOf(nm) === 0 || k === nm + '_photo' || k === nm + 'Photo') {
-                var v = f[k];
-                (Array.isArray(v) ? v : [v]).forEach(function (u) { if (typeof u === 'string' && u.indexOf('data:image') === 0) out.push(u); });
+                out = out.concat(photoUrls(f[k]));
               }
             });
           });
@@ -4774,12 +4783,9 @@ ${photoUrls}`;
         // any leftover photos in the payload not mapped to an item -> a Photos section
         var extra = [], f = (payload && payload.fields) || {};
         Object.keys(f).forEach(function (k) {
-          var v = f[k];
-          (Array.isArray(v) ? v : [v]).forEach(function (u) {
-            if (typeof u === 'string' && u.indexOf('data:image') === 0) {
-              var used = sections.some(function (s) { return s.items.some(function (i) { return i.photos.indexOf(u) !== -1; }); });
-              if (!used) extra.push(u);
-            }
+          photoUrls(f[k]).forEach(function (u) {
+            var used = sections.some(function (s) { return s.items.some(function (i) { return i.photos.indexOf(u) !== -1; }); });
+            if (!used) extra.push(u);
           });
         });
         if (extra.length) sections.push({ title: 'Photos', items: [{ label: 'Attached photos', response: '', type: 'photos', notes: '', flagged: false, photos: extra }] });
