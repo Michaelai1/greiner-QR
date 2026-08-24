@@ -4671,17 +4671,22 @@ ${photoUrls}`;
       function ngSubmit(payload, submitBtn, label) {
         var subtype = payload.inspection_subtype || 'jha';
         var title = TITLES[subtype] || 'Field Inspection';
+        var form = document.getElementById(FORM_IDS[subtype]);
+        var dmodel = form ? extractDoc(form, subtype, payload)
+          : { title: title, subtype: subtype, meta: {}, sections: [], flagged: [], counts: { items: 0, flagged: payload.defect_count || 0 } };
+        // Preserve the full human-readable record context so the document can be
+        // reconstructed even after templates evolve (#20).
+        var storeFields = Object.assign({}, payload.fields || {}, { doc: dmodel });
         return rpc('cs_portal_field_submit', {
           p_token: NG.ticket, p_form_type: subtype, p_form_title: title,
-          p_asset_id: payload.asset_id || null, p_fields: payload.fields || {},
+          p_asset_id: payload.asset_id || null, p_fields: storeFields,
           p_photos: [], p_signature: payload.signature || null,
           p_has_defects: !!payload.has_defects, p_defect_count: payload.defect_count || 0, p_pdf_path: null
         }).then(function (res) {
-          return generatePdf(title, payload, res).then(function (pdf) {
-            return edge({ action: 'upload', ticket: NG.ticket, id: res.id, pdf_base64: pdf.base64 }).then(function () {
-              NG.last = { blob: pdf.blob, filename: pdf.filename, id: res.id, title: title, when: new Date() };
-              renderCompletion();
-            });
+          var pdf = renderDetailedPdf(dmodel);
+          return edge({ action: 'upload', ticket: NG.ticket, id: res.id, pdf_base64: pdf.base64 }).then(function () {
+            NG.last = { blob: pdf.blob, filename: pdf.filename, id: res.id, title: title, when: new Date() };
+            renderCompletion();
           });
         }).catch(function (e) {
           if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = label || 'Submit'; }
@@ -4693,6 +4698,226 @@ ${photoUrls}`;
           }
           throw e;
         });
+      }
+
+      // ================= REUSABLE DETAILED SAFETY-DOCUMENT SYSTEM =================
+      // Config-driven so a duplicated client deployment inherits it by changing
+      // NGDOC.brand only. extractDoc() reads the live form DOM into a portable
+      // document model (sections -> items with label/response/notes/photo/flag);
+      // renderDetailedPdf() turns any such model into a full multi-page record.
+      var NGDOC = { brand: 'GREINER BROTHERS', subtitle: 'Safety Record', footer: 'Powered by NextGen Safety' };
+      var FORM_IDS = { aerial_platform: 'aerialInspectionForm', forklift: 'forkliftInspectionForm', jha: 'jhaForm', hot_work_permit: 'hotWorkForm' };
+      var META_NAMES = { inspector: ['aerialInspectorName','fl_inspector_name','inspector_name','jhaAnalysisBy','jha_prepared_by','hw_permit_issued_by'],
+        jobsite: ['aerialJobsite','forkliftJobsite','jhaLocation','hotWorkLocation'],
+        asset: ['aerialVehicleId','forkliftVehicleId'], date: ['aerialDate','forkliftDate','jhaDate','hotWorkDate'] };
+      function labelForName(n) { var el = document.querySelector('[name="' + n + '"]'); if (!el) return null; var g = el.closest('.form-group'); var l = g && (g.querySelector('.form-label') || g.querySelector('.inspection-checklist-label')); return l ? l.textContent.replace(/\*/g, '').trim() : null; }
+
+      function fmtResp(v) {
+        if (v === true) return 'Yes'; if (v === false) return 'No';
+        var s = String(v == null ? '' : v).trim(), low = s.toLowerCase();
+        var map = { yes: 'Yes', no: 'No', pass: 'Pass', fail: 'Fail', safe: 'Safe', defect: 'DEFECT', unsafe: 'UNSAFE', ok: 'OK', na: 'N/A', 'n/a': 'N/A', complete: 'Complete', incomplete: 'Incomplete' };
+        return map[low] || s;
+      }
+      function isFlag(v) { var l = String(v).toLowerCase(); return l === 'defect' || l === 'fail' || l === 'unsafe' || l === 'incomplete'; }
+
+      // Build the portable document model from the live form.
+      function extractDoc(form, subtype, payload) {
+        var sections = [], flaggedList = [], seenNames = {};
+        function noteFor(grp) {
+          var t = grp.querySelector('textarea, input[name*="note" i], input[name*="Note"]');
+          // a checklist item's own value isn't a note; only textareas / explicit note fields
+          if (t && t.tagName === 'TEXTAREA' && t.value.trim()) return t.value.trim();
+          if (t && /note/i.test(t.name || '') && t.value.trim()) return t.value.trim();
+          return '';
+        }
+        function photosFor(names) {
+          var out = [], f = (payload && payload.fields) || {};
+          names.forEach(function (nm) {
+            Object.keys(f).forEach(function (k) {
+              if (k.indexOf(nm) === 0 || k === nm + '_photo' || k === nm + 'Photo') {
+                var v = f[k];
+                (Array.isArray(v) ? v : [v]).forEach(function (u) { if (typeof u === 'string' && u.indexOf('data:image') === 0) out.push(u); });
+              }
+            });
+          });
+          return out;
+        }
+        (form.querySelectorAll('.form-section') || []).forEach(function (sec) {
+          var tEl = sec.querySelector('.form-section-title');
+          var title = tEl ? tEl.textContent.replace(/\*/g, '').trim() : '';
+          var items = [];
+          Array.prototype.forEach.call(sec.querySelectorAll('.form-group'), function (grp) {
+            var lEl = grp.querySelector('.inspection-checklist-label') || grp.querySelector('.form-label');
+            var label = lEl ? lEl.textContent.replace(/\*/g, '').trim() : '';
+            if (!label) return;
+            var response = '', rtype = 'text', flagged = false, name = '';
+            var radios = grp.querySelectorAll('input[type=radio]');
+            var main = grp.querySelector('input:not([type=radio]):not([type=hidden]), select, textarea');
+            if (radios.length) {
+              var ck = grp.querySelector('input[type=radio]:checked');
+              response = ck ? ck.value : ''; rtype = 'choice'; flagged = isFlag(response);
+              name = radios[0].name || '';
+            } else if (main) {
+              name = main.name || '';
+              if (main.tagName === 'SELECT') { response = main.options[main.selectedIndex] ? main.options[main.selectedIndex].text : main.value; rtype = 'choice'; }
+              else { response = main.value; rtype = main.type || (main.tagName === 'TEXTAREA' ? 'text' : 'text'); flagged = isFlag(response); }
+            } else return;
+            if (name) seenNames[name] = 1;
+            var notes = noteFor(grp);
+            var photos = name ? photosFor([name]) : [];
+            var it = { label: label, response: response, type: rtype, notes: notes, flagged: flagged, photos: photos };
+            if (flagged) flaggedList.push(label);
+            items.push(it);
+          });
+          if (items.length) sections.push({ title: title || 'Details', items: items });
+        });
+        // any leftover photos in the payload not mapped to an item -> a Photos section
+        var extra = [], f = (payload && payload.fields) || {};
+        Object.keys(f).forEach(function (k) {
+          var v = f[k];
+          (Array.isArray(v) ? v : [v]).forEach(function (u) {
+            if (typeof u === 'string' && u.indexOf('data:image') === 0) {
+              var used = sections.some(function (s) { return s.items.some(function (i) { return i.photos.indexOf(u) !== -1; }); });
+              if (!used) extra.push(u);
+            }
+          });
+        });
+        if (extra.length) sections.push({ title: 'Photos', items: [{ label: 'Attached photos', response: '', type: 'photos', notes: '', flagged: false, photos: extra }] });
+        return {
+          title: (TITLES[subtype] || 'Field Inspection'), subtype: subtype,
+          meta: {
+            inspector: NG.user || '', job: (NG.job || {}).name || '', job_number: (NG.job || {}).job_number || '',
+            location: (NG.job || {}).address || '', asset: payload.asset_id || '',
+            date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString(),
+            submitted_at: new Date().toISOString()
+          },
+          sections: sections, flagged: flaggedList,
+          counts: { items: sections.reduce(function (n, s) { return n + s.items.filter(function (i) { return i.type !== 'photos'; }).length; }, 0), flagged: flaggedList.length }
+        };
+      }
+
+      // Render a full, professional, multi-page permanent record from the model.
+      function renderDetailedPdf(dmodel) {
+        var JS = window.jspdf && window.jspdf.jsPDF;
+        if (!JS) return { base64: '', blob: new Blob([], { type: 'application/pdf' }), filename: 'record.pdf' };
+        var doc = new JS({ unit: 'pt', format: 'letter' });
+        var W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
+        var M = 46, y = M, navy = [15, 23, 42], gray = [110, 110, 110], line = [222, 222, 222];
+        var flagged = dmodel.counts.flagged > 0;
+        function footer() {
+          doc.setFontSize(8); doc.setTextColor(150);
+          doc.text(NGDOC.footer, M, H - 24);
+          doc.text('Page ' + doc.internal.getNumberOfPages(), W / 2, H - 24, { align: 'center' });
+          doc.text(dmodel.meta.job + (dmodel.meta.asset ? ' · ' + dmodel.meta.asset : ''), W - M, H - 24, { align: 'right' });
+        }
+        function ensure(h) { if (y + h > H - 40) { footer(); doc.addPage(); y = M; } }
+        function rule() { doc.setDrawColor(line[0], line[1], line[2]); doc.line(M, y, W - M, y); y += 14; }
+        // header band
+        doc.setFillColor(navy[0], navy[1], navy[2]); doc.rect(0, 0, W, 70, 'F');
+        doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(17); doc.text(NGDOC.brand, M, 30);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(205, 205, 205); doc.text(NGDOC.subtitle, M, 48);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(255); doc.text(dmodel.title, W - M, 42, { align: 'right' });
+        y = 92;
+        // metadata block (two columns; omit blanks)
+        var mm = dmodel.meta, rows = [];
+        rows.push(['Project / Job', mm.job + (mm.job_number ? ' · ' + mm.job_number : '')]);
+        if (mm.location) rows.push(['Location', mm.location]);
+        rows.push(['Completed by', mm.inspector]);
+        if (mm.asset) rows.push(['Equipment / Asset', mm.asset]);
+        rows.push(['Date', mm.date]); rows.push(['Time', mm.time]);
+        doc.setFontSize(10);
+        rows.forEach(function (r) {
+          if (!r[1]) return; ensure(17);
+          doc.setTextColor(gray[0], gray[1], gray[2]); doc.setFont('helvetica', 'bold'); doc.text(r[0] + ':', M, y);
+          doc.setTextColor(30, 30, 30); doc.setFont('helvetica', 'normal');
+          doc.text(doc.splitTextToSize(String(r[1]), W - M - (M + 132)), M + 132, y);
+          y += 17;
+        });
+        y += 6;
+        // status + summary
+        ensure(28);
+        doc.setFillColor.apply(doc, flagged ? [250, 234, 234] : [234, 245, 238]); doc.roundedRect(M, y - 2, 300, 22, 4, 4, 'F');
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor.apply(doc, flagged ? [200, 30, 30] : [30, 120, 50]);
+        doc.text((flagged ? 'FLAGGED — ACTION REQUIRED' : 'PASS — NO DEFECTS') + '  ·  ' + dmodel.counts.items + ' items, ' + dmodel.counts.flagged + ' flagged', M + 12, y + 12.5);
+        y += 34;
+        if (flagged) {
+          ensure(18); doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); doc.setTextColor(150, 30, 30); doc.text('Items requiring attention', M, y); y += 15;
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(60, 60, 60);
+          dmodel.flagged.forEach(function (fl) { ensure(14); doc.text('• ' + fl, M + 6, y, { maxWidth: W - M - (M + 6) }); y += 14; });
+          y += 8;
+        }
+        // sections -> every item
+        dmodel.sections.forEach(function (sec) {
+          ensure(30);
+          doc.setFillColor(241, 243, 247); doc.rect(M, y - 2, W - 2 * M, 20, 'F');
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.setTextColor(navy[0], navy[1], navy[2]);
+          doc.text(sec.title, M + 8, y + 12); y += 28;
+          sec.items.forEach(function (it, idx) {
+            if (it.type === 'photos') { renderPhotos(it.photos); return; }
+            var labelLines = doc.splitTextToSize((idx + 1) + '. ' + it.label, W - 2 * M - 90);
+            ensure(labelLines.length * 12 + (it.notes ? 26 : 8) + 6);
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(35, 35, 35);
+            doc.text(labelLines, M, y);
+            // response, right-aligned, colored
+            var resp = fmtResp(it.response);
+            if (resp) {
+              doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+              doc.setTextColor.apply(doc, it.flagged ? [200, 30, 30] : (/^(yes|pass|safe|ok|complete|n\/a)$/i.test(resp) ? [30, 120, 50] : [40, 40, 40]));
+              doc.text((it.flagged ? resp + '  ⚑' : resp), W - M, y, { align: 'right' });
+            }
+            y += labelLines.length * 12 + 4;
+            if (it.notes) {
+              var nl = doc.splitTextToSize('Notes: ' + it.notes, W - 2 * M - 10); ensure(nl.length * 11 + 4);
+              doc.setFont('helvetica', 'italic'); doc.setFontSize(9); doc.setTextColor(90, 90, 90);
+              doc.text(nl, M + 10, y); y += nl.length * 11 + 4;
+            }
+            if (it.photos && it.photos.length) renderPhotos(it.photos);
+            y += 4;
+          });
+          y += 6;
+        });
+        function renderPhotos(list) {
+          (list || []).forEach(function (data) {
+            ensure(128);
+            try { doc.addImage(data, 'JPEG', M + 10, y, 150, 112); }
+            catch (e) { try { doc.addImage(data, 'PNG', M + 10, y, 150, 112); } catch (_) {} }
+            y += 120;
+          });
+        }
+        footer();
+        var base64 = doc.output('datauristring').split(',')[1];
+        var blob = doc.output('blob');
+        var fname = ('Greiner-' + (dmodel.meta.job || 'Purdue').replace(/[^A-Za-z0-9]+/g, '') + '-' + dmodel.title.replace(/[^A-Za-z0-9]+/g, '') + '-' + new Date().toISOString().slice(0, 10) + '.pdf');
+        return { base64: base64, blob: blob, filename: fname };
+      }
+
+      // ---------- mobile-safe View / Download / Share ----------
+      // getBlob() returns a Promise<Blob>. View opens a tab synchronously in the
+      // user gesture (survives the async fetch); Download uses an object URL;
+      // Share uses the Web Share API with the actual PDF File and falls back.
+      function mvView(getBlob) {
+        var w = window.open('', '_blank');   // opened inside the gesture -> not popup-blocked
+        return getBlob().then(function (blob) {
+          var url = URL.createObjectURL(blob);
+          if (w && !w.closed) { w.location = url; } else { window.location.href = url; }  // same-tab fallback
+        }).catch(function () { if (w && !w.closed) w.close(); toast('error', 'Could not open PDF', 'Please try again.'); });
+      }
+      function mvDownload(getBlob, name) {
+        return getBlob().then(function (blob) {
+          var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name || 'record.pdf';
+          a.rel = 'noopener'; document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); }, 100);
+        }).catch(function () { toast('error', 'Download failed', 'Please try again.'); });
+      }
+      function mvShare(getBlob, name, title) {
+        return getBlob().then(function (blob) {
+          var file = new File([blob], name || 'record.pdf', { type: 'application/pdf' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            return navigator.share({ files: [file], title: title || 'Safety record', text: title || '' }).catch(function (e) { if (e && e.name === 'AbortError') return; throw e; });
+          }
+          // no file-share support -> download so the user can attach it manually
+          var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name || 'record.pdf'; document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); }, 100);
+          toast('success', 'Ready to send', 'PDF saved — attach it to a text or email.');
+        }).catch(function () { toast('error', 'Share failed', 'Try Download instead.'); });
       }
 
       // ---------- professional Greiner PDF ----------
@@ -4783,18 +5008,10 @@ ${photoUrls}`;
           '<button class="submit-button" id="ngDownload" style="background:#fff;color:#0f172a;border:1px solid #d1d5db">Download PDF</button>' +
           '<button class="submit-button" id="ngShare" style="background:#fff;color:#0f172a;border:1px solid #d1d5db">Share / Send PDF</button>' +
           '<a href="' + DASH + '" class="submit-button" style="background:#b48c28;text-align:center;text-decoration:none;display:block">Back to Purdue</a>';
-        var blob = NG.last.blob;
-        document.getElementById('ngView').onclick = function () { window.open(URL.createObjectURL(blob), '_blank'); };
-        document.getElementById('ngDownload').onclick = function () { var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = NG.last.filename; document.body.appendChild(a); a.click(); a.remove(); };
-        document.getElementById('ngShare').onclick = function () {
-          var file = new File([blob], NG.last.filename, { type: 'application/pdf' });
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            navigator.share({ files: [file], title: NG.last.title, text: NG.last.title + ' — ' + (job.name || '') }).catch(function () {});
-            return;
-          }
-          var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = NG.last.filename; document.body.appendChild(a); a.click(); a.remove();
-          toast('success', 'Ready to send', 'PDF downloaded — attach it to a text or email.');
-        };
+        var getBlob = function () { return Promise.resolve(NG.last.blob); };
+        document.getElementById('ngView').onclick = function () { mvView(getBlob); };
+        document.getElementById('ngDownload').onclick = function () { mvDownload(getBlob, NG.last.filename); };
+        document.getElementById('ngShare').onclick = function () { mvShare(getBlob, NG.last.filename, NG.last.title + ' — ' + (job.name || '')); };
         window.showView('success');
       }
 
