@@ -1344,6 +1344,10 @@
             padding: var(--spacing-md);
         }
         
+        .inspection-defect-thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .inspection-defect-thumbs .defect-thumb { position: relative; width: 72px; height: 72px; }
+        .inspection-defect-thumbs .defect-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid var(--color-border, #d1d5db); display: block; }
+        .inspection-defect-thumbs .defect-thumb button { position: absolute; top: -7px; right: -7px; width: 22px; height: 22px; border-radius: 50%; border: none; background: #b91c1c; color: #fff; font-size: 13px; line-height: 1; cursor: pointer; }
         .inspection-defect-file-name {
             display: block;
             font-size: var(--font-size-xs);
@@ -2967,7 +2971,10 @@
                 'SC1', 'SC2', 'SC3', 'SC4', 'SC5', 'SC7', 'SC8', 'SC9',
                 'SW1', 'SW2', 'SW3',
                 'TR6', 'TR13', 'TR14', 'TR15', 'TR16', 'TR17', 'TR18', 'TR19', 'TR20', 'TR21', 'TR23', 'TR24', 'TR25', 'TR26', 'TR3', 'TR4', 'TR5', 'TR9',
-                'WG1', 'WG2'
+                'WG1', 'WG2',
+                // Observed in historical Purdue field submissions (rental lifts) —
+                // confirm the per-site list with Tony before treating as complete.
+                '53310', '53319', '56439', 'JLG 34282'
             ]
         };
         
@@ -3101,24 +3108,49 @@
                 '<textarea class="form-textarea inspection-defect-notes" id="' + idNotes + '" name="' + baseName + '_defect_notes" rows="3" disabled placeholder="Describe the defect…"></textarea>' +
                 '<div class="form-error">Please describe this defect</div></div>' +
                 '<div class="form-group">' +
-                '<span class="form-label">Photo <span class="inspection-defect-optional">(optional)</span></span>' +
+                '<span class="form-label">Photos <span class="inspection-defect-optional">(optional \u2014 add as many as needed)</span></span>' +
                 '<div class="photo-input-wrapper inspection-defect-photo-wrapper">' +
                 '<label for="' + idFileCam + '" class="photo-input-label">' +
                 '<svg class="photo-input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">' +
                 '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>' +
                 '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>' +
                 '<div class="photo-input-text">Open camera</div></label>' +
-                '<input type="file" class="photo-input inspection-defect-photo inspection-defect-photo--camera" id="' + idFileCam + '" name="' + baseName + '_defect_photo_camera" accept="image/*" capture="environment" disabled>' +
+                '<input type="file" class="photo-input inspection-defect-photo inspection-defect-photo--camera" id="' + idFileCam + '" name="' + baseName + '_defect_photo_camera" accept="image/*" capture="environment" multiple disabled>' +
                 '<label for="' + idFileLib + '" class="photo-input-label">' +
                 '<svg class="photo-input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">' +
                 '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1"/>' +
                 '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v12m0 0l-4-4m4 4l4-4"/></svg>' +
                 '<div class="photo-input-text">Open photo library</div></label>' +
-                '<input type="file" class="photo-input inspection-defect-photo inspection-defect-photo--library" id="' + idFileLib + '" name="' + baseName + '_defect_photo_library" accept="image/*" disabled>' +
-                '<span class="inspection-defect-file-name"></span></div></div></div>';
+                '<input type="file" class="photo-input inspection-defect-photo inspection-defect-photo--library" id="' + idFileLib + '" name="' + baseName + '_defect_photo_library" accept="image/*" multiple disabled>' +
+                '<span class="inspection-defect-file-name"></span></div>' +
+                '<div class="inspection-defect-thumbs" aria-live="polite"></div></div></div>';
             row.appendChild(panel);
         }
         
+        function renderDefectThumbs(row) {
+            if (!row) return;
+            var box = row.querySelector('.inspection-defect-thumbs');
+            var nameEl = row.querySelector('.inspection-defect-file-name');
+            var arr = row._defectPhotos || [];
+            if (nameEl) nameEl.textContent = arr.length ? (arr.length + ' photo' + (arr.length === 1 ? '' : 's') + ' attached') : '';
+            if (!box) return;
+            box.innerHTML = '';
+            arr.forEach(function(p, i) {
+                var d = document.createElement('div');
+                d.className = 'defect-thumb';
+                var img = document.createElement('img');
+                img.src = p.data_url; img.alt = 'Defect photo ' + (i + 1);
+                var x = document.createElement('button');
+                x.type = 'button'; x.textContent = '\u00d7';
+                x.setAttribute('aria-label', 'Remove photo ' + (i + 1));
+                x.onclick = function() {
+                    row._defectPhotos.splice(i, 1);
+                    renderDefectThumbs(row);
+                };
+                d.appendChild(img); d.appendChild(x); box.appendChild(d);
+            });
+        }
+
         function updateInspectionDefectPanelForRow(row) {
             if (!row) return;
             var panel = row.querySelector('.inspection-defect-detail');
@@ -3148,6 +3180,8 @@
                     inp.disabled = true;
                     inp.value = '';
                 });
+                row._defectPhotos = [];
+                renderDefectThumbs(row);
                 var fn = panel.querySelector('.inspection-defect-file-name');
                 if (fn) fn.textContent = '';
             }
@@ -3182,10 +3216,13 @@
                 var notesEl = rows[i].querySelector('.inspection-defect-notes');
                 if (!notesEl || !notesEl.name) continue;
                 var payloadKey = notesEl.name.replace(/_defect_notes$/, '') + '_defect_photo';
+                var acc = (rows[i]._defectPhotos || []).slice();
+                // safety net: any files still sitting un-flushed in an input
                 var fileInp = getInspectionDefectPhotoInput(rows[i]);
-                if (!fileInp || fileInp.disabled || !fileInp.files || !fileInp.files.length) continue;
-                var arr = await photosToPayload(fileInp.files);
-                if (arr && arr[0]) fields[payloadKey] = arr[0];
+                if (fileInp && !fileInp.disabled && fileInp.files && fileInp.files.length) {
+                    acc = acc.concat(await photosToPayload(fileInp.files));
+                }
+                if (acc.length) fields[payloadKey] = acc;   // full array — every photo kept
             }
             return fields;
         }
@@ -4396,18 +4433,21 @@ ${photoUrls}`;
                         updateInspectionDefectPanelForRow(t.closest('.inspection-checklist-row'));
                     }
                     if (t.matches && t.matches('input.inspection-defect-photo')) {
-                        var panel = t.closest('.inspection-defect-detail');
-                        if (panel && t.files && t.files[0]) {
-                            panel.querySelectorAll('input.inspection-defect-photo').forEach(function(other) {
-                                if (other !== t) other.value = '';
+                        // Multiple photos per item: every selection (camera or
+                        // library, any number of times) APPENDS to the row's
+                        // photo set; thumbnails render with per-photo remove.
+                        var row = t.closest('.inspection-checklist-row');
+                        if (row && t.files && t.files.length) {
+                            // snapshot BEFORE clearing — the FileList is live and
+                            // resetting the input would empty it mid-read
+                            var picked = Array.prototype.slice.call(t.files);
+                            t.value = '';
+                            photosToPayload(picked).then(function(arr) {
+                                row._defectPhotos = (row._defectPhotos || []).concat(arr);
+                                renderDefectThumbs(row);
                             });
-                        }
-                        var nameEl = panel && panel.querySelector('.inspection-defect-file-name');
-                        if (nameEl) {
-                            var cam = panel.querySelector('.inspection-defect-photo--camera');
-                            var lib = panel.querySelector('.inspection-defect-photo--library');
-                            var f = (cam && cam.files && cam.files[0]) || (lib && lib.files && lib.files[0]);
-                            nameEl.textContent = f ? f.name : '';
+                        } else {
+                            t.value = '';
                         }
                     }
                 });
@@ -4641,7 +4681,17 @@ ${photoUrls}`;
           var g = el.closest('.form-group'); if (g) g.classList.remove('error');
         });
       }
+      function initDates() {
+        ['aerialDate', 'forkliftDate', 'jhaDate', 'hotWorkDate'].forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el && !el.value) {
+            var d = new Date();
+            el.value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+          }
+        });
+      }
       function applyLocks() {
+        initDates();
         // Authoritative submitter identity comes from the authenticated field
         // session — prefill AND lock the inspector name + typed signature so a
         // record can't carry a conflicting inspector (e.g. "Michael") (§11).
