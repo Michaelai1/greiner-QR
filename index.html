@@ -2287,6 +2287,7 @@
                                     <label class="form-label" for="jhaHazard1">Potential Hazards <span class="required">*</span></label>
                                     <div class="jha-combo-wrap"><input type="text" class="form-input" id="jhaHazard1" name="jhaHazard1" autocomplete="off" required placeholder="Choose or type a hazard"><button type="button" class="jha-combo-btn" data-combo-type="hazards" aria-label="Show hazard suggestions">&#9660;</button><div class="jha-combo-dropdown"></div></div>
                                     <div class="form-error">Required</div>
+                                    <div class="jha-photo-wrap" data-photo-key="jhaHazard1_photos"><button type="button" class="inspection-add-row-btn jha-photo-btn" style="margin-top:8px">&#128247; Add photo(s) · optional</button><input type="file" class="jha-photo-input" accept="image/*" multiple hidden><div class="inspection-defect-thumbs"></div></div>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="jhaAction1">Recommended Action or Procedure <span class="required">*</span></label>
@@ -2305,6 +2306,7 @@
                                     <label class="form-label" for="jhaHazard2">Potential Hazards <span class="required">*</span></label>
                                     <div class="jha-combo-wrap"><input type="text" class="form-input" id="jhaHazard2" name="jhaHazard2" autocomplete="off" required placeholder="Choose or type a hazard"><button type="button" class="jha-combo-btn" data-combo-type="hazards" aria-label="Show hazard suggestions">&#9660;</button><div class="jha-combo-dropdown"></div></div>
                                     <div class="form-error">Required</div>
+                                    <div class="jha-photo-wrap" data-photo-key="jhaHazard2_photos"><button type="button" class="inspection-add-row-btn jha-photo-btn" style="margin-top:8px">&#128247; Add photo(s) · optional</button><input type="file" class="jha-photo-input" accept="image/*" multiple hidden><div class="inspection-defect-thumbs"></div></div>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="jhaAction2">Recommended Action or Procedure <span class="required">*</span></label>
@@ -2323,6 +2325,7 @@
                                     <label class="form-label" for="jhaHazard3">Potential Hazards <span class="required">*</span></label>
                                     <div class="jha-combo-wrap"><input type="text" class="form-input" id="jhaHazard3" name="jhaHazard3" autocomplete="off" required placeholder="Choose or type a hazard"><button type="button" class="jha-combo-btn" data-combo-type="hazards" aria-label="Show hazard suggestions">&#9660;</button><div class="jha-combo-dropdown"></div></div>
                                     <div class="form-error">Required</div>
+                                    <div class="jha-photo-wrap" data-photo-key="jhaHazard3_photos"><button type="button" class="inspection-add-row-btn jha-photo-btn" style="margin-top:8px">&#128247; Add photo(s) · optional</button><input type="file" class="jha-photo-input" accept="image/*" multiple hidden><div class="inspection-defect-thumbs"></div></div>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label" for="jhaAction3">Recommended Action or Procedure <span class="required">*</span></label>
@@ -2360,6 +2363,15 @@
                             <label class="form-label" for="jhaEmp6">Employee 6</label>
                             <input type="text" class="form-input" id="jhaEmp6" name="jhaEmp6" placeholder="Name">
                         </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Additional Photos &amp; Notes</div>
+                        <p class="jha-row-hint">Add photos of the work area, setup, site conditions, or anything else useful for documenting the JHA. Optional.</p>
+                        <div class="form-group">
+                            <label class="form-label" for="jhaAdditionalNotes">Notes</label>
+                            <textarea class="form-textarea" id="jhaAdditionalNotes" name="jhaAdditionalNotes" rows="3" placeholder="Optional notes about the work area or conditions&hellip;"></textarea>
+                        </div>
+                        <div class="jha-photo-wrap" data-photo-key="jhaAdditionalNotes_photos"><button type="button" class="inspection-add-row-btn jha-photo-btn">&#128247; Add photo(s) · optional</button><input type="file" class="jha-photo-input" accept="image/*" multiple hidden><div class="inspection-defect-thumbs"></div></div>
                     </div>
                     <button type="submit" class="submit-button" id="jhaSubmitBtn" style="margin-top: var(--spacing-md);">Submit JHA</button>
                 </form>
@@ -3124,6 +3136,63 @@
             return photos;
         }
         
+        /* JHA photos reuse the proven defect-photo machinery: snapshot the
+           FileList before clearing (iOS liveness), downscale via
+           photosToPayload, accumulate per control, thumbnail + per-photo
+           remove using the same .defect-thumb styling. */
+        function renderJhaThumbs(wrap) {
+            if (!wrap) return;
+            var box = wrap.querySelector('.inspection-defect-thumbs');
+            var arr = wrap._photos || [];
+            if (!box) return;
+            box.innerHTML = '';
+            arr.forEach(function(p, i) {
+                var d = document.createElement('div');
+                d.className = 'defect-thumb';
+                var img = document.createElement('img');
+                img.src = p.data_url; img.alt = 'Photo ' + (i + 1);
+                var x = document.createElement('button');
+                x.type = 'button'; x.textContent = '\u00d7';
+                x.setAttribute('aria-label', 'Remove photo ' + (i + 1));
+                x.onclick = function() {
+                    wrap._photos.splice(i, 1);
+                    renderJhaThumbs(wrap);
+                };
+                d.appendChild(img); d.appendChild(x); box.appendChild(d);
+            });
+        }
+        (function wireJhaPhotos() {
+            var jf = document.getElementById('jhaForm');
+            if (!jf) return;
+            jf.addEventListener('click', function(e) {
+                var b = e.target.closest('.jha-photo-btn');
+                if (!b) return;
+                e.preventDefault();
+                var inp = b.parentElement.querySelector('.jha-photo-input');
+                if (inp) inp.click();
+            });
+            jf.addEventListener('change', function(e) {
+                var t = e.target;
+                if (!t.classList || !t.classList.contains('jha-photo-input')) return;
+                var wrap = t.closest('.jha-photo-wrap');
+                if (wrap && t.files && t.files.length) {
+                    var picked = Array.prototype.slice.call(t.files);   // snapshot BEFORE clearing
+                    t.value = '';
+                    photosToPayload(picked).then(function(arr) {
+                        wrap._photos = (wrap._photos || []).concat(arr);
+                        renderJhaThumbs(wrap);
+                    });
+                } else { t.value = ''; }
+            });
+        })();
+        function augmentJhaPhotos(form, fields) {
+            Array.prototype.forEach.call(form.querySelectorAll('.jha-photo-wrap'), function(wrap) {
+                var arr = wrap._photos || [];
+                if (arr.length && wrap.dataset.photoKey) fields[wrap.dataset.photoKey] = arr;
+            });
+            return fields;
+        }
+
         function enhanceInspectionChecklistRow(row) {
             if (!row || row.querySelector('.inspection-defect-detail')) return;
             var firstRadio = row.querySelector('input[type="radio"][name]');
@@ -3815,7 +3884,8 @@ ${photoUrls}`;
                 '<div class="form-group">' +
                 '<label class="form-label" for="jhaHazard' + rowNum + '">Potential Hazards <span class="required">*</span></label>' +
                 '<div class="jha-combo-wrap"><input type="text" class="form-input" id="jhaHazard' + rowNum + '" name="jhaHazard' + rowNum + '" autocomplete="off" required placeholder="Choose or type a hazard"><button type="button" class="jha-combo-btn" data-combo-type="hazards" aria-label="Show hazard suggestions">&#9660;</button><div class="jha-combo-dropdown"></div></div>' +
-                '<div class="form-error">Required</div></div>' +
+                '<div class="form-error">Required</div>' +
+                '<div class="jha-photo-wrap" data-photo-key="jhaHazard' + rowNum + '_photos"><button type="button" class="inspection-add-row-btn jha-photo-btn" style="margin-top:8px">&#128247; Add photo(s) · optional</button><input type="file" class="jha-photo-input" accept="image/*" multiple hidden><div class="inspection-defect-thumbs"></div></div></div>' +
                 '<div class="form-group">' +
                 '<label class="form-label" for="jhaAction' + rowNum + '">Recommended Action or Procedure <span class="required">*</span></label>' +
                 '<div class="jha-combo-wrap"><input type="text" class="form-input" id="jhaAction' + rowNum + '" name="jhaAction' + rowNum + '" autocomplete="off" required placeholder="Choose or type an action"><button type="button" class="jha-combo-btn" data-combo-type="actions" aria-label="Show action suggestions">&#9660;</button><div class="jha-combo-dropdown"></div></div>' +
@@ -3829,6 +3899,9 @@ ${photoUrls}`;
             if (form) {
                 form.reset();
                 setTodayDateInput(document.getElementById('jhaDate'));
+                Array.prototype.forEach.call(form.querySelectorAll('.jha-photo-wrap'), function(w) {
+                    w._photos = []; renderJhaThumbs(w);
+                });
             }
             document.querySelectorAll('#jhaForm .form-group').forEach(function(g) { g.classList.remove('error'); });
             updateJhaAddRowButton();
@@ -3969,6 +4042,9 @@ ${photoUrls}`;
                     var fields = serializeFormFields(form);
                     if (form.id === 'aerialInspectionForm' || form.id === 'forkliftInspectionForm') {
                         fields = await augmentInspectionDefectPhotos(form, fields);
+                    }
+                    if (form.id === 'jhaForm') {
+                        fields = augmentJhaPhotos(form, fields);
                     }
 
                     // Compute defect flag from any radio set to "defect"
