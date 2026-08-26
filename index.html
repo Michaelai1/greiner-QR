@@ -5079,7 +5079,8 @@ ${photoUrls}`;
             if (navigator.canShare && navigator.canShare({ files: [f] })) {
               return navigator.share({ files: [f], title: name || 'Safety record' }).catch(function () {});
             }
-            window.open(URL.createObjectURL(blob), '_blank');
+            var w = window.open(URL.createObjectURL(blob), '_blank');
+            if (!w) toast('success', 'Use Share instead', 'Tap Share / Send PDF to save it.');
             return;
           }
           var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name || 'record.pdf';
