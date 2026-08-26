@@ -3749,11 +3749,10 @@ ${photoUrls}`;
         
         function setTodayDateInput(inputEl) {
             if (!inputEl) return;
-            const now = new Date();
-            const y = now.getFullYear();
-            const m = String(now.getMonth() + 1).padStart(2, '0');
-            const d = String(now.getDate()).padStart(2, '0');
-            inputEl.value = y + '-' + m + '-' + d;
+            // "today" is Indiana's today, not the device's — a phone on the
+            // wrong timezone must not pre-date the form into tomorrow.
+            inputEl.value = new Date().toLocaleDateString('en-CA',
+                { timeZone: 'America/Indiana/Indianapolis' });
         }
         
         function openAerialInspectionForm() {
