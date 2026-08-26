@@ -3074,17 +3074,52 @@
             return obj;
         }
         
+        // Phone camera photos are 3–8MB; sent raw they blow past the PDF
+        // broker's resource limit and bloat every stored row. Downscale to a
+        // documentation-quality JPEG before anything else touches the file.
+        async function downscalePhoto(file) {
+            var url = null;
+            try {
+                url = URL.createObjectURL(file);
+                var img = await new Promise(function(resolve, reject) {
+                    var i = new Image();
+                    i.onload = function() { resolve(i); };
+                    i.onerror = reject;
+                    i.src = url;
+                });
+                var w = img.naturalWidth, h = img.naturalHeight;
+                if (!w || !h) return null;
+                var scale = Math.min(1, 1600 / Math.max(w, h));
+                var canvas = document.createElement('canvas');
+                canvas.width = Math.max(1, Math.round(w * scale));
+                canvas.height = Math.max(1, Math.round(h * scale));
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                var out = canvas.toDataURL('image/jpeg', 0.82);
+                return out.indexOf('data:image/jpeg') === 0 ? out : null;
+            } catch (e) {
+                return null;
+            } finally {
+                if (url) { try { URL.revokeObjectURL(url); } catch (e) {} }
+            }
+        }
+
         async function photosToPayload(files) {
             const photos = [];
             for (let i = 0; i < files.length; i++) {
                 const f = files[i];
-                const dataUrl = await new Promise(function(resolve, reject) {
-                    const r = new FileReader();
-                    r.onload = function() { resolve(r.result); };
-                    r.onerror = reject;
-                    r.readAsDataURL(f);
-                });
-                photos.push({ filename: f.name || 'photo-' + (i + 1), mime: f.type || 'application/octet-stream', data_url: dataUrl });
+                var dataUrl = await downscalePhoto(f);
+                var mime = 'image/jpeg';
+                if (!dataUrl) {
+                    // decode failed (odd format) — fall back to the raw file
+                    dataUrl = await new Promise(function(resolve, reject) {
+                        const r = new FileReader();
+                        r.onload = function() { resolve(r.result); };
+                        r.onerror = reject;
+                        r.readAsDataURL(f);
+                    });
+                    mime = f.type || 'application/octet-stream';
+                }
+                photos.push({ filename: f.name || 'photo-' + (i + 1), mime: mime, data_url: dataUrl });
             }
             return photos;
         }
@@ -4713,7 +4748,7 @@ ${photoUrls}`;
         if (payload && payload.form_type === 'inspection') {
           if (!NG.ticket) {
             if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = label || 'Submit'; }
-            toast('error', 'Sign in required', 'Open this form from your Purdue dashboard.');
+            toast('error', 'Sign in required', 'Open this form from your Greiner dashboard.');
             return Promise.reject(new Error('no field session'));
           }
           return ngSubmit(payload, submitBtn, label);
@@ -4745,7 +4780,7 @@ ${photoUrls}`;
           if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = label || 'Submit'; }
           if (/insufficient scope|invalid token|not a field user/i.test(e.message || '')) {
             try { localStorage.removeItem(TICKET_KEY); } catch (_) {}
-            toast('error', 'Session expired', 'Open this form again from your Purdue dashboard.');
+            toast('error', 'Session expired', 'Open this form again from your Greiner dashboard.');
           } else {
             toast('error', 'Submit failed', e.message || 'Please try again.');
           }
@@ -5144,7 +5179,7 @@ ${photoUrls}`;
         }).catch(function () {
           try { localStorage.removeItem(TICKET_KEY); } catch (e) {}
           NG.active = false; NG.ticket = null;
-          toast('error', 'Session expired', 'Open this form again from your Purdue dashboard to sign in.');
+          toast('error', 'Session expired', 'Open this form again from your Greiner dashboard to sign in.');
         });
       }
     })();
