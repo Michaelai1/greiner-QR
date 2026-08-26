@@ -5072,6 +5072,16 @@ ${photoUrls}`;
       }
       function mvDownload(getBlob, name) {
         return getBlob().then(function (blob) {
+          // iOS Home Screen (standalone) mode: anchor downloads are unreliable —
+          // hand the file to the native share sheet (Save to Files lives there).
+          if (navigator.standalone) {
+            var f = new File([blob], name || 'record.pdf', { type: 'application/pdf' });
+            if (navigator.canShare && navigator.canShare({ files: [f] })) {
+              return navigator.share({ files: [f], title: name || 'Safety record' }).catch(function () {});
+            }
+            window.open(URL.createObjectURL(blob), '_blank');
+            return;
+          }
           var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name || 'record.pdf';
           a.rel = 'noopener'; document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); }, 100);
         }).catch(function () { toast('error', 'Download failed', 'Please try again.'); });
