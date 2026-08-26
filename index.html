@@ -4793,6 +4793,14 @@ ${photoUrls}`;
       // NGDOC.brand only. extractDoc() reads the live form DOM into a portable
       // document model (sections -> items with label/response/notes/photo/flag);
       // renderDetailedPdf() turns any such model into a full multi-page record.
+      /* All submission timestamps display in Indiana time regardless of the
+         phone's timezone; storage stays UTC ISO. Calendar-date form values
+         ("2026-08-25") are never timezone-shifted. */
+      var NGTZ = 'America/Indiana/Indianapolis';
+      function tzDate(t) { return new Date(t).toLocaleDateString('en-US', { timeZone: NGTZ, month: 'short', day: 'numeric', year: 'numeric' }); }
+      function tzTime(t) { return new Date(t).toLocaleTimeString('en-US', { timeZone: NGTZ, hour: 'numeric', minute: '2-digit' }); }
+      function tzDateTime(t) { return tzDate(t) + ' \u00b7 ' + tzTime(t); }
+      function calDate(v) { var x = new Date(String(v) + 'T12:00:00'); return isNaN(x) ? String(v) : x.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
       var NGDOC = { brand: 'GREINER BROTHERS', subtitle: 'Safety Record', footer: 'Powered by NextGen Safety' };
       var FORM_IDS = { aerial_platform: 'aerialInspectionForm', forklift: 'forkliftInspectionForm', jha: 'jhaForm', hot_work_permit: 'hotWorkForm' };
       var META_NAMES = { inspector: ['aerialInspectorName','fl_inspector_name','inspector_name','jhaAnalysisBy','jha_prepared_by','hw_permit_issued_by'],
@@ -4904,7 +4912,15 @@ ${photoUrls}`;
           meta: {
             inspector: NG.user || '', job: (NG.job || {}).name || '', job_number: (NG.job || {}).job_number || '',
             location: (NG.job || {}).address || '', asset: payload.asset_id || '',
-            date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString(),
+            date: (function () {
+              var v = '';
+              (META_NAMES.date || []).some(function (n) {
+                var el = form && form.querySelector('[name="' + n + '"], #' + n);
+                if (el && el.value) { v = el.value; return true; } return false;
+              });
+              return v ? calDate(v) : tzDate(new Date());
+            })(),
+            time: tzTime(new Date()),
             submitted_at: new Date().toISOString()
           },
           sections: sections, flagged: flaggedList,
@@ -4943,7 +4959,8 @@ ${photoUrls}`;
         if (mm.location) rows.push(['Location', mm.location]);
         rows.push(['Completed by', mm.inspector]);
         if (mm.asset) rows.push(['Equipment / Asset', mm.asset]);
-        rows.push(['Date', mm.date]); rows.push(['Time', mm.time]);
+        rows.push(['Inspection Date', mm.date]);
+        rows.push(['Submitted', mm.submitted_at ? tzDateTime(mm.submitted_at) : (mm.date + (mm.time ? ' \u00b7 ' + mm.time : ''))]);
         doc.setFontSize(10);
         rows.forEach(function (r) {
           if (!r[1]) return; ensure(17);
@@ -5103,7 +5120,7 @@ ${photoUrls}`;
           doc.setFont('helvetica', 'bold'); doc.setFontSize(12.5); doc.setTextColor(255); doc.text(title, W - M, 40, { align: 'right' });
           y = 90;
 
-          var meta = [['Project / Job', (job.name || '') + (job.job_number ? ' · ' + job.job_number : '')], ['Submitted by', NG.user || ''], ['Date', new Date().toLocaleDateString()], ['Time', new Date().toLocaleTimeString()]];
+          var meta = [['Project / Job', (job.name || '') + (job.job_number ? ' · ' + job.job_number : '')], ['Submitted by', NG.user || ''], ['Submitted', tzDateTime(new Date())]];
           if (payload.asset_id) meta.push(['Equipment / Asset', payload.asset_id]);
           doc.setFontSize(10);
           meta.forEach(function (row) { ensure(18); doc.setTextColor(gray[0], gray[1], gray[2]); doc.setFont('helvetica', 'bold'); doc.text(row[0] + ':', M, y); doc.setTextColor(30, 30, 30); doc.setFont('helvetica', 'normal'); doc.text(String(row[1] || '—'), M + 130, y); y += 18; });
@@ -5155,11 +5172,11 @@ ${photoUrls}`;
         var box = document.getElementById('ngActions');
         if (!box) { box = document.createElement('div'); box.id = 'ngActions'; box.style.cssText = 'margin-top:18px;display:flex;flex-direction:column;gap:10px'; view.appendChild(box); }
         box.innerHTML =
-          '<div style="text-align:center;color:#6b7280;font-size:13px;margin-bottom:2px">' + esc(NG.last.title) + ' · ' + esc(job.name || '') + ' · ' + NG.last.when.toLocaleString() + '</div>' +
+          '<div style="text-align:center;color:#6b7280;font-size:13px;margin-bottom:2px">' + esc(NG.last.title) + ' · ' + esc(job.name || '') + ' · ' + tzDateTime(NG.last.when) + '</div>' +
           '<button class="submit-button" id="ngView">View PDF</button>' +
           '<button class="submit-button" id="ngDownload" style="background:#fff;color:#0f172a;border:1px solid #d1d5db">Download PDF</button>' +
           '<button class="submit-button" id="ngShare" style="background:#fff;color:#0f172a;border:1px solid #d1d5db">Share / Send PDF</button>' +
-          '<a href="' + DASH + '" class="submit-button" style="background:#b48c28;text-align:center;text-decoration:none;display:block">Back to Purdue</a>';
+          '<a href="' + DASH + '" class="submit-button" style="background:#b48c28;text-align:center;text-decoration:none;display:block">Back to Dashboard</a>';
         var getBlob = function () { return Promise.resolve(NG.last.blob); };
         document.getElementById('ngView').onclick = function () { mvView(getBlob); };
         document.getElementById('ngDownload').onclick = function () { mvDownload(getBlob, NG.last.filename); };
