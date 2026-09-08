@@ -1,8 +1,8 @@
 {
-  "pid": 70530,
-  "port": 31632,
-  "token": "481a22f5-63cb-49b4-9b8f-7b9161b12e50",
-  "startedAt": "2026-08-24T21:55:32.463Z",
+  "pid": 40397,
+  "port": 20695,
+  "token": "45c92928-35d5-499d-acbf-4fbe2c48c20d",
+  "startedAt": "2026-09-08T18:02:33.385Z",
   "serverPath": "/Users/michaelcarey/.claude/skills/gstack/browse/src/server.ts",
   "mode": "launched"
 }

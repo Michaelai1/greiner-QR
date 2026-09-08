@@ -2423,6 +2423,14 @@
                             <input type="text" class="form-input" id="hotWorkPersonName" name="hotWorkPersonName" required placeholder="Full name">
                             <div class="form-error">Required</div>
                         </div>
+                        <div class="form-group">
+                            <label class="form-label">Person Doing Hot Work Is <span class="required">*</span></label>
+                            <div class="jha-newrevised-row" role="radiogroup" aria-label="Employee or Contractor">
+                                <label><input type="radio" name="hotWorkPersonType" value="Employee" required> Employee</label>
+                                <label><input type="radio" name="hotWorkPersonType" value="Contractor"> Contractor</label>
+                            </div>
+                            <div class="form-error">Required</div>
+                        </div>
                     </div>
                     <div class="form-section">
                         <div class="form-section-title">Checklist</div>
@@ -2444,10 +2452,23 @@
                         <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="hw_chk_conf_purged" id="hw_chk_conf_purged"> Containers purged of flammable liquids/vapors</label></div>
                         <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="hw_chk_conf_guidelines" id="hw_chk_conf_guidelines"> Follow confined space guidelines</label></div>
                         <h3 class="hotwork-section-heading">Fire watch / hot work area monitoring</h3>
-                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="hw_chk_fw_during" id="hw_chk_fw_during"> Fire watch provided during and for 30 minutes after work including breaks</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="hw_chk_fw_during" id="hw_chk_fw_during"> Fire watch provided during and for 60 minutes after work including breaks</label></div>
                         <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="hw_chk_fw_ext" id="hw_chk_fw_ext"> Fire watch supplied with extinguisher and/or water pump can</label></div>
                         <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="hw_chk_fw_trained" id="hw_chk_fw_trained"> Fire watch trained in use of equipment and familiar with alarm location</label></div>
                         <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="hw_chk_fw_opposite" id="hw_chk_fw_opposite"> Fire watch may be required for opposite side of walls, above and below floors</label></div>
+                        <h3 class="hotwork-section-heading">Special conditions — Permit Authorizing Individual (if applicable)</h3>
+                        <div class="form-group">
+                            <label class="form-label" for="hotWorkAdjSeparation">Adjusted separation distance for combustibles (default 35 ft)</label>
+                            <input type="text" class="form-input" id="hotWorkAdjSeparation" name="hotWorkAdjSeparation" placeholder="Leave blank if standard 35 ft">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="hotWorkAdjFireWatch">Adjusted fire watch time (minimum 30 minutes)</label>
+                            <input type="text" class="form-input" id="hotWorkAdjFireWatch" name="hotWorkAdjFireWatch" placeholder="Leave blank if standard 60 minutes">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="hotWorkMonitoring">Post-fire-watch monitoring time (up to 3 hours)</label>
+                            <input type="text" class="form-input" id="hotWorkMonitoring" name="hotWorkMonitoring" placeholder="Leave blank if none required">
+                        </div>
                     </div>
                     <div class="form-section">
                         <div class="form-group">
@@ -2984,9 +3005,19 @@
                 'SW1', 'SW2', 'SW3',
                 'TR6', 'TR13', 'TR14', 'TR15', 'TR16', 'TR17', 'TR18', 'TR19', 'TR20', 'TR21', 'TR23', 'TR24', 'TR25', 'TR26', 'TR3', 'TR4', 'TR5', 'TR9',
                 'WG1', 'WG2',
-                // Observed in historical Purdue field submissions (rental lifts) —
-                // confirm the per-site list with Tony before treating as complete.
-                '53310', '53319', '56439', 'JLG 34282'
+                // Observed in historical Purdue field submissions (rental lifts).
+                '53310', '53319', '56439', 'JLG 34282',
+                // Current Skyworks rentals per Tony's 2026-08-31 rental report.
+                // Purdue C800:
+                '53308', '53309', '53313', '30879', '30984', '27152', '53317', '53315', '16028', '40929',
+                // Taylorsville C808:
+                '40265',
+                // IU Health C785:
+                '45154', '45165', '45168', '45169', '45167', '45245', '45157', '3289Q', '45246', '45171', '15847', '40897',
+                // Westin C796:
+                '9252Q', '15458', '14270', '51631', '45248', '54425', '8705', '8625', '5563', '6831', '53321', '43662', '3050401', '3034400', '61685Q',
+                // Indiana School for the Blind C802:
+                '41874', '51686'
             ]
         };
         
