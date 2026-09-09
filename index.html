@@ -2520,7 +2520,181 @@
                 </form>
             </div>
         </div>
-        
+
+        <!-- Job Site Analysis (Checklist) — Greiner GBI Job Site Analysis Form -->
+        <div id="inspectionJobSiteAnalysisView" class="view">
+            <div class="header-top-bar"></div>
+            <div class="header-bar">
+                <div class="header-left">
+                    <img class="header-logo app-chrome-logo" src="" alt="Greiner" width="120" height="36" decoding="async">
+                    <span class="header-title"><span class="title-bold">Job Site Analysis</span></span>
+                </div>
+                <button class="close-button" id="closeInspectionJobSiteAnalysisBtn" title="Close" type="button">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="form-container">
+                <button type="button" class="inspection-back-btn" id="inspectionJobSiteAnalysisBackBtn">← Back to inspections</button>
+                <h1 class="form-heading">Job Site Analysis</h1>
+                <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-lg);">Greiner Job Site Analysis for use during the pre-job safety meeting. Check all that apply. Emergency No. 911.</p>
+                <form id="jobSiteAnalysisForm">
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label class="form-label" for="jsaWorkArea">Work Area / Facility <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="jsaWorkArea" name="jsaWorkArea" required placeholder="Work area or facility">
+                            <div class="form-error">Required</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="jsaJobNo">Job No.</label>
+                            <input type="text" class="form-input" id="jsaJobNo" name="jsaJobNo" placeholder="Job number">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="jsaStartDate">Start Date <span class="required">*</span></label>
+                            <input type="date" class="form-input" id="jsaStartDate" name="jsaStartDate" required>
+                            <div class="form-error">Required</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="jsaFinishDate">Finish Date</label>
+                            <input type="date" class="form-input" id="jsaFinishDate" name="jsaFinishDate">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="jsaSupervisor">Supervisor <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="jsaSupervisor" name="jsaSupervisor" required placeholder="Supervisor name">
+                            <div class="form-error">Required</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="jsaPhone">Phone No.</label>
+                            <input type="tel" class="form-input" id="jsaPhone" name="jsaPhone" inputmode="tel" placeholder="Phone number">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="jsaDescription">Description of Work <span class="required">*</span></label>
+                            <textarea class="form-textarea" id="jsaDescription" name="jsaDescription" rows="4" required placeholder="Describe the work…"></textarea>
+                            <div class="form-error">Required</div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Potential Hazards <span class="small muted" style="font-weight:400">(check those that apply)</span></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_flooding"> Flooding</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_skin_irritants"> Skin Irritants</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_fall"> Fall Potential</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_toxic"> Toxic Material</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_adjacent"> Adjacent Work</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_lifting"> Lifting Hazards</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_access"> Difficult Access</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_shoring"> Shoring/Sloping</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_traffic"> Traffic/Vibration</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_confined"> Confined Spaces</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_noise"> High Noise Levels</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_radiation"> Ionizing Radiation</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_excavation"> Excavation Hazard</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_elevated_load"> Elevated Load or Work</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_ventilation"> Inadequate Ventilation</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_water"> Water/Drowning Hazard</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_environmental"> Environmental Extremes</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_new_temp"> Employees/New or Temp</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_fire_explosion"> Fire or Explosion Potential</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_compressed_gas"> Compressed Gasses/Liquid</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_welding"> * Welding/Burning Operations</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_pinch_crush"> Pinch, Crush or Striking Hazards</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_sharp_hot_cold"> Sharp Edges or Hot/Cold Surfaces</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_chem_msds"> Hazardous Chemical Exposure/MSDS</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_electrical"> Electrical Shock/Energized Equipment</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_energy_release"> Potential Release of Energy Kinetic/Gravity</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_haz_lead"> Lead Exposure</label></div>
+                        <div class="form-group" style="margin-top:var(--spacing-sm)">
+                            <label class="form-label" for="jsaHazardsOther">Other hazards</label>
+                            <input type="text" class="form-input" id="jsaHazardsOther" name="jsaHazardsOther" placeholder="Other (optional)">
+                        </div>
+                        <p class="jha-row-hint">* A Supplemental HOT WORK Permit is required for all Welding and Burning Operations.</p>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Applicable Safe Work Practices <span class="small muted" style="font-weight:400">(check those that apply)</span></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_swp_first_aid"> First Aid</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_swp_loto"> Lock-out Tag Out</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_swp_barricades"> Use of Barricades</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_swp_lighting"> Approved Lighting</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_swp_orientation"> Site/Job Orientation</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_swp_specialized_ppe"> Use of Specialized PPE</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_swp_energy_isolation"> Energy Isolation Procedure</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_swp_confined_permit"> Confined Space Entry Permit</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_swp_rescue"> Rescue/Retrieval Equipment</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_swp_specialized_equip"> Use of Specialized Equipment</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_swp_specialized_training"> Specialized Training Required</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_swp_sop"> Standard Operating Procedures</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_swp_review_eap"> Review of Emergency Action Plans</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_swp_prejob"> Special Pre-Job Safety Discussions</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_swp_hotwork_permit"> Hot Work Permit: Electrical/Welding</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_swp_communications"> Communications: Visual/Audio</label></div>
+                        <div class="form-group" style="margin-top:var(--spacing-sm)">
+                            <label class="form-label" for="jsaPracticesOther">Other practices</label>
+                            <input type="text" class="form-input" id="jsaPracticesOther" name="jsaPracticesOther" placeholder="Other (optional)">
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Special Precautions <span class="small muted" style="font-weight:400">(check those that apply)</span></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_sp_simultaneous"> Simultaneous Operations</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_sp_pollution"> Pollution Prevention Measures</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_sp_redundant"> Redundant Protection Measures</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_sp_prejob"> Special Pre-Job Safety Discussions</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_sp_near_miss"> Near Miss Reports/Incidents</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_sp_haz_waste"> Hazardous Waste Disposal</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_sp_dig_alert"> Dig Alert</label></div>
+                        <h3 class="hotwork-section-heading">Electrical Powerline Issue</h3>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_sp_powerline_present"> Overhead or Underground power lines</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_sp_powerline_100ft"> Overhead power lines within 100 feet of work site (if yes, develop a plan to address hazard)</label></div>
+                        <div class="form-group" style="margin-top:var(--spacing-sm)">
+                            <label class="form-label" for="jsaPrecautionsOther">Other precautions</label>
+                            <input type="text" class="form-input" id="jsaPrecautionsOther" name="jsaPrecautionsOther" placeholder="Other (optional)">
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Personal Protective Equipment (PPE) <span class="small muted" style="font-weight:400">(check those that apply)</span></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_ppe_hard_hats"> Hard Hats</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_ppe_respirators"> Respirators</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_ppe_eye"> Eye Protection</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_ppe_air_lines"> Air Lines/Hood</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_ppe_face"> Face Protection</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_ppe_foot"> Safety Foot Wear</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_ppe_ear"> Ear Protection</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_ppe_personal_grounds"> Personal Grounds</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_ppe_coveralls"> Coveralls/Clothing</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_ppe_scba"> SCBA</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_ppe_sop"> Standard Operating Procedures</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_ppe_review_eap"> Review of Emergency Action Plans</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_ppe_prejob"> Special Pre-Job Safety Discussions</label></div>
+                        <div class="hotwork-check-row"><label class="hotwork-check-label"><input type="checkbox" name="jsa_ppe_hotwork_permit"> Hot Work Permit: Electrical/Welding</label></div>
+                        <div class="form-group" style="margin-top:var(--spacing-sm)">
+                            <label class="form-label" for="jsaPpeOther">Other PPE</label>
+                            <input type="text" class="form-input" id="jsaPpeOther" name="jsaPpeOther" placeholder="Other (optional)">
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label class="form-label" for="jsaNotes">Notes / Comments</label>
+                            <textarea class="form-textarea" id="jsaNotes" name="jsaNotes" rows="3" placeholder="Optional"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <span class="form-label">Photos <span class="inspection-defect-optional">(optional)</span></span>
+                            <div class="jha-photo-wrap" data-photo-key="jsa_photos"><button type="button" class="inspection-add-row-btn jha-photo-btn">&#128247; Add photo(s) · optional</button><input type="file" class="jha-photo-input" accept="image/*" multiple hidden><div class="inspection-defect-thumbs"></div></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="jsaReviewedBy">Reviewed By</label>
+                            <input type="text" class="form-input" id="jsaReviewedBy" name="jsaReviewedBy" placeholder="Name (optional)">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="jsaSignature">Signature <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="jsaSignature" name="jsaSignature" required placeholder="Type full name to sign">
+                            <div class="form-error">Required</div>
+                        </div>
+                        <p class="jha-row-hint">If an accident occurs during this job, a copy of the Job Site Analysis should be in the investigation report.</p>
+                    </div>
+                    <button type="submit" class="submit-button" id="jobSiteAnalysisSubmitBtn" style="margin-top: var(--spacing-md);">Submit Job Site Analysis</button>
+                </form>
+            </div>
+        </div>
+
         <!-- Daily log View -->
         <!-- Daily log View -->
         <div id="dailyLogView" class="view">
@@ -3961,6 +4135,19 @@ ${photoUrls}`;
             document.querySelectorAll('#hotWorkForm .form-group').forEach(function(g) { g.classList.remove('error'); });
             showView('inspectionHotWork');
         }
+
+        function openJobSiteAnalysisForm() {
+            var form = document.getElementById('jobSiteAnalysisForm');
+            if (form) {
+                form.reset();
+                setTodayDateInput(document.getElementById('jsaStartDate'));
+                Array.prototype.forEach.call(form.querySelectorAll('.jha-photo-wrap'), function(w) {
+                    w._photos = []; renderJhaThumbs(w);
+                });
+            }
+            document.querySelectorAll('#jobSiteAnalysisForm .form-group').forEach(function(g) { g.classList.remove('error'); });
+            showView('inspectionJobSiteAnalysis');
+        }
         
         document.getElementById('openAerialInspectionBtn').addEventListener('click', openAerialInspectionForm);
         document.getElementById('openForkliftInspectionBtn').addEventListener('click', openForkliftInspectionForm);
@@ -4007,6 +4194,12 @@ ${photoUrls}`;
             showView('inspections');
         });
         
+        (function(){
+          var b = document.getElementById('closeInspectionJobSiteAnalysisBtn');
+          var bk = document.getElementById('inspectionJobSiteAnalysisBackBtn');
+          if (b) b.addEventListener('click', function(){ showView('inspections'); });
+          if (bk) bk.addEventListener('click', function(){ showView('inspections'); });
+        })();
         document.getElementById('closeInspectionHotWorkBtn').addEventListener('click', function() {
             document.getElementById('hotWorkForm').reset();
             showView('landing');
@@ -4067,14 +4260,15 @@ ${photoUrls}`;
                         aerialInspectionForm: 'aerial_platform',
                         forkliftInspectionForm: 'forklift',
                         jhaForm: 'jha',
-                        hotWorkForm: 'hot_work_permit'
+                        hotWorkForm: 'hot_work_permit',
+                        jobSiteAnalysisForm: 'job_site_analysis'
                     };
                     var inspectionSubtype = subtypeMap[form.id];
                     var fields = serializeFormFields(form);
                     if (form.id === 'aerialInspectionForm' || form.id === 'forkliftInspectionForm') {
                         fields = await augmentInspectionDefectPhotos(form, fields);
                     }
-                    if (form.id === 'jhaForm') {
+                    if (form.id === 'jhaForm' || form.id === 'jobSiteAnalysisForm') {
                         fields = augmentJhaPhotos(form, fields);
                     }
 
@@ -4159,6 +4353,11 @@ ${photoUrls}`;
             document.getElementById('hotWorkSubmitBtn'),
             'Submit permit',
             function() { setDefaultHotWorkDatetimes(); }
+        );
+        handleInspectionSubmit(
+            document.getElementById('jobSiteAnalysisForm'),
+            document.getElementById('jobSiteAnalysisSubmitBtn'),
+            'Submit Job Site Analysis'
         );
         
         document.getElementById('closeDailyLogBtn').addEventListener('click', function() {
@@ -4780,8 +4979,8 @@ ${photoUrls}`;
       var EDGE = CREEKSIDE_URL + '/functions/v1/field-pdf';
       var DASH = 'https://greiner.creeksidesafety.com/index.html';
       var TICKET_KEY = 'ng_field_ticket';
-      var TITLES = { aerial_platform: 'Aerial Platform Inspection', forklift: 'Forklift Inspection', jha: 'Job Hazard Analysis (JHA)', hot_work_permit: 'Hot Work Permit' };
-      var OPENERS = { jha: 'openJhaForm', hotwork: 'openHotWorkForm', aerial: 'openAerialInspectionForm', forklift: 'openForkliftInspectionForm' };
+      var TITLES = { aerial_platform: 'Aerial Platform Inspection', forklift: 'Forklift Inspection', jha: 'JHA (Task / Hazard / Control)', hot_work_permit: 'Hot Work Permit', job_site_analysis: 'Job Site Analysis (Checklist)' };
+      var OPENERS = { jha: 'openJhaForm', hotwork: 'openHotWorkForm', aerial: 'openAerialInspectionForm', forklift: 'openForkliftInspectionForm', jobsiteanalysis: 'openJobSiteAnalysisForm', job_site_analysis: 'openJobSiteAnalysisForm' };
       var NG = window.NG = { active: false, ticket: null, user: '', job: null, last: null };
       function esc(s) { return String(s == null ? '' : s); }
       function toast(type, title, msg) { if (typeof showToast === 'function') showToast(type, title, msg); }
@@ -4836,8 +5035,13 @@ ${photoUrls}`;
         // Authoritative submitter identity comes from the authenticated field
         // session — prefill AND lock the inspector name + typed signature so a
         // record can't carry a conflicting inspector (e.g. "Michael") (§11).
-        if (NG.user) setLock('[name="aerialInspectorName"],[name="forkliftInspectorName"],[name="jhaAnalysisBy"],[name="aerialSignature"],[name="forkliftSignature"]', NG.user);
+        if (NG.user) setLock('[name="aerialInspectorName"],[name="forkliftInspectorName"],[name="jhaAnalysisBy"],[name="aerialSignature"],[name="forkliftSignature"],[name="jsaSignature"]', NG.user);
         if (NG.job) setLock('[name="aerialJobsite"],[name="forkliftJobsite"],[name="jhaLocation"],[name="hotWorkLocation"]', NG.job.name + (NG.job.job_number ? ' (' + NG.job.job_number + ')' : ''));
+        // Prefill the JSA job number from the authenticated job (editable).
+        if (NG.job && NG.job.job_number) {
+          var jn = document.querySelector('[name="jsaJobNo"]');
+          if (jn && !jn.value) jn.value = NG.job.job_number;
+        }
         setupAerialAssetPicker();
       }
 
@@ -4929,12 +5133,73 @@ ${photoUrls}`;
         return _handleSaveData ? _handleSaveData(url, payload, submitBtn, label) : Promise.resolve();
       };
 
+      // Job Site Analysis is checkbox-driven, so it gets a dedicated extractor
+      // (extractDoc reads one control per .form-group and would miss the check
+      // groups). Same portable doc-model shape -> same renderer / View Details.
+      function extractJsaDoc(form, payload) {
+        var f = (payload && payload.fields) || {};
+        function val(id) { var el = form.querySelector('[name="' + id + '"]'); return el ? String(el.value || '').trim() : ''; }
+        function checkedItems(sec) {
+          var items = [];
+          Array.prototype.forEach.call(sec.querySelectorAll('input[type=checkbox]'), function (cb) {
+            if (cb.checked) {
+              var lab = cb.closest('label');
+              var t = lab ? lab.textContent.replace(/\*/g, '').trim() : cb.name;
+              items.push({ label: t, response: 'Selected', type: 'choice', notes: '', flagged: false, photos: [] });
+            }
+          });
+          return items;
+        }
+        var sections = [];
+        // Job information (skip blanks; identity/date live in the header too)
+        var info = [];
+        [['jsaWorkArea', 'Work Area / Facility'], ['jsaJobNo', 'Job No.'], ['jsaSupervisor', 'Supervisor'],
+         ['jsaPhone', 'Phone No.'], ['jsaFinishDate', 'Finish Date'], ['jsaDescription', 'Description of Work']
+        ].forEach(function (p) { var v = val(p[0]); if (v) info.push({ label: p[1], response: v, type: 'text', notes: '', flagged: false, photos: [] }); });
+        if (info.length) sections.push({ title: 'Job Information', items: info });
+        // Checklist sections — one item per checked box, plus any "Other" text
+        var secEls = form.querySelectorAll('.form-section');
+        Array.prototype.forEach.call(secEls, function (sec) {
+          var tEl = sec.querySelector('.form-section-title');
+          if (!tEl) return;
+          var title = tEl.textContent.replace(/\(check those that apply\)/i, '').replace(/\*/g, '').trim();
+          var items = checkedItems(sec);
+          var other = sec.querySelector('input[name$="Other"]');
+          if (other && other.value.trim()) items.push({ label: 'Other', response: other.value.trim(), type: 'text', notes: '', flagged: false, photos: [] });
+          if (items.length) sections.push({ title: title, items: items });
+        });
+        // Notes + photos
+        var notes = val('jsaNotes');
+        var photos = [];
+        (function () { var w = form.querySelector('.jha-photo-wrap'); if (w && w._photos) w._photos.forEach(function (p) { if (p && p.data_url) photos.push(p.data_url); }); })();
+        if (notes || photos.length) {
+          sections.push({ title: 'Notes & Photos', items: [{ label: 'Notes', response: notes || '', type: 'text', notes: '', flagged: false, photos: photos }] });
+        }
+        // Sign-off
+        var signoff = [];
+        var rev = val('jsaReviewedBy'); if (rev) signoff.push({ label: 'Reviewed by', response: rev, type: 'text', notes: '', flagged: false, photos: [] });
+        var sig = val('jsaSignature'); if (sig) signoff.push({ label: 'Signed by', response: sig, type: 'text', notes: '', flagged: false, photos: [] });
+        if (signoff.length) sections.push({ title: 'Final Comments & Sign-off', items: signoff, aux: true, signoff: true });
+        return {
+          title: TITLES.job_site_analysis, subtype: 'job_site_analysis',
+          meta: {
+            inspector: NG.user || '', job: (NG.job || {}).name || '', job_number: (NG.job || {}).job_number || '',
+            location: (NG.job || {}).address || '', asset: '',
+            date: (function () { var v = val('jsaStartDate'); return v ? calDate(v) : tzDate(new Date()); })(),
+            time: tzTime(new Date()), submitted_at: new Date().toISOString()
+          },
+          sections: sections, flagged: [],
+          counts: { items: sections.reduce(function (n, s) { return s.aux ? n : n + s.items.length; }, 0), flagged: 0 }
+        };
+      }
+
       function ngSubmit(payload, submitBtn, label) {
         var subtype = payload.inspection_subtype || 'jha';
         var title = TITLES[subtype] || 'Field Inspection';
         var form = document.getElementById(FORM_IDS[subtype]);
-        var dmodel = form ? extractDoc(form, subtype, payload)
-          : { title: title, subtype: subtype, meta: {}, sections: [], flagged: [], counts: { items: 0, flagged: payload.defect_count || 0 } };
+        var dmodel = !form
+          ? { title: title, subtype: subtype, meta: {}, sections: [], flagged: [], counts: { items: 0, flagged: payload.defect_count || 0 } }
+          : (subtype === 'job_site_analysis' ? extractJsaDoc(form, payload) : extractDoc(form, subtype, payload));
         // Preserve the full human-readable record context so the document can be
         // reconstructed even after templates evolve (#20).
         var storeFields = Object.assign({}, payload.fields || {}, { doc: dmodel });
@@ -4975,7 +5240,7 @@ ${photoUrls}`;
       function tzDateTime(t) { return tzDate(t) + ' \u00b7 ' + tzTime(t); }
       function calDate(v) { var x = new Date(String(v) + 'T12:00:00'); return isNaN(x) ? String(v) : x.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
       var NGDOC = { brand: 'GREINER BROTHERS', subtitle: 'Safety Record', footer: 'Powered by NextGen Safety' };
-      var FORM_IDS = { aerial_platform: 'aerialInspectionForm', forklift: 'forkliftInspectionForm', jha: 'jhaForm', hot_work_permit: 'hotWorkForm' };
+      var FORM_IDS = { aerial_platform: 'aerialInspectionForm', forklift: 'forkliftInspectionForm', jha: 'jhaForm', hot_work_permit: 'hotWorkForm', job_site_analysis: 'jobSiteAnalysisForm' };
       var META_NAMES = { inspector: ['aerialInspectorName','fl_inspector_name','inspector_name','jhaAnalysisBy','jha_prepared_by','hw_permit_issued_by'],
         jobsite: ['aerialJobsite','forkliftJobsite','jhaLocation','hotWorkLocation'],
         asset: ['aerialVehicleId','forkliftVehicleId'], date: ['aerialDate','forkliftDate','jhaDate','hotWorkDate'] };
@@ -5388,6 +5653,15 @@ ${photoUrls}`;
           NG.active = false; NG.ticket = null;
           toast('error', 'Session expired', 'Open this form again from your Greiner dashboard to sign in.');
         });
+      } else if (params.get('review') === '1' && OPENERS[ngform] && typeof window[OPENERS[ngform]] === 'function') {
+        // Admin/Tony review preview: open a form for visual review with no
+        // session. Submit stays blocked (handleSaveData requires a ticket), so
+        // no data is written. Gated on ?review=1 — the normal crew flow (which
+        // always carries a ticket) is untouched.
+        setTimeout(function () {
+          window[OPENERS[ngform]]();
+          toast('success', 'Review preview', 'Preview only — sign in from the Greiner dashboard to submit.');
+        }, 0);
       }
     })();
     </script>
