@@ -5194,7 +5194,7 @@ ${photoUrls}`;
             // together on one page so a defect never separates from its evidence (§10/§14).
             var respBlock = shortResp ? 0 : (resp ? doc.splitTextToSize((it.flagged ? 'FLAGGED — ' : '') + resp, W - 2 * M - 12).length * 12 + 4 : 0);
             var notesBlock = it.notes ? doc.splitTextToSize('Notes: ' + it.notes, W - 2 * M - 10).length * 11 + 6 : 0;
-            var photoBlock = (it.photos && it.photos.length) ? 124 : 0;
+            var photoBlock = (it.photos && it.photos.length) ? 112 : 0;
             ensure(labelLines.length * 12 + 6 + respBlock + notesBlock + photoBlock);
             doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(35, 35, 35);
             doc.text(labelLines, M, y);
@@ -5222,10 +5222,13 @@ ${photoUrls}`;
         });
         function renderPhotos(list) {
           (list || []).forEach(function (data) {
-            ensure(128);
-            try { doc.addImage(data, 'JPEG', M + 10, y, 150, 112); }
-            catch (e) { try { doc.addImage(data, 'PNG', M + 10, y, 150, 112); } catch (_) {} }
-            y += 120;
+            // Slightly constrained height so a single-defect report with one
+            // photo keeps its sign-off on page 1 (avoids an almost-empty p2);
+            // still large and legible. Multi-defect reports page as needed.
+            ensure(116);
+            try { doc.addImage(data, 'JPEG', M + 10, y, 140, 105); }
+            catch (e) { try { doc.addImage(data, 'PNG', M + 10, y, 140, 105); } catch (_) {} }
+            y += 110;
           });
         }
         footer();
