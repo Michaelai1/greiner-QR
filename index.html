@@ -2409,9 +2409,20 @@
                             <div class="form-error">Required</div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="hotWorkLocation">Location / Building &amp; Floor — be specific <span class="required">*</span></label>
-                            <input type="text" class="form-input" id="hotWorkLocation" name="hotWorkLocation" required placeholder="Building, floor, area">
+                            <label class="form-label" for="hotWorkLocation">Building / General Location <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="hotWorkLocation" name="hotWorkLocation" required placeholder="Building or general location">
                             <div class="form-error">Required</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="hotWorkFloor">Floor / Level</label>
+                            <select id="hotWorkBuildingSelect" class="form-input" data-ui-only="1" style="display:none;margin-bottom:8px"></select>
+                            <select id="hotWorkFloorSelect" class="form-input" data-ui-only="1" style="display:none;margin-bottom:8px"></select>
+                            <input type="text" class="form-input" id="hotWorkFloor" name="hotWorkFloor" placeholder="Floor or level (optional)">
+                        </div>
+                        <input type="hidden" name="hotWorkBuilding" id="hotWorkBuilding">
+                        <div class="form-group">
+                            <label class="form-label" for="hotWorkArea">Specific Area / Room</label>
+                            <input type="text" class="form-input" id="hotWorkArea" name="hotWorkArea" placeholder="Specific area or room (optional)">
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="hotWorkDescription">Description of Work Being Performed <span class="required">*</span></label>
@@ -5037,12 +5048,72 @@ ${photoUrls}`;
         // record can't carry a conflicting inspector (e.g. "Michael") (§11).
         if (NG.user) setLock('[name="aerialInspectorName"],[name="forkliftInspectorName"],[name="jhaAnalysisBy"],[name="aerialSignature"],[name="forkliftSignature"],[name="jsaSignature"]', NG.user);
         if (NG.job) setLock('[name="aerialJobsite"],[name="forkliftJobsite"],[name="jhaLocation"],[name="hotWorkLocation"]', NG.job.name + (NG.job.job_number ? ' (' + NG.job.job_number + ')' : ''));
-        // Prefill the JSA job number from the authenticated job (editable).
-        if (NG.job && NG.job.job_number) {
-          var jn = document.querySelector('[name="jsaJobNo"]');
-          if (jn && !jn.value) jn.value = NG.job.job_number;
+        // Project info auto-populates from the authenticated job record — the
+        // field user never retypes what the job already stores (Tony req #2).
+        if (NG.job) {
+          setLock('[name="jhaProjectName"]', NG.job.name || '');
+          if (NG.job.job_number) {
+            setLock('[name="hotWorkJobNo"]', NG.job.job_number);
+            var jn = document.querySelector('[name="jsaJobNo"]');
+            if (jn && !jn.value) jn.value = NG.job.job_number;
+          }
         }
         setupAerialAssetPicker();
+        setupPeopleAutocomplete();
+        setupHotWorkLocation();
+      }
+
+      // People autocomplete (Tony req #1): a native datalist of the people
+      // assigned to THIS job (cs_portal_field_home 'people' — server-scoped to
+      // the session's job, so no unrelated-job names leak). Attached to the
+      // free person fields; multi-person fields (JHA employees) each keep their
+      // own input, so multi-selection is preserved. With no roster data the
+      // fields stay plain free-text — zero regression.
+      function setupPeopleAutocomplete() {
+        var people = NG.people || [];
+        var dl = document.getElementById('ngPeopleList');
+        if (!people.length) { if (dl) dl.innerHTML = ''; return; }
+        if (!dl) { dl = document.createElement('datalist'); dl.id = 'ngPeopleList'; document.body.appendChild(dl); }
+        dl.innerHTML = people.map(function (p) {
+          var nm = typeof p === 'string' ? p : (p.name || '');
+          var ph = (p && p.phone) ? p.phone : '';
+          return '<option value="' + esc(nm) + '">' + esc(ph) + '</option>';
+        }).join('');
+        document.querySelectorAll('[name="jhaPmSupervisor"],[name="jhaReviewedBy"],[name="hotWorkPersonName"],[name^="jhaEmp"]').forEach(function (inp) {
+          inp.setAttribute('list', 'ngPeopleList'); inp.setAttribute('autocomplete', 'off');
+        });
+      }
+
+      // Hot Work location hierarchy (Tony req #3): if the job has configured
+      // buildings/floors (cs_portal_field_home 'hotwork_locations'), show
+      // Building + Floor dropdowns; otherwise the fields stay manual entry.
+      // Values are configured per job — never invented in code.
+      function setupHotWorkLocation() {
+        var locs = (NG.job && NG.job.hotwork_locations) || NG.hotworkLocations || [];
+        var bSel = document.getElementById('hotWorkBuildingSelect');
+        var fSel = document.getElementById('hotWorkFloorSelect');
+        if (!bSel || !fSel) return;
+        if (!locs.length) { bSel.style.display = 'none'; fSel.style.display = 'none'; return; }
+        bSel.style.display = ''; fSel.style.display = '';
+        bSel.innerHTML = '<option value="">Select building…</option>' +
+          locs.map(function (b) { return '<option value="' + esc(b.building || b) + '">' + esc(b.building || b) + '</option>'; }).join('');
+        function fillFloors() {
+          var b = locs.filter(function (x) { return (x.building || x) === bSel.value; })[0];
+          var floors = (b && b.floors) || [];
+          fSel.innerHTML = '<option value="">Select floor…</option>' +
+            floors.map(function (f) { return '<option value="' + esc(f) + '">' + esc(f) + '</option>'; }).join('') +
+            '<option value="__other__">Other…</option>';
+        }
+        bSel.onchange = function () {
+          fillFloors();
+          var bf = document.querySelector('[name="hotWorkBuilding"]');
+          if (bf) bf.value = bSel.value;
+        };
+        fSel.onchange = function () {
+          var ff = document.querySelector('[name="hotWorkFloor"]');
+          if (ff && fSel.value !== '__other__') ff.value = fSel.value;
+        };
+        fillFloors();
       }
 
       // Aerial unit picker: a dropdown of the job's active lifts (from
@@ -5644,6 +5715,8 @@ ${photoUrls}`;
           NG.user = home.user || '';
           NG.job = (home.jobs && home.jobs[0]) || null;
           NG.equipment = home.equipment || [];   // job-scoped units (server-filtered)
+          NG.people = home.people || [];          // job roster for person autocomplete (#1)
+          NG.hotworkLocations = home.hotwork_locations || (NG.job && NG.job.hotwork_locations) || [];  // per-job hot-work locations (#3)
           applyLocks();
           var opener = OPENERS[ngform];
           if (opener && typeof window[opener] === 'function') { window[opener](); applyLocks(); }
