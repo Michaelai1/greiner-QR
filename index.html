@@ -5414,6 +5414,25 @@ ${photoUrls}`;
             sections.push({ title: t, items: items });
           }
         });
+        // Hot Work permit: the precaution checklist lives in .hotwork-check-row
+        // groups (not .form-group), so the generic pass above misses it. Capture
+        // the CHECKED precautions, grouped by their section heading, so the sent/
+        // downloaded PDF includes the full verified checklist (source: "check off
+        // all precautions which apply; leave blank if N/A").
+        if (subtype === 'hot_work_permit') {
+          var hwGroups = {}, hwOrder = [], hwCur = 'Checklist';
+          Array.prototype.forEach.call(form.querySelectorAll('.hotwork-section-heading, .hotwork-check-row'), function (node) {
+            if (node.classList.contains('hotwork-section-heading')) { hwCur = node.textContent.replace(/\*/g, '').trim(); return; }
+            var cb = node.querySelector('input[type=checkbox]');
+            if (cb && cb.checked) {
+              var lab = node.querySelector('label');
+              var t = lab ? lab.textContent.replace(/\*/g, '').trim() : (cb.name || '');
+              if (!hwGroups[hwCur]) { hwGroups[hwCur] = []; hwOrder.push(hwCur); }
+              hwGroups[hwCur].push({ label: t, response: 'Yes', type: 'choice', notes: '', flagged: false, photos: [] });
+            }
+          });
+          hwOrder.forEach(function (sec) { if (hwGroups[sec].length) sections.push({ title: sec, items: hwGroups[sec] }); });
+        }
         // any leftover photos in the payload not mapped to an item -> a Photos section
         var extra = [], f = (payload && payload.fields) || {};
         Object.keys(f).forEach(function (k) {
