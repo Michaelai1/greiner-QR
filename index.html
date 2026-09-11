@@ -2577,10 +2577,6 @@
                             <div class="form-error">Required</div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="jsaPhone">Phone No.</label>
-                            <input type="tel" class="form-input" id="jsaPhone" name="jsaPhone" inputmode="tel" placeholder="Phone number">
-                        </div>
-                        <div class="form-group">
                             <label class="form-label" for="jsaDescription">Description of Work <span class="required">*</span></label>
                             <textarea class="form-textarea" id="jsaDescription" name="jsaDescription" rows="4" required placeholder="Describe the work…"></textarea>
                             <div class="form-error">Required</div>
@@ -5235,7 +5231,7 @@ ${photoUrls}`;
         // Job information (skip blanks; identity/date live in the header too)
         var info = [];
         [['jsaWorkArea', 'Work Area / Facility'], ['jsaJobNo', 'Job No.'], ['jsaSupervisor', 'Supervisor'],
-         ['jsaPhone', 'Phone No.'], ['jsaFinishDate', 'Finish Date'], ['jsaDescription', 'Description of Work']
+         ['jsaFinishDate', 'Finish Date'], ['jsaDescription', 'Description of Work']
         ].forEach(function (p) { var v = val(p[0]); if (v) info.push({ label: p[1], response: v, type: 'text', notes: '', flagged: false, photos: [] }); });
         if (info.length) sections.push({ title: 'Job Information', items: info });
         // Checklist sections — one item per checked box, plus any "Other" text
