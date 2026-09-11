@@ -1833,8 +1833,9 @@
             <div class="inspection-grid inspection-grid--four">
                 <button type="button" class="inspection-type-btn" id="openAerialInspectionBtn" aria-label="Aerial Platform">Aerial Platform</button>
                 <button type="button" class="inspection-type-btn" id="openForkliftInspectionBtn" aria-label="Forklift">Forklift</button>
-                <button type="button" class="inspection-type-btn" id="openJhaFormBtn" aria-label="JHA Form">JHA Form</button>
+                <button type="button" class="inspection-type-btn" id="openJhaFormBtn" aria-label="JHA Task Hazard Control">JHA: Task / Hazard / Control</button>
                 <button type="button" class="inspection-type-btn" id="openHotWorkPermitBtn" aria-label="Hot Work Permit">Hot Work Permit</button>
+                <button type="button" class="inspection-type-btn" id="openJobSiteAnalysisBtn" aria-label="JHA Checklist Review">JHA: Checklist — Review</button>
             </div>
         </div>
         
@@ -2538,7 +2539,7 @@
             <div class="header-bar">
                 <div class="header-left">
                     <img class="header-logo app-chrome-logo" src="" alt="Greiner" width="120" height="36" decoding="async">
-                    <span class="header-title"><span class="title-bold">Job Site Analysis</span></span>
+                    <span class="header-title"><span class="title-bold">JHA — Checklist</span></span>
                 </div>
                 <button class="close-button" id="closeInspectionJobSiteAnalysisBtn" title="Close" type="button">
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2548,8 +2549,8 @@
             </div>
             <div class="form-container">
                 <button type="button" class="inspection-back-btn" id="inspectionJobSiteAnalysisBackBtn">← Back to inspections</button>
-                <h1 class="form-heading">Job Site Analysis</h1>
-                <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-lg);">Greiner Job Site Analysis for use during the pre-job safety meeting. Check all that apply. Emergency No. 911.</p>
+                <h1 class="form-heading">Job Hazard Analysis — Checklist</h1>
+                <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm); margin-bottom: var(--spacing-lg);"><strong>Alternate / review format.</strong> Greiner Job Hazard Analysis (checklist style) for use during the pre-job safety meeting. Check all that apply. Emergency No. 911.</p>
                 <form id="jobSiteAnalysisForm">
                     <div class="form-section">
                         <div class="form-group">
@@ -3378,27 +3379,31 @@
             });
         }
         (function wireJhaPhotos() {
-            var jf = document.getElementById('jhaForm');
-            if (!jf) return;
-            jf.addEventListener('click', function(e) {
-                var b = e.target.closest('.jha-photo-btn');
-                if (!b) return;
-                e.preventDefault();
-                var inp = b.parentElement.querySelector('.jha-photo-input');
-                if (inp) inp.click();
-            });
-            jf.addEventListener('change', function(e) {
-                var t = e.target;
-                if (!t.classList || !t.classList.contains('jha-photo-input')) return;
-                var wrap = t.closest('.jha-photo-wrap');
-                if (wrap && t.files && t.files.length) {
-                    var picked = Array.prototype.slice.call(t.files);   // snapshot BEFORE clearing
-                    t.value = '';
-                    photosToPayload(picked).then(function(arr) {
-                        wrap._photos = (wrap._photos || []).concat(arr);
-                        renderJhaThumbs(wrap);
-                    });
-                } else { t.value = ''; }
+            // Same photo-wrap upload UI for the Task/Hazard/Control JHA and the
+            // JHA Checklist (Job Site Analysis) form.
+            ['jhaForm', 'jobSiteAnalysisForm'].forEach(function (fid) {
+                var jf = document.getElementById(fid);
+                if (!jf) return;
+                jf.addEventListener('click', function(e) {
+                    var b = e.target.closest('.jha-photo-btn');
+                    if (!b) return;
+                    e.preventDefault();
+                    var inp = b.parentElement.querySelector('.jha-photo-input');
+                    if (inp) inp.click();
+                });
+                jf.addEventListener('change', function(e) {
+                    var t = e.target;
+                    if (!t.classList || !t.classList.contains('jha-photo-input')) return;
+                    var wrap = t.closest('.jha-photo-wrap');
+                    if (wrap && t.files && t.files.length) {
+                        var picked = Array.prototype.slice.call(t.files);   // snapshot BEFORE clearing
+                        t.value = '';
+                        photosToPayload(picked).then(function(arr) {
+                            wrap._photos = (wrap._photos || []).concat(arr);
+                            renderJhaThumbs(wrap);
+                        });
+                    } else { t.value = ''; }
+                });
             });
         })();
         function augmentJhaPhotos(form, fields) {
@@ -4162,6 +4167,7 @@ ${photoUrls}`;
         
         document.getElementById('openAerialInspectionBtn').addEventListener('click', openAerialInspectionForm);
         document.getElementById('openForkliftInspectionBtn').addEventListener('click', openForkliftInspectionForm);
+        (function(){ var b=document.getElementById('openJobSiteAnalysisBtn'); if(b) b.addEventListener('click', openJobSiteAnalysisForm); })();
         document.getElementById('openJhaFormBtn').addEventListener('click', openJhaForm);
         document.getElementById('openHotWorkPermitBtn').addEventListener('click', openHotWorkForm);
 
@@ -4990,7 +4996,7 @@ ${photoUrls}`;
       var EDGE = CREEKSIDE_URL + '/functions/v1/field-pdf';
       var DASH = 'https://greiner.creeksidesafety.com/index.html';
       var TICKET_KEY = 'ng_field_ticket';
-      var TITLES = { aerial_platform: 'Aerial Platform Inspection', forklift: 'Forklift Inspection', jha: 'JHA (Task / Hazard / Control)', hot_work_permit: 'Hot Work Permit', job_site_analysis: 'Job Site Analysis (Checklist)' };
+      var TITLES = { aerial_platform: 'Aerial Platform Inspection', forklift: 'Forklift Inspection', jha: 'JHA (Task / Hazard / Control)', hot_work_permit: 'Hot Work Permit', job_site_analysis: 'Job Hazard Analysis (Checklist)' };
       var OPENERS = { jha: 'openJhaForm', hotwork: 'openHotWorkForm', aerial: 'openAerialInspectionForm', forklift: 'openForkliftInspectionForm', jobsiteanalysis: 'openJobSiteAnalysisForm', job_site_analysis: 'openJobSiteAnalysisForm' };
       var NG = window.NG = { active: false, ticket: null, user: '', job: null, last: null };
       function esc(s) { return String(s == null ? '' : s); }
@@ -5052,6 +5058,10 @@ ${photoUrls}`;
         // field user never retypes what the job already stores (Tony req #2).
         if (NG.job) {
           setLock('[name="jhaProjectName"]', NG.job.name || '');
+          // JHA Checklist: prefill Work Area/Facility + Job No. from the job
+          // (editable — Work Area can be refined to a specific area on site).
+          var wa = document.querySelector('[name="jsaWorkArea"]');
+          if (wa && !wa.value && NG.job.name) wa.value = NG.job.name;
           if (NG.job.job_number) {
             setLock('[name="hotWorkJobNo"]', NG.job.job_number);
             var jn = document.querySelector('[name="jsaJobNo"]');
@@ -5079,7 +5089,7 @@ ${photoUrls}`;
           var ph = (p && p.phone) ? p.phone : '';
           return '<option value="' + esc(nm) + '">' + esc(ph) + '</option>';
         }).join('');
-        document.querySelectorAll('[name="jhaPmSupervisor"],[name="jhaReviewedBy"],[name="hotWorkPersonName"],[name^="jhaEmp"]').forEach(function (inp) {
+        document.querySelectorAll('[name="jhaPmSupervisor"],[name="jhaReviewedBy"],[name="hotWorkPersonName"],[name^="jhaEmp"],[name="jsaSupervisor"],[name="jsaReviewedBy"]').forEach(function (inp) {
           inp.setAttribute('list', 'ngPeopleList'); inp.setAttribute('autocomplete', 'off');
         });
       }
