@@ -5216,14 +5216,15 @@ ${photoUrls}`;
       function extractJsaDoc(form, payload) {
         var f = (payload && payload.fields) || {};
         function val(id) { var el = form.querySelector('[name="' + id + '"]'); return el ? String(el.value || '').trim() : ''; }
-        function checkedItems(sec) {
+        // Every checkbox in the section, marked Checked / Not checked, so the
+        // downloaded JHA Checklist shows the WHOLE checklist (not just the ones
+        // that were ticked).
+        function allItems(sec) {
           var items = [];
           Array.prototype.forEach.call(sec.querySelectorAll('input[type=checkbox]'), function (cb) {
-            if (cb.checked) {
-              var lab = cb.closest('label');
-              var t = lab ? lab.textContent.replace(/\*/g, '').trim() : cb.name;
-              items.push({ label: t, response: 'Selected', type: 'choice', notes: '', flagged: false, photos: [] });
-            }
+            var lab = cb.closest('label');
+            var t = lab ? lab.textContent.replace(/\*/g, '').trim() : cb.name;
+            items.push({ label: t, response: cb.checked ? 'Checked' : 'Not checked', type: 'choice', notes: '', flagged: false, photos: [] });
           });
           return items;
         }
@@ -5240,7 +5241,7 @@ ${photoUrls}`;
           var tEl = sec.querySelector('.form-section-title');
           if (!tEl) return;
           var title = tEl.textContent.replace(/\(check those that apply\)/i, '').replace(/\*/g, '').trim();
-          var items = checkedItems(sec);
+          var items = allItems(sec);
           var other = sec.querySelector('input[name$="Other"]');
           if (other && other.value.trim()) items.push({ label: 'Other', response: other.value.trim(), type: 'text', notes: '', flagged: false, photos: [] });
           if (items.length) sections.push({ title: title, items: items });
@@ -5424,11 +5425,12 @@ ${photoUrls}`;
           Array.prototype.forEach.call(form.querySelectorAll('.hotwork-section-heading, .hotwork-check-row'), function (node) {
             if (node.classList.contains('hotwork-section-heading')) { hwCur = node.textContent.replace(/\*/g, '').trim(); return; }
             var cb = node.querySelector('input[type=checkbox]');
-            if (cb && cb.checked) {
+            if (cb) {
               var lab = node.querySelector('label');
               var t = lab ? lab.textContent.replace(/\*/g, '').trim() : (cb.name || '');
               if (!hwGroups[hwCur]) { hwGroups[hwCur] = []; hwOrder.push(hwCur); }
-              hwGroups[hwCur].push({ label: t, response: 'Yes', type: 'choice', notes: '', flagged: false, photos: [] });
+              // Whole checklist, every item marked Checked / Not checked.
+              hwGroups[hwCur].push({ label: t, response: cb.checked ? 'Checked' : 'Not checked', type: 'choice', notes: '', flagged: false, photos: [] });
             }
           });
           hwOrder.forEach(function (sec) { if (hwGroups[sec].length) sections.push({ title: sec, items: hwGroups[sec] }); });
@@ -5546,7 +5548,7 @@ ${photoUrls}`;
             if (it.type === 'photos') { renderPhotos(it.photos); return; }
             if (numbered) seq++;
             var resp = fmtResp(it.response);
-            var respColor = it.flagged ? [200, 30, 30] : (/^(yes|pass|safe|ok|complete|n\/a)$/i.test(resp) ? [30, 120, 50] : [40, 40, 40]);
+            var respColor = it.flagged ? [200, 30, 30] : (/^(yes|pass|safe|ok|complete|checked|n\/a)$/i.test(resp) ? [30, 120, 50] : [40, 40, 40]);
             // short values sit to the right of the question; long / free-text
             // responses go on their own line below so nothing overlaps.
             var shortResp = resp && resp.length <= 22 && it.type !== 'text' && it.type !== 'textarea';
