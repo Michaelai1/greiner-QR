@@ -40,7 +40,7 @@ includes("['WEBHOOK_REPORT', 'WEBHOOK_TRANSPORT', 'WEBHOOK_INSPECTION', 'WEBHOOK
 // The demo submit path itself must contain no network call whatsoever.
 const demoSubmitSrc = html.slice(
   html.indexOf('function ngDemoSubmit('),
-  html.indexOf('// ---------- boot: validate ticket')
+  html.indexOf('// Completion screen for a JHA')
 );
 assert.ok(demoSubmitSrc.length > 100, 'could not isolate ngDemoSubmit source');
 for (const forbidden of ['rpc(', 'edge(', 'fetch(', 'XMLHttpRequest', 'navigator.sendBeacon', 'webhook']) {
@@ -94,9 +94,11 @@ includes('Greiner Review Demo', 'Visible "Greiner Review Demo" label is missing'
 includes('>Complete New JHA<', 'Landing must offer "Complete New JHA"');
 includes('>Revise Submitted JHA<', 'Landing must offer "Revise Submitted JHA"');
 assert.ok(!html.includes('JHA — Coming next'), 'JHA must no longer be marked "Coming next"');
-includes('Toolbox Talks — Coming next', 'Toolbox Talks must be labelled "Coming next"');
-includes("if (key === 'toolbox') { showDemoComingNext(key); return; }",
-  'Toolbox Talks must still short-circuit to "Coming next"');
+// Toolbox Talks is built now too — the landing shows the live weekly talk.
+assert.ok(!html.includes('Toolbox Talks — Coming next'),
+  'Toolbox Talks must no longer be marked "Coming next"');
+includes("if (key === 'toolbox') { openToolboxTalk(); return; }",
+  'Toolbox Talks must open the real workflow');
 // Landing first: a form only auto-opens when the link names one.
 includes('if (ngform) openDemoForm(ngform);',
   'Demo must stay on the landing screen unless a form is named in the URL');

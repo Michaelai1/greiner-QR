@@ -5984,7 +5984,7 @@ ${photoUrls}`;
 
       function openDemoForm(key) {
         key = String(key || '').toLowerCase();
-        if (key === 'toolbox') { showDemoComingNext(key); return; }
+        if (key === 'toolbox') { openToolboxTalk(); return; }
         // Revise Submitted JHA: pick from today's submitted JHAs on this job.
         if (key === 'revisejha' || key === 'revise_jha') { renderReviseList(); return; }
         if (key === 'jha') {
@@ -6017,8 +6017,12 @@ ${photoUrls}`;
             'style="width:100%;margin-bottom:8px">Revise Submitted JHA</button>' +
           '<button type="button" class="action-button action-button--primary" data-demoform="hotwork" ' +
             'style="width:100%;margin-bottom:8px">Hot Work Permit</button>' +
-          '<button type="button" class="action-button action-button--phase2" data-demoform="toolbox" ' +
-            'style="width:100%">Toolbox Talks — Coming next</button>';
+          '<button type="button" class="action-button action-button--primary" data-demoform="toolbox" ' +
+            'style="width:100%">Toolbox Talk — ' + esc(tbtCurrentTalk().t) + '</button>' +
+          '<div style="font-size:12px;color:#6b7280;margin-top:6px;text-align:center">' +
+            esc(TBT_CO[TBT_COMPANY].name) + ' · due ' + esc(tbtDueLabel()) + ' · ' +
+            (TBT_MODE === 'group' ? 'Foreman-led group talk' : 'Individual completion') + ' · ' +
+            esc(tbtStatusText()) + '</div>';
         landing.insertBefore(d, landing.firstChild);
         Array.prototype.forEach.call(d.querySelectorAll('[data-demoform]'), function (btn) {
           btn.addEventListener('click', function () { openDemoForm(btn.getAttribute('data-demoform')); });
@@ -6617,6 +6621,277 @@ ${photoUrls}`;
         renderCrew();
         syncLadderPanel();
         renderJhaBanner();
+      }
+
+
+      /* ================= TOOLBOX TALKS — mobile demo =====================
+         Two completion paths, both entirely local:
+           group      - a foreman presents and records attendance for a job/group
+           individual - the signed-in employee acknowledges for themselves
+         Company comes from ?company=choice|peine|greiner (default greiner).
+         Nothing is uploaded, no webhook, no text, no Supabase write.
+         =================================================================== */
+      var TBT_KEY = 'cs_tbt_mobile_demo_v1';
+      // The first three seeded talks from the office demo's queue. The phone
+      // only ever needs the current week's talk; the rest live in the office.
+      var TBT_TALKS = [
+        { i: 'fall', t: 'Fall Protection', f: 'Fall Protection.pdf',
+          path: '/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Tony Toolbox Email 01/Fall Protection.pdf' },
+        { i: 'ladders', t: 'Ladders 1', f: 'Ladders 1.pdf',
+          path: '/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Tony Toolbox Email 01/Ladders 1.pdf' },
+        { i: 'exc', t: 'Excavation Safety', f: 'Excavation Safety.pdf',
+          path: '/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Tony Toolbox Email 01/Excavation Safety.pdf' }
+      ];
+      var TBT_CO = {
+        greiner: { name: 'Greiner Brothers', mode: 'group',
+          groups: ['Demo Job A — Level 2 Fit-out', 'Demo Job B — Central Plant'],
+          people: [
+            { n: 'Demo Foreman', g: 'Demo Job A — Level 2 Fit-out' },
+            { n: 'Alex Rivera (Demo)', g: 'Demo Job A — Level 2 Fit-out' },
+            { n: 'Jordan Blake (Demo)', g: 'Demo Job A — Level 2 Fit-out' },
+            { n: 'Sam Whitfield (Demo)', g: 'Demo Job A — Level 2 Fit-out' },
+            { n: 'Casey Nolan (Demo)', g: 'Demo Job B — Central Plant' },
+            { n: 'Taylor Reed (Demo)', g: 'Demo Job B — Central Plant' }
+          ], me: 'Demo Foreman' },
+        choice: { name: 'Choice', mode: 'group', groups: ['Monday Group Meeting'],
+          people: ['Alex Fyffe', 'Angel Garcia', 'Zach France', 'Bobby Douthit', 'Cian McGarr',
+                   'Cenon "T" Heim', 'Darvelle White', 'Joe Mikalouski', 'Jon Wennen',
+                   'Justin Rice', 'Kyle Palmer', 'Nick Barnes'].map(function (n) {
+                     return { n: n, g: 'Monday Group Meeting' }; }), me: 'Alex Fyffe' },
+        peine: { name: 'Peine', mode: 'individual', groups: ['Peine Field (Demo)'],
+          people: ['Avery Nolan (Demo)', 'Bailey Cruz (Demo)', 'Cameron Diaz-Lee (Demo)',
+                   'Devon Marsh (Demo)', 'Emerson Pike (Demo)', 'Finley Ward (Demo)'].map(function (n) {
+                     return { n: n, g: 'Peine Field (Demo)' }; }), me: 'Avery Nolan (Demo)' }
+      };
+      var TBT_COMPANY = (function () {
+        var c = (params.get('company') || '').toLowerCase();
+        return TBT_CO[c] ? c : 'greiner';
+      })();
+      var TBT_MODE = (function () {
+        var m = (params.get('tbtmode') || '').toLowerCase();
+        return (m === 'group' || m === 'individual') ? m : TBT_CO[TBT_COMPANY].mode;
+      })();
+      var TBT_SEL = { group: null, attendees: [], manual: [], q: '', presenter: '', presented: false };
+
+      function tbtMondayISO() {
+        var d = new Date(); d.setHours(12, 0, 0, 0);
+        var dow = d.getDay(); d.setDate(d.getDate() + (dow === 0 ? -6 : 1 - dow));
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      }
+      function tbtDueLabel() {
+        var p = tbtMondayISO().split('-');
+        return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+      }
+      function tbtCurrentTalk() { return TBT_TALKS[0]; }
+      function tbtState() {
+        try { return JSON.parse(localStorage.getItem(TBT_KEY) || '{"records":[]}'); }
+        catch (e) { return { records: [] }; }
+      }
+      function tbtPush(rec) {
+        var s = tbtState(); s.records.push(rec);
+        try { localStorage.setItem(TBT_KEY, JSON.stringify(s)); } catch (e) {}
+      }
+      // Company is matched explicitly on both lookups: Greiner, Choice and
+      // Peine must never credit each other, even if two of them ever shared a
+      // group or employee name.
+      function tbtMyRecord() {
+        var me = TBT_CO[TBT_COMPANY].me, wk = tbtMondayISO(), talk = tbtCurrentTalk().i;
+        return tbtState().records.filter(function (r) {
+          return r.company === TBT_COMPANY && r.week === wk && r.talkId === talk &&
+                 r.kind === 'individual' && r.employee === me; })[0] || null;
+      }
+      function tbtGroupRecord(g) {
+        var wk = tbtMondayISO(), talk = tbtCurrentTalk().i;
+        return tbtState().records.filter(function (r) {
+          return r.company === TBT_COMPANY && r.week === wk && r.talkId === talk &&
+                 r.kind === 'group' && r.group === g; })[0] || null;
+      }
+      function tbtStatusText() {
+        if (TBT_MODE === 'individual') return tbtMyRecord() ? 'Completed' : 'Not completed';
+        var gs = TBT_CO[TBT_COMPANY].groups;
+        var done = gs.filter(function (g) { return tbtGroupRecord(g); }).length;
+        return done + ' of ' + gs.length + ' group' + (gs.length === 1 ? '' : 's') + ' submitted';
+      }
+
+      /* ---------------- the toolbox view ---------------- */
+      function ensureTbtView() {
+        var v = document.getElementById('toolboxTalkView');
+        if (v) return v;
+        v = document.createElement('div'); v.id = 'toolboxTalkView'; v.className = 'view';
+        v.innerHTML = '<div class="form-container"><button type="button" class="back-button" id="tbtBack">&larr; Back</button>' +
+          '<h2 class="form-title">Toolbox Talk</h2><div id="tbtBody"></div></div>';
+        (document.querySelector('.app-container') || document.body).appendChild(v);
+        v.querySelector('#tbtBack').addEventListener('click', function () { window.showView('landing'); });
+        return v;
+      }
+      // Local source documents are a review-demo convenience only. Outside the
+      // demo gate this never touches a file:// path — the real build will serve
+      // the talk from storage instead.
+      function tbtOpenDoc() {
+        var t = tbtCurrentTalk();
+        if (!DEMO) {
+          toast('error', 'Not available', 'The Toolbox Talk document is not published yet.');
+          return;
+        }
+        try { window.open('file://' + encodeURI(t.path), '_blank'); }
+        catch (e) { toast('error', 'Could not open', 'The local file could not be opened.'); }
+      }
+      function tbtDocButton() {
+        return '<button type="button" class="action-button action-button--primary" id="tbtViewDoc" style="width:100%;margin-bottom:12px">View the Toolbox Talk document</button>';
+      }
+      function tbtHeaderHtml() {
+        var t = tbtCurrentTalk(), co = TBT_CO[TBT_COMPANY];
+        return '<div style="border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin-bottom:14px;background:#fff">' +
+          '<div style="font-size:11.5px;font-weight:800;letter-spacing:.05em;color:#6b7280">THIS WEEK’S TALK · ' + esc(co.name) + '</div>' +
+          '<div style="font-size:18px;font-weight:800;margin-top:3px">' + esc(t.t) + '</div>' +
+          '<div style="font-size:12.5px;color:#6b7280;margin-top:4px">Due ' + esc(tbtDueLabel()) +
+            ' · ' + (TBT_MODE === 'group' ? 'Foreman-led group talk' : 'Individual completion') +
+            ' · ' + esc(tbtStatusText()) + '</div></div>';
+      }
+
+      /* ---------------- OPTION 1: foreman-led group ---------------- */
+      function renderTbtGroup() {
+        var co = TBT_CO[TBT_COMPANY];
+        if (!TBT_SEL.group) TBT_SEL.group = co.groups[0];
+        if (!TBT_SEL.presenter) TBT_SEL.presenter = co.me || '';
+        var roster = co.people.filter(function (p) { return p.g === TBT_SEL.group; });
+        var q = (TBT_SEL.q || '').toLowerCase();
+        var shown = roster.filter(function (p) { return !q || p.n.toLowerCase().indexOf(q) !== -1; });
+        var already = tbtGroupRecord(TBT_SEL.group);
+        var body = document.getElementById('tbtBody');
+        body.innerHTML = tbtHeaderHtml() + tbtDocButton() +
+          (already ? '<div style="background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:10px;padding:12px;margin-bottom:12px;font-weight:700">' +
+            'This group already submitted this week (' + (already.roster.length + already.manual.length) + ' attended).</div>' : '') +
+          '<div class="form-group"><label class="form-label">Job / meeting group</label>' +
+            '<select class="form-input" id="tbtGroupSel">' + co.groups.map(function (g) {
+              return '<option' + (g === TBT_SEL.group ? ' selected' : '') + '>' + esc(g) + '</option>'; }).join('') + '</select></div>' +
+          '<div class="form-group"><label class="form-label">Presenter <span class="required">*</span></label>' +
+            '<input type="text" class="form-input" id="tbtPresenter" value="' + esc(TBT_SEL.presenter) + '" placeholder="Who presented"></div>' +
+          '<div class="form-group"><label class="form-label">Attendees (' + (TBT_SEL.attendees.length + TBT_SEL.manual.length) + ' selected)</label>' +
+            '<input type="search" class="form-input" id="tbtSearch" placeholder="Search employees…" value="' + esc(TBT_SEL.q) + '" style="margin-bottom:8px">' +
+            '<div style="display:flex;gap:8px;margin-bottom:8px">' +
+              '<button type="button" class="inspection-add-row-btn" id="tbtAll" style="flex:1">Select all assigned</button>' +
+              '<button type="button" class="inspection-add-row-btn" id="tbtNone" style="flex:1">Clear</button></div>' +
+            '<div class="jha-crew-roster">' + (shown.length ? shown.map(function (p) {
+              var on = TBT_SEL.attendees.indexOf(p.n) !== -1;
+              return '<button type="button" class="jha-crew-chip' + (on ? ' is-on' : '') + '" data-tbt-att="' + esc(p.n) + '">' +
+                (on ? '✓ ' : '+ ') + esc(p.n) + '</button>'; }).join('') :
+              '<div class="jha-row-hint">Nobody matches that search.</div>') + '</div></div>' +
+          '<div class="form-group"><label class="form-label">Someone not on the roster?</label>' +
+            '<div style="display:flex;gap:8px">' +
+              '<input type="text" class="form-input" id="tbtManual" placeholder="Type a name" style="flex:1">' +
+              '<button type="button" class="inspection-add-row-btn" id="tbtManualAdd">Add Name</button></div></div>' +
+          ((TBT_SEL.attendees.length + TBT_SEL.manual.length) ?
+            '<div class="jha-crew-selected">' +
+              TBT_SEL.attendees.map(function (n) {
+                return '<span class="jha-crew-pill">' + esc(n) + '<button type="button" class="jha-crew-x" data-tbt-rm="' + esc(n) + '">&times;</button></span>'; }).join('') +
+              TBT_SEL.manual.map(function (n) {
+                return '<span class="jha-crew-pill" style="background:#fff7ed;border-color:#fdba74;color:#7c2d12">' + esc(n) +
+                  ' <em style="font-style:normal;font-size:10.5px;font-weight:800">MANUAL ENTRY</em>' +
+                  '<button type="button" class="jha-crew-x" style="color:#7c2d12" data-tbt-rmm="' + esc(n) + '">&times;</button></span>'; }).join('') +
+            '</div>' : '') +
+          '<label class="check" style="display:flex;gap:9px;align-items:flex-start;margin:14px 0">' +
+            '<input type="checkbox" id="tbtPresented"' + (TBT_SEL.presented ? ' checked' : '') + '>' +
+            '<span>I presented this Toolbox Talk to the people listed above.</span></label>' +
+          '<button type="button" class="submit-button" id="tbtSubmitGroup">Submit group Toolbox Talk</button>';
+
+        document.getElementById('tbtViewDoc').onclick = tbtOpenDoc;
+        document.getElementById('tbtGroupSel').onchange = function () {
+          TBT_SEL.group = this.value; TBT_SEL.attendees = []; TBT_SEL.manual = []; renderTbtGroup(); };
+        document.getElementById('tbtPresenter').oninput = function () { TBT_SEL.presenter = this.value; };
+        var sq = document.getElementById('tbtSearch');
+        sq.oninput = function () { TBT_SEL.q = this.value; renderTbtGroup();
+          var el = document.getElementById('tbtSearch'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } };
+        document.getElementById('tbtAll').onclick = function () {
+          TBT_SEL.attendees = roster.map(function (p) { return p.n; }); renderTbtGroup(); };
+        document.getElementById('tbtNone').onclick = function () {
+          TBT_SEL.attendees = []; TBT_SEL.manual = []; renderTbtGroup(); };
+        Array.prototype.forEach.call(body.querySelectorAll('[data-tbt-att]'), function (b) {
+          b.onclick = function () {
+            var n = b.getAttribute('data-tbt-att'), i = TBT_SEL.attendees.indexOf(n);
+            if (i === -1) TBT_SEL.attendees.push(n); else TBT_SEL.attendees.splice(i, 1);
+            renderTbtGroup(); };
+        });
+        Array.prototype.forEach.call(body.querySelectorAll('[data-tbt-rm]'), function (b) {
+          b.onclick = function () {
+            var i = TBT_SEL.attendees.indexOf(b.getAttribute('data-tbt-rm'));
+            if (i !== -1) TBT_SEL.attendees.splice(i, 1); renderTbtGroup(); };
+        });
+        Array.prototype.forEach.call(body.querySelectorAll('[data-tbt-rmm]'), function (b) {
+          b.onclick = function () {
+            var i = TBT_SEL.manual.indexOf(b.getAttribute('data-tbt-rmm'));
+            if (i !== -1) TBT_SEL.manual.splice(i, 1); renderTbtGroup(); };
+        });
+        document.getElementById('tbtManualAdd').onclick = function () {
+          var el = document.getElementById('tbtManual'), n = (el.value || '').trim();
+          if (!n) return;
+          if (TBT_SEL.manual.indexOf(n) === -1 && TBT_SEL.attendees.indexOf(n) === -1) TBT_SEL.manual.push(n);
+          el.value = ''; renderTbtGroup(); };
+        document.getElementById('tbtPresented').onchange = function () { TBT_SEL.presented = this.checked; };
+        document.getElementById('tbtSubmitGroup').onclick = function () {
+          if (!TBT_SEL.presenter.trim()) { toast('error', 'Presenter required', 'Enter who presented the talk.'); return; }
+          if (!TBT_SEL.attendees.length && !TBT_SEL.manual.length) { toast('error', 'No attendees', 'Select who attended.'); return; }
+          if (!TBT_SEL.presented) { toast('error', 'Confirm the talk', 'Tick the box confirming you presented it.'); return; }
+          var rec = { week: tbtMondayISO(), talkId: tbtCurrentTalk().i, kind: 'group',
+            company: TBT_COMPANY, group: TBT_SEL.group, presenter: TBT_SEL.presenter.trim(),
+            roster: TBT_SEL.attendees.slice(), manual: TBT_SEL.manual.slice(), at: new Date().toISOString() };
+          tbtPush(rec); renderTbtDone(rec);
+        };
+      }
+
+      /* ---------------- OPTION 2: individual ---------------- */
+      function renderTbtIndividual() {
+        var co = TBT_CO[TBT_COMPANY], me = co.me;
+        var mine = tbtMyRecord();
+        var body = document.getElementById('tbtBody');
+        body.innerHTML = tbtHeaderHtml() + tbtDocButton() +
+          '<div class="form-group"><label class="form-label">Completing as</label>' +
+            '<input type="text" class="form-input" value="' + esc(me) + '" readonly style="background:#eef1f5;color:#374151">' +
+            '<p class="jha-row-hint">Taken from your signed-in profile. In individual mode you can only complete your own.</p></div>' +
+          (mine ? '<div style="background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:10px;padding:14px;font-weight:700">' +
+              'You already completed this week’s Toolbox Talk on ' +
+              esc(new Date(mine.at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })) + '.</div>'
+            : '<label class="check" style="display:flex;gap:9px;align-items:flex-start;margin:14px 0">' +
+                '<input type="checkbox" id="tbtIndConfirm">' +
+                '<span>I have read and understood this Toolbox Talk.</span></label>' +
+              '<button type="button" class="submit-button" id="tbtSubmitInd">Submit my completion</button>');
+        document.getElementById('tbtViewDoc').onclick = tbtOpenDoc;
+        var btn = document.getElementById('tbtSubmitInd');
+        if (btn) btn.onclick = function () {
+          if (!document.getElementById('tbtIndConfirm').checked) {
+            toast('error', 'Confirm first', 'Tick the box to confirm you read the talk.'); return; }
+          if (tbtMyRecord()) { toast('error', 'Already completed', 'You have already completed this week’s talk.'); return; }
+          var rec = { week: tbtMondayISO(), talkId: tbtCurrentTalk().i, kind: 'individual',
+            company: TBT_COMPANY, employee: me, group: (co.people.filter(function (p) { return p.n === me; })[0] || {}).g || '',
+            at: new Date().toISOString() };
+          tbtPush(rec); renderTbtDone(rec);
+        };
+      }
+
+      function renderTbtDone(rec) {
+        var body = document.getElementById('tbtBody'), t = tbtCurrentTalk();
+        var total = rec.kind === 'group' ? (rec.roster.length + rec.manual.length) : 1;
+        body.innerHTML =
+          '<div id="tbtDoneNotice" style="background:#fff7ed;border:1px solid #fdba74;color:#7c2d12;border-radius:10px;padding:16px;text-align:center">' +
+            '<div style="font-weight:800;font-size:17px">Toolbox Talk recorded</div>' +
+            '<div style="font-size:13.5px;margin-top:6px">' + esc(t.t) + ' · week of ' + esc(rec.week) + '</div>' +
+            '<div style="font-size:13.5px">' + (rec.kind === 'group'
+              ? 'Group: ' + esc(rec.group) + ' · presented by ' + esc(rec.presenter) + '<br>' +
+                total + ' attendee' + (total === 1 ? '' : 's') + ' (' + rec.roster.length + ' roster' +
+                (rec.manual.length ? ' + ' + rec.manual.length + ' manual' : '') + ')'
+              : 'Completed by ' + esc(rec.employee)) + '</div>' +
+            '<div style="font-weight:800;margin-top:10px">No production data was saved.</div></div>' +
+          '<button type="button" class="submit-button" id="tbtDoneBack" style="margin-top:12px;background:#fff;color:#0f172a;border:1px solid #d1d5db">Back to demo home</button>';
+        document.getElementById('tbtDoneBack').onclick = function () {
+          TBT_SEL = { group: null, attendees: [], manual: [], q: '', presenter: '', presented: false };
+          window.showView('landing');
+        };
+      }
+
+      function openToolboxTalk() {
+        ensureTbtView();
+        window.showView('toolboxTalk');
+        if (TBT_MODE === 'group') renderTbtGroup(); else renderTbtIndividual();
       }
 
       // ---------- boot: validate ticket, auto-open form, lock identity ----------

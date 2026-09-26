@@ -157,7 +157,7 @@ includes('One original + N revisions still counts as ONE completed daily JHA.',
   'The compliance rule must be documented');
 
 /* ---------------- still local-only ------------------------------------ */
-const jhaModule = html.slice(html.indexOf('REVISED JHA — demo (local only)'), html.indexOf('// ---------- boot: validate ticket'));
+const jhaModule = html.slice(html.indexOf('REVISED JHA — demo (local only)'), html.indexOf('TOOLBOX TALKS — mobile demo'));
 for (const forbidden of ['rpc(', 'edge(', 'fetch(', 'XMLHttpRequest', 'sendBeacon', 'webhook']) {
   assert.ok(!jhaModule.includes(forbidden),
     `The JHA module must stay local — found "${forbidden}"`);
