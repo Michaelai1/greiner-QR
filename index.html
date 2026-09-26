@@ -2415,15 +2415,17 @@
                             <div class="form-error">Required</div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="hotWorkFloor">Floor / Level</label>
+                            <label class="form-label" for="hotWorkFloor">Floor / Level <span class="required">*</span></label>
                             <select id="hotWorkBuildingSelect" class="form-input" data-ui-only="1" style="display:none;margin-bottom:8px"></select>
                             <select id="hotWorkFloorSelect" class="form-input" data-ui-only="1" style="display:none;margin-bottom:8px"></select>
-                            <input type="text" class="form-input" id="hotWorkFloor" name="hotWorkFloor" placeholder="Floor or level (optional)">
+                            <input type="text" class="form-input" id="hotWorkFloor" name="hotWorkFloor" required placeholder="Floor or level">
+                            <div class="form-error">Required</div>
                         </div>
                         <input type="hidden" name="hotWorkBuilding" id="hotWorkBuilding">
                         <div class="form-group">
-                            <label class="form-label" for="hotWorkArea">Specific Area / Room</label>
-                            <input type="text" class="form-input" id="hotWorkArea" name="hotWorkArea" placeholder="Specific area or room (optional)">
+                            <label class="form-label" for="hotWorkArea">Specific Area / Room <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="hotWorkArea" name="hotWorkArea" required placeholder="Specific area or room">
+                            <div class="form-error">Required</div>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="hotWorkDescription">Description of Work Being Performed <span class="required">*</span></label>
@@ -2438,10 +2440,25 @@
                         <div class="form-group">
                             <label class="form-label">Person Doing Hot Work Is <span class="required">*</span></label>
                             <div class="jha-newrevised-row" role="radiogroup" aria-label="Employee or Contractor">
-                                <label><input type="radio" name="hotWorkPersonType" value="Employee" required> Employee</label>
+                                <label><input type="radio" name="hotWorkPersonType" value="Greiner Brothers Employee" required> Greiner Brothers Employee</label>
                                 <label><input type="radio" name="hotWorkPersonType" value="Contractor"> Contractor</label>
                             </div>
                             <div class="form-error">Required</div>
+                        </div>
+                        <div class="form-group" id="hotWorkSkillLevelGroup" style="display:none">
+                            <label class="form-label" for="hotWorkSkillLevel">Position / Skill Level <span class="required">*</span></label>
+                            <select class="form-input" id="hotWorkSkillLevel" name="hotWorkSkillLevel">
+                                <option value="">Select position or skill level…</option>
+                                <option value="Apprentice">Apprentice</option>
+                                <option value="1st Year Apprentice">1st Year Apprentice</option>
+                                <option value="2nd Year Apprentice">2nd Year Apprentice</option>
+                                <option value="3rd Year Apprentice">3rd Year Apprentice</option>
+                                <option value="4th Year Apprentice">4th Year Apprentice</option>
+                                <option value="Journeyman">Journeyman</option>
+                                <option value="Foreman">Foreman</option>
+                                <option value="Superintendent">Superintendent</option>
+                            </select>
+                            <div class="form-error">Required for Greiner Brothers employees</div>
                         </div>
                     </div>
                     <div class="form-section">
@@ -2492,13 +2509,9 @@
                             <input type="text" class="form-input" id="hotWorkSignedAuthorizing" name="hotWorkSignedAuthorizing" required placeholder="Type name to sign">
                             <div class="form-error">Required</div>
                         </div>
+                        <input type="hidden" id="hotWorkSignedWorker" name="hotWorkSignedWorker">
                         <div class="form-group">
-                            <label class="form-label" for="hotWorkSignedWorker">Signed: Person Doing Hot Work <span class="required">*</span></label>
-                            <input type="text" class="form-input" id="hotWorkSignedWorker" name="hotWorkSignedWorker" required placeholder="Type name to sign">
-                            <div class="form-error">Required</div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="hotWorkSignedFireWatch">Signed: Fire Watch <span class="required">*</span></label>
+                            <label class="form-label" for="hotWorkSignedFireWatch">Person Conducting Fire Watch <span class="required">*</span></label>
                             <input type="text" class="form-input" id="hotWorkSignedFireWatch" name="hotWorkSignedFireWatch" required placeholder="Type name to sign">
                             <div class="form-error">Required</div>
                         </div>
@@ -2518,12 +2531,12 @@
                             <div class="form-error">Required</div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="hotWorkHoursMonitored">Final Checkup — hours monitored <span class="required">*</span></label>
-                            <input type="number" class="form-input" id="hotWorkHoursMonitored" name="hotWorkHoursMonitored" required min="0" step="0.25" placeholder="e.g. 2.5">
+                            <label class="form-label" for="hotWorkFinalCheckupTime">Time of Final Checkup <span class="required">*</span></label>
+                            <input type="datetime-local" class="form-input" id="hotWorkFinalCheckupTime" name="hotWorkFinalCheckupTime" required>
                             <div class="form-error">Required</div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="hotWorkFinalSignature">Final Checkup — signature <span class="required">*</span></label>
+                            <label class="form-label" for="hotWorkFinalSignature">Final Checkup Performed By <span class="required">*</span></label>
                             <input type="text" class="form-input" id="hotWorkFinalSignature" name="hotWorkFinalSignature" required placeholder="Type name to sign">
                             <div class="form-error">Required</div>
                         </div>
@@ -4136,6 +4149,55 @@ ${photoUrls}`;
             exp.setMinutes(exp.getMinutes() - exp.getTimezoneOffset());
             end.value = exp.toISOString().slice(0, 16);
         }
+
+        function setHotWorkEmployeeFields() {
+            var selected = document.querySelector('input[name="hotWorkPersonType"]:checked');
+            var group = document.getElementById('hotWorkSkillLevelGroup');
+            var select = document.getElementById('hotWorkSkillLevel');
+            var isGreinerEmployee = selected && selected.value === 'Greiner Brothers Employee';
+            if (group) group.style.display = isGreinerEmployee ? '' : 'none';
+            if (select) {
+                select.required = !!isGreinerEmployee;
+                if (!isGreinerEmployee) select.value = '';
+            }
+        }
+
+        // datetime-local has minute precision. Treat a start within the current
+        // minute as current, but reject any earlier minute.
+        function isHotWorkStartBeforeNow(value, now) {
+            if (!value) return false;
+            var selected = new Date(value);
+            var current = now instanceof Date ? new Date(now.getTime()) : new Date();
+            if (isNaN(selected.getTime()) || isNaN(current.getTime())) return false;
+            selected.setSeconds(0, 0);
+            current.setSeconds(0, 0);
+            return selected.getTime() < current.getTime();
+        }
+
+        function validateHotWorkTiming() {
+            var start = document.getElementById('hotWorkTimeStarted');
+            if (!start || !isHotWorkStartBeforeNow(start.value, new Date())) return true;
+            var group = start.closest('.form-group');
+            var error = group && group.querySelector('.form-error');
+            if (group) group.classList.add('error');
+            if (error) error.textContent = 'Time Started cannot be earlier than the current time.';
+            start.setCustomValidity('Time Started cannot be earlier than the current time.');
+            start.reportValidity();
+            start.focus();
+            return false;
+        }
+
+        (function wireHotWorkEmployeeType() {
+            var form = document.getElementById('hotWorkForm');
+            if (!form) return;
+            form.addEventListener('change', function (event) {
+                if (event.target && event.target.name === 'hotWorkPersonType') setHotWorkEmployeeFields();
+                if (event.target && event.target.id === 'hotWorkTimeStarted') event.target.setCustomValidity('');
+            });
+            form.addEventListener('input', function (event) {
+                if (event.target && event.target.id === 'hotWorkTimeStarted') event.target.setCustomValidity('');
+            });
+        })();
         
         function openHotWorkForm() {
             var form = document.getElementById('hotWorkForm');
@@ -4143,6 +4205,7 @@ ${photoUrls}`;
                 form.reset();
                 setTodayDateInput(document.getElementById('hotWorkDate'));
                 setDefaultHotWorkDatetimes();
+                setHotWorkEmployeeFields();
             }
             document.querySelectorAll('#hotWorkForm .form-group').forEach(function(g) { g.classList.remove('error'); });
             showView('inspectionHotWork');
@@ -4221,7 +4284,7 @@ ${photoUrls}`;
         function wireInspectionFormClearErrors(formId) {
             const form = document.getElementById(formId);
             if (!form) return;
-            form.querySelectorAll('input, textarea').forEach(function(el) {
+            form.querySelectorAll('input, textarea, select').forEach(function(el) {
                 el.addEventListener('input', function() {
                     const g = this.closest('.form-group');
                     if (g) g.classList.remove('error');
@@ -4258,6 +4321,7 @@ ${photoUrls}`;
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 document.querySelectorAll('#' + form.id + ' .form-group').forEach(function(g) { g.classList.remove('error'); });
+                if (form.id === 'hotWorkForm' && !validateHotWorkTiming()) return;
                 if (!form.checkValidity()) {
                     form.querySelectorAll(':invalid').forEach(function(inv) {
                         var g = inv.closest('.form-group');
@@ -4277,6 +4341,11 @@ ${photoUrls}`;
                         jobSiteAnalysisForm: 'job_site_analysis'
                     };
                     var inspectionSubtype = subtypeMap[form.id];
+                    if (form.id === 'hotWorkForm') {
+                        var workerName = form.querySelector('[name="hotWorkPersonName"]');
+                        var workerSignature = form.querySelector('[name="hotWorkSignedWorker"]');
+                        if (workerSignature) workerSignature.value = workerName ? workerName.value.trim() : '';
+                    }
                     var fields = serializeFormFields(form);
                     if (form.id === 'aerialInspectionForm' || form.id === 'forkliftInspectionForm') {
                         fields = await augmentInspectionDefectPhotos(form, fields);
@@ -4365,7 +4434,7 @@ ${photoUrls}`;
             document.getElementById('hotWorkForm'),
             document.getElementById('hotWorkSubmitBtn'),
             'Submit permit',
-            function() { setDefaultHotWorkDatetimes(); }
+            function() { setDefaultHotWorkDatetimes(); setHotWorkEmployeeFields(); }
         );
         handleInspectionSubmit(
             document.getElementById('jobSiteAnalysisForm'),
