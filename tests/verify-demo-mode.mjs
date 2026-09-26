@@ -90,10 +90,13 @@ includes("params.get('review') === '1'", 'Safe no-submit review mode must be pre
  * 5. Review-demo labelling and routing
  * ------------------------------------------------------------------ */
 includes('Greiner Review Demo', 'Visible "Greiner Review Demo" label is missing');
-includes('JHA — Coming next', 'JHA must be labelled "Coming next"');
+// JHA is built now; only Toolbox Talks remains unbuilt.
+includes('>Complete New JHA<', 'Landing must offer "Complete New JHA"');
+includes('>Revise Submitted JHA<', 'Landing must offer "Revise Submitted JHA"');
+assert.ok(!html.includes('JHA — Coming next'), 'JHA must no longer be marked "Coming next"');
 includes('Toolbox Talks — Coming next', 'Toolbox Talks must be labelled "Coming next"');
-includes("if (key === 'jha' || key === 'toolbox') { showDemoComingNext(key); return; }",
-  'Unbuilt forms must short-circuit to "Coming next", not open an old form');
+includes("if (key === 'toolbox') { showDemoComingNext(key); return; }",
+  'Toolbox Talks must still short-circuit to "Coming next"');
 // Landing first: a form only auto-opens when the link names one.
 includes('if (ngform) openDemoForm(ngform);',
   'Demo must stay on the landing screen unless a form is named in the URL');

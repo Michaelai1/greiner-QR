@@ -1436,6 +1436,22 @@
         }
 
         /* JHA custom combobox */
+        .jha-crew-roster { display:flex; flex-wrap:wrap; gap:8px; margin:6px 0 4px; }
+        .jha-crew-chip { border:1px solid #d1d5db; background:#fff; color:#0f172a; border-radius:999px;
+            padding:10px 14px; font-size:14px; font-weight:600; min-height:44px; cursor:pointer; }
+        .jha-crew-chip.is-on { background:#1e3a8a; border-color:#1e3a8a; color:#fff; }
+        .jha-crew-selected { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+        .jha-crew-pill { display:inline-flex; align-items:center; gap:8px; background:#eef2ff; border:1px solid #c7d2fe;
+            color:#1e3a8a; border-radius:999px; padding:8px 10px 8px 13px; font-size:13.5px; font-weight:700; }
+        .jha-crew-x { border:0; background:transparent; color:#1e3a8a; font-size:17px; line-height:1; cursor:pointer; padding:0 2px; }
+        .jha-assign-row { border:1px solid #e5e7eb; border-radius:12px; padding:12px; margin-bottom:10px; background:#fafafa; }
+        .jha-assign-warn { background:#fff7ed; border:1px solid #fdba74; color:#7c2d12; border-radius:8px;
+            padding:10px; font-size:13px; font-weight:600; margin-bottom:10px; }
+        .jha-assign-add { border:0; background:#b45309; color:#fff; border-radius:6px; padding:6px 10px;
+            font-size:12.5px; font-weight:700; cursor:pointer; margin-left:4px; }
+        .jha-assign-remove { border:0; background:transparent; color:#b91c1c; font-size:13px; font-weight:600;
+            cursor:pointer; padding:4px 0; }
+        .jha-other-input { border-color:#b45309; }
         .jha-combo-wrap {
             position: relative;
             display: flex;
@@ -2160,6 +2176,11 @@
                             <div class="form-error">Required</div>
                         </div>
                         <div class="form-group">
+                            <label class="form-label" for="jhaDescriptionOfWork">Description of Work <span class="required">*</span></label>
+                            <textarea class="form-textarea" id="jhaDescriptionOfWork" name="jhaDescriptionOfWork" rows="3" required placeholder="What work is being done today?"></textarea>
+                            <div class="form-error">Required</div>
+                        </div>
+                        <div class="form-group">
                             <label class="form-label" for="jhaDate">Date <span class="required">*</span></label>
                             <input type="date" class="form-input" id="jhaDate" name="jhaDate" required>
                             <div class="form-error">Required</div>
@@ -2202,11 +2223,8 @@
                             <input type="text" class="form-input" id="jhaSubcontractors" name="jhaSubcontractors" required placeholder="List or N/A">
                             <div class="form-error">Required</div>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label" for="jhaReviewedBy">Reviewed By <span class="required">*</span></label>
-                            <input type="text" class="form-input" id="jhaReviewedBy" name="jhaReviewedBy" required placeholder="Name">
-                            <div class="form-error">Required</div>
-                        </div>
+                        <!-- Reviewed By removed for this demo. Supervisor approval can be
+                             added later if Tony asks for it. -->
                         <div class="form-group">
                             <label class="form-label" for="jhaJobsiteSafety">Jobsite Safety Requirements — PPE, housekeeping, dust walls, spark-proof tools, etc. <span class="required">*</span></label>
                             <textarea class="form-textarea" id="jhaJobsiteSafety" name="jhaJobsiteSafety" rows="4" required placeholder="Describe requirements…"></textarea>
@@ -2291,7 +2309,7 @@
                                     <div class="jha-photo-wrap" data-photo-key="jhaHazard1_photos"><button type="button" class="inspection-add-row-btn jha-photo-btn" style="margin-top:8px">&#128247; Add photo(s) · optional</button><input type="file" class="jha-photo-input" accept="image/*" multiple hidden><div class="inspection-defect-thumbs"></div></div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" for="jhaAction1">Recommended Action or Procedure <span class="required">*</span></label>
+                                    <label class="form-label" for="jhaAction1">Actions to Reduce Hazards <span class="required">*</span></label>
                                     <div class="jha-combo-wrap"><input type="text" class="form-input" id="jhaAction1" name="jhaAction1" autocomplete="off" required placeholder="Choose or type an action"><button type="button" class="jha-combo-btn" data-combo-type="actions" aria-label="Show action suggestions">&#9660;</button><div class="jha-combo-dropdown"></div></div>
                                     <div class="form-error">Required</div>
                                 </div>
@@ -2310,7 +2328,7 @@
                                     <div class="jha-photo-wrap" data-photo-key="jhaHazard2_photos"><button type="button" class="inspection-add-row-btn jha-photo-btn" style="margin-top:8px">&#128247; Add photo(s) · optional</button><input type="file" class="jha-photo-input" accept="image/*" multiple hidden><div class="inspection-defect-thumbs"></div></div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" for="jhaAction2">Recommended Action or Procedure <span class="required">*</span></label>
+                                    <label class="form-label" for="jhaAction2">Actions to Reduce Hazards <span class="required">*</span></label>
                                     <div class="jha-combo-wrap"><input type="text" class="form-input" id="jhaAction2" name="jhaAction2" autocomplete="off" required placeholder="Choose or type an action"><button type="button" class="jha-combo-btn" data-combo-type="actions" aria-label="Show action suggestions">&#9660;</button><div class="jha-combo-dropdown"></div></div>
                                     <div class="form-error">Required</div>
                                 </div>
@@ -2329,7 +2347,7 @@
                                     <div class="jha-photo-wrap" data-photo-key="jhaHazard3_photos"><button type="button" class="inspection-add-row-btn jha-photo-btn" style="margin-top:8px">&#128247; Add photo(s) · optional</button><input type="file" class="jha-photo-input" accept="image/*" multiple hidden><div class="inspection-defect-thumbs"></div></div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" for="jhaAction3">Recommended Action or Procedure <span class="required">*</span></label>
+                                    <label class="form-label" for="jhaAction3">Actions to Reduce Hazards <span class="required">*</span></label>
                                     <div class="jha-combo-wrap"><input type="text" class="form-input" id="jhaAction3" name="jhaAction3" autocomplete="off" required placeholder="Choose or type an action"><button type="button" class="jha-combo-btn" data-combo-type="actions" aria-label="Show action suggestions">&#9660;</button><div class="jha-combo-dropdown"></div></div>
                                     <div class="form-error">Required</div>
                                 </div>
@@ -2338,31 +2356,66 @@
                         <button type="button" class="inspection-add-row-btn" id="jhaAddRowBtn">+ Add row (max 6)</button>
                     </div>
                     <div class="form-section">
-                        <div class="form-section-title">Employees Present</div>
-                        <p class="jha-row-hint">Up to six names (optional).</p>
+                        <div class="form-section-title">Crew on this JHA</div>
+                        <p class="jha-row-hint">Tap a name to add them (up to 30). Then group people under the task they are doing today.</p>
                         <div class="form-group">
-                            <label class="form-label" for="jhaEmp1">Employee 1</label>
-                            <input type="text" class="form-input" id="jhaEmp1" name="jhaEmp1" placeholder="Name">
+                            <input type="search" class="form-input" id="jhaCrewSearch" placeholder="Search the crew roster&hellip;" autocomplete="off">
                         </div>
-                        <div class="form-group">
-                            <label class="form-label" for="jhaEmp2">Employee 2</label>
-                            <input type="text" class="form-input" id="jhaEmp2" name="jhaEmp2" placeholder="Name">
+                        <div id="jhaCrewRoster" class="jha-crew-roster"></div>
+                        <div id="jhaCrewSelectedWrap">
+                            <div class="form-label" style="margin-top:12px">On this JHA (<span id="jhaCrewCount">0</span>/30)</div>
+                            <div id="jhaCrewSelected" class="jha-crew-selected"></div>
                         </div>
+                        <div class="form-label" style="margin-top:14px">Task assignments</div>
+                        <p class="jha-row-hint">Group employees under the same daily task and say what they are doing.</p>
+                        <div id="jhaAssignRows"></div>
+                        <button type="button" class="inspection-add-row-btn" id="jhaAddAssignBtn">+ Add task assignment</button>
+                        <input type="hidden" id="jhaCrewData" name="jhaCrewData">
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Ladder Use</div>
                         <div class="form-group">
-                            <label class="form-label" for="jhaEmp3">Employee 3</label>
-                            <input type="text" class="form-input" id="jhaEmp3" name="jhaEmp3" placeholder="Name">
+                            <span class="form-label">Planned or expected use of any ladder? <span class="required">*</span></span>
+                            <div class="jha-newrevised-row" role="radiogroup" aria-label="Planned or expected use of any ladder">
+                                <label><input type="radio" name="jhaLadderUse" value="yes" required> Yes</label>
+                                <label><input type="radio" name="jhaLadderUse" value="no"> No</label>
+                            </div>
+                            <div class="form-error">Required</div>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label" for="jhaEmp4">Employee 4</label>
-                            <input type="text" class="form-input" id="jhaEmp4" name="jhaEmp4" placeholder="Name">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="jhaEmp5">Employee 5</label>
-                            <input type="text" class="form-input" id="jhaEmp5" name="jhaEmp5" placeholder="Name">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="jhaEmp6">Employee 6</label>
-                            <input type="text" class="form-input" id="jhaEmp6" name="jhaEmp6" placeholder="Name">
+                        <!-- Ladder questions below are taken ONLY from the Greiner Brothers
+                             Ladder / Fall Protection Variance Form supplied by Tony. Nothing
+                             here is invented. The form's three approval signatures
+                             (Superintendent/Foreman, Site Safety Advisor, third-party safety
+                             member) are deliberately NOT built - approval is out of scope for
+                             this demo. -->
+                        <div id="jhaLadderPanel" style="display:none">
+                            <p class="jha-row-hint">From the Greiner Brothers Ladder / Fall Protection Variance Form.</p>
+                            <div class="form-group">
+                                <span class="form-label">Can this work be done safely from a ladder? <span class="required">*</span></span>
+                                <div class="jha-newrevised-row" role="radiogroup" aria-label="Can this work be done safely from a ladder">
+                                    <label><input type="radio" name="jhaLadderSafe" value="yes"> Yes</label>
+                                    <label><input type="radio" name="jhaLadderSafe" value="no"> No</label>
+                                </div>
+                                <div class="form-error">Required</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="jhaLadderWhyNotLift">Explain why a one-man scissor lift, or being tied off while using a ladder, will not work in this instance <span class="required">*</span></label>
+                                <textarea class="form-textarea" id="jhaLadderWhyNotLift" name="jhaLadderWhyNotLift" rows="3" placeholder="Be specific and detailed&hellip;"></textarea>
+                                <div class="form-error">Required</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="jhaLadderObstacle1">Above-ceiling hindrances / obstacles</label>
+                                <input type="text" class="form-input" id="jhaLadderObstacle1" name="jhaLadderObstacle1" placeholder="1." style="margin-bottom:6px">
+                                <input type="text" class="form-input" id="jhaLadderObstacle2" name="jhaLadderObstacle2" placeholder="2." style="margin-bottom:6px">
+                                <input type="text" class="form-input" id="jhaLadderObstacle3" name="jhaLadderObstacle3" placeholder="3." style="margin-bottom:6px">
+                                <input type="text" class="form-input" id="jhaLadderObstacle4" name="jhaLadderObstacle4" placeholder="4." style="margin-bottom:6px">
+                                <input type="text" class="form-input" id="jhaLadderObstacle5" name="jhaLadderObstacle5" placeholder="5.">
+                            </div>
+                            <div class="form-group" id="jhaLadderRiskGroup" style="display:none">
+                                <label class="form-label" for="jhaLadderGreaterRisk">Explain how the use of fall protection poses a greater risk than not using it <span class="required">*</span></label>
+                                <textarea class="form-textarea" id="jhaLadderGreaterRisk" name="jhaLadderGreaterRisk" rows="3" placeholder="Be specific and detailed&hellip;"></textarea>
+                                <div class="form-error">Required</div>
+                            </div>
                         </div>
                     </div>
                     <div class="form-section">
@@ -4122,7 +4175,7 @@ ${photoUrls}`;
                 '<div class="form-error">Required</div>' +
                 '<div class="jha-photo-wrap" data-photo-key="jhaHazard' + rowNum + '_photos"><button type="button" class="inspection-add-row-btn jha-photo-btn" style="margin-top:8px">&#128247; Add photo(s) · optional</button><input type="file" class="jha-photo-input" accept="image/*" multiple hidden><div class="inspection-defect-thumbs"></div></div></div>' +
                 '<div class="form-group">' +
-                '<label class="form-label" for="jhaAction' + rowNum + '">Recommended Action or Procedure <span class="required">*</span></label>' +
+                '<label class="form-label" for="jhaAction' + rowNum + '">Actions to Reduce Hazards <span class="required">*</span></label>' +
                 '<div class="jha-combo-wrap"><input type="text" class="form-input" id="jhaAction' + rowNum + '" name="jhaAction' + rowNum + '" autocomplete="off" required placeholder="Choose or type an action"><button type="button" class="jha-combo-btn" data-combo-type="actions" aria-label="Show action suggestions">&#9660;</button><div class="jha-combo-dropdown"></div></div>' +
                 '<div class="form-error">Required</div></div>';
             container.appendChild(div);
@@ -4888,7 +4941,9 @@ ${photoUrls}`;
         })();
         // JHA combobox interaction — event delegation on #jhaForm
         (function setupJhaComboboxes() {
-            var PRESETS = {
+            // exposed so the JHA v2 / revision module can offer the same
+            // built-in task list in employee assignments
+            var PRESETS = window.JHA_PRESETS = {
                 tasks: [
                     'Electrical & Power Tool Use',
                     'Energy Control (Lockout/Tagout)',
@@ -4908,7 +4963,8 @@ ${photoUrls}`;
                     'Mounting/dismounting equipment',
                     'Filling gas tanks or changing batteries',
                     'Setting up workpiece / fixture',
-                    'Housekeeping / Site Cleanup'
+                    'Housekeeping / Site Cleanup',
+                    'Other'
                 ],
                 hazards: [
                     'Electric Shock / Electrocution',
@@ -4928,7 +4984,23 @@ ${photoUrls}`;
                     'Pinch points',
                     'Bodily injury from compressed gas cylinder',
                     'Pedestrian traffic / Struck by vehicle',
-                    'Falling objects / load toppling'
+                    'Falling objects / load toppling',
+                    'Flooding',
+                    'Skin Irritants',
+                    'Toxic Material',
+                    'Adjacent Work',
+                    'Difficult Access',
+                    'Confined Spaces',
+                    'Ionizing Radiation',
+                    'Elevated Load or Work',
+                    'Inadequate Ventilation',
+                    'Water/Drowning Hazard',
+                    'Environmental Extremes',
+                    'Employees/New or Temp',
+                    'Hazardous Chemical Exposure/MSDS',
+                    'Potential Release of Energy Kinetic/Gravity',
+                    'Lead Exposure',
+                    'Other'
                 ],
                 actions: [
                     'Inspect all tools/equipment prior to use; remove defective items',
@@ -4947,7 +5019,8 @@ ${photoUrls}`;
                     'Have delivery driver set brakes, turn off engine, and exit cab',
                     'Keep a fire extinguisher readily available',
                     'Clean/clear work area of unused tools/materials',
-                    'Use mechanical hoist or get assistance for heavy loads'
+                    'Use mechanical hoist or get assistance for heavy loads',
+                    'Other'
                 ]
             };
 
@@ -5176,7 +5249,9 @@ ${photoUrls}`;
           var ph = (p && p.phone) ? p.phone : '';
           return '<option value="' + esc(nm) + '">' + esc(ph) + '</option>';
         }).join('');
-        document.querySelectorAll('[name="jhaPmSupervisor"],[name="jhaReviewedBy"],[name="hotWorkPersonName"],[name^="jhaEmp"],[name="jsaSupervisor"],[name="jsaReviewedBy"]').forEach(function (inp) {
+        // NOTE: the detailed JHA no longer has Reviewed By or jhaEmp1-6 — its crew
+        // is chosen with the roster picker instead, so those selectors are gone.
+        document.querySelectorAll('[name="jhaPmSupervisor"],[name="hotWorkPersonName"],[name="jsaSupervisor"],[name="jsaReviewedBy"]').forEach(function (inp) {
           inp.setAttribute('list', 'ngPeopleList'); inp.setAttribute('autocomplete', 'off');
         });
       }
@@ -5269,7 +5344,12 @@ ${photoUrls}`;
 
       // re-apply locks whenever an inspection view is shown (forms reset on open)
       var _showView = window.showView;
-      window.showView = function (v) { if (typeof _showView === 'function') _showView(v); if (NG.active && /inspection/i.test(v)) setTimeout(applyLocks, 0); };
+      window.showView = function (v) {
+        if (typeof _showView === 'function') _showView(v);
+        if (NG.active && /inspection/i.test(v)) setTimeout(applyLocks, 0);
+        // The JHA form resets on open, so its v2 sections are (re)built here.
+        if (/inspectionJha$/i.test(v)) setTimeout(function () { try { jhaInit(); } catch (e) {} }, 0);
+      };
 
       // route inspection submissions to NextGen; everything else unchanged
       var _handleSaveData = window.handleSaveData;
@@ -5904,7 +5984,15 @@ ${photoUrls}`;
 
       function openDemoForm(key) {
         key = String(key || '').toLowerCase();
-        if (key === 'jha' || key === 'toolbox') { showDemoComingNext(key); return; }
+        if (key === 'toolbox') { showDemoComingNext(key); return; }
+        // Revise Submitted JHA: pick from today's submitted JHAs on this job.
+        if (key === 'revisejha' || key === 'revise_jha') { renderReviseList(); return; }
+        if (key === 'jha') {
+          // A brand-new daily JHA — never a revision.
+          JHA_CTX = null;
+          if (typeof window.openJhaForm === 'function') { window.openJhaForm(); applyLocks(); }
+          return;
+        }
         var opener = OPENERS[key];
         if (opener && typeof window[opener] === 'function') {
           window[opener]();
@@ -5923,10 +6011,12 @@ ${photoUrls}`;
           '<div style="font-size:12.5px;color:#6b7280;margin-bottom:10px">' +
             'Signed in as <b>Demo Foreman</b> · Demo Greiner Job (DEMO-001). Nothing you submit is saved.' +
           '</div>' +
+          '<button type="button" class="action-button action-button--primary" data-demoform="jha" ' +
+            'style="width:100%;margin-bottom:8px">Complete New JHA</button>' +
+          '<button type="button" class="action-button action-button--primary" data-demoform="revisejha" ' +
+            'style="width:100%;margin-bottom:8px">Revise Submitted JHA</button>' +
           '<button type="button" class="action-button action-button--primary" data-demoform="hotwork" ' +
             'style="width:100%;margin-bottom:8px">Hot Work Permit</button>' +
-          '<button type="button" class="action-button action-button--phase2" data-demoform="jha" ' +
-            'style="width:100%;margin-bottom:8px">JHA — Coming next</button>' +
           '<button type="button" class="action-button action-button--phase2" data-demoform="toolbox" ' +
             'style="width:100%">Toolbox Talks — Coming next</button>';
         landing.insertBefore(d, landing.firstChild);
@@ -5971,20 +6061,562 @@ ${photoUrls}`;
       function ngDemoSubmit(payload, submitBtn, label) {
         var subtype = (payload && payload.inspection_subtype) || '';
         var title = TITLES[subtype] || 'Demo Form';
-        var blob = null, filename = '';
+        var blob = null, filename = '', jhaRec = null;
         try {
           var form = document.getElementById(FORM_IDS[subtype]);
           if (form) {
             var dmodel = (subtype === 'job_site_analysis')
               ? extractJsaDoc(form, payload)
               : extractDoc(form, subtype, payload);
+            if (subtype === 'jha') {
+              // Build the record FIRST so the doc can show its revision meta,
+              // then store it. The previous revision is never mutated.
+              jhaRec = buildJhaRecord(payload);
+              decorateJhaDoc(dmodel, jhaRec);
+              DEMO_JHA_STORE.push(jhaRec);
+              title = 'Job Hazard Analysis';
+            }
             var pdf = renderDetailedPdf(dmodel);
             blob = pdf.blob; filename = pdf.filename;
           }
         } catch (e) { blob = null; }
         if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = label || 'Submit'; }
-        renderDemoCompletion(title, blob, filename);
+        if (jhaRec) { renderJhaDemoCompletion(jhaRec, blob, filename); JHA_CTX = null; }
+        else renderDemoCompletion(title, blob, filename);
         return Promise.resolve({ demo: true, saved: false });
+      }
+
+      // Completion screen for a JHA / JHA revision.
+      function renderJhaDemoCompletion(rec, blob, filename) {
+        var view = document.getElementById('successView'); if (!view) return;
+        var done = document.getElementById('doneBtn'); if (done) done.style.display = 'none';
+        var ra = document.getElementById('reportAnotherLink'); if (ra) ra.style.display = 'none';
+        var box = document.getElementById('ngActions');
+        if (!box) {
+          box = document.createElement('div'); box.id = 'ngActions';
+          box.style.cssText = 'margin-top:18px;display:flex;flex-direction:column;gap:10px';
+          view.appendChild(box);
+        }
+        var revised = rec.revision_number > 1;
+        box.innerHTML =
+          '<div id="demoSubmitNotice" style="background:#fff7ed;border:1px solid #fdba74;color:#7c2d12;' +
+            'border-radius:10px;padding:14px;text-align:center">' +
+            '<div style="font-weight:800;font-size:16px" id="jhaDemoHeadline">' +
+              (revised ? 'Revised JHA submitted' : 'JHA submitted') + '</div>' +
+            '<div style="font-size:13.5px;margin-top:6px">Revision ' + rec.revision_number + '</div>' +
+            '<div style="font-size:13.5px">Original submission time: ' + esc(jhaTime(rec.original_submitted_at)) + '</div>' +
+            (rec.revised_at ? '<div style="font-size:13.5px">Latest revision time: ' + esc(jhaTime(rec.revised_at)) + '</div>' : '') +
+            '<div style="font-weight:700;margin-top:8px">No production data was saved.</div>' +
+          '</div>' +
+          '<div style="text-align:center;color:#6b7280;font-size:13px">' +
+            esc(rec.data.jhaDescriptionOfWork || 'Job Hazard Analysis') +
+            ' · daily JHAs counted today: ' + demoDailyJhaCompliance() + '</div>' +
+          (blob ? '<button class="submit-button" id="demoView">View PDF (local preview)</button>' : '') +
+          '<button class="submit-button" id="demoReviseAgain" ' +
+            'style="background:#fff;color:#0f172a;border:1px solid #d1d5db">Revise a submitted JHA</button>' +
+          '<button class="submit-button" id="demoBack" ' +
+            'style="background:#fff;color:#0f172a;border:1px solid #d1d5db">Back to demo home</button>';
+        if (blob) {
+          document.getElementById('demoView').onclick = function () {
+            mvView(function () { return Promise.resolve(blob); }, filename, 'Job Hazard Analysis');
+          };
+        }
+        document.getElementById('demoReviseAgain').onclick = function () { renderReviseList(); };
+        document.getElementById('demoBack').onclick = function () { window.showView('landing'); };
+        window.showView('success');
+      }
+
+      /* ================= REVISED JHA — demo (local only) =================
+         Two mobile actions:
+           Complete New JHA   -> the existing detailed JHA form, unchanged
+           Revise Submitted JHA -> pick a JHA already submitted for THIS job
+                                   TODAY, load its latest version, edit, and
+                                   submit a new linked revision.
+         There are deliberately NO drafts, no autosave, no "resume", no
+         "copy previous" and no reason-for-revision field. Every revision is
+         submitted or it does not exist. Nothing survives a reload.
+         =================================================================== */
+      var JHA_MAX_EMPLOYEES = 30;
+      var DEMO_JHA_STORE = [];        // in-memory only, seeded per demo session
+      var JHA_CTX = null;             // set while editing a revision, else null
+
+      function jhaTodayISO() {
+        try {
+          return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Indiana/Indianapolis',
+            year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+        } catch (e) {
+          var d = new Date();
+          return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+      }
+      function jhaTime(iso) {
+        if (!iso) return '';
+        try {
+          return new Date(iso).toLocaleTimeString('en-US', { timeZone: 'America/Indiana/Indianapolis',
+            hour: 'numeric', minute: '2-digit' });
+        } catch (e) { return new Date(iso).toLocaleTimeString(); }
+      }
+
+      function seedDemoJhas() {
+        var today = jhaTodayISO(), job = 'demo-job-001';
+        function at(h, m) { var d = new Date(); d.setHours(h, m, 0, 0); return d.toISOString(); }
+        DEMO_JHA_STORE = [
+          { id: 'demo-jha-a-r1', root_jha_id: 'demo-jha-a', previous_revision_id: null, revision_number: 1,
+            original_submitted_at: at(6, 45), revised_at: null, revised_by: 'Demo Foreman',
+            job_id: job, work_date: today, status: 'submitted',
+            data: {
+              jhaDescriptionOfWork: 'Set overhead pipe hangers, Level 2 east corridor',
+              jhaJobsiteSafety: 'Hard hat, safety glasses, gloves. Keep corridor clear.',
+              jhaTask1: 'Ladders / Stairways Use', jhaHazard1: 'Falls / Loss of footing', jhaAction1: 'Maintain three points of contact',
+              jhaTask2: 'Material Handling', jhaHazard2: 'Back or shoulder strain / awkward lifting', jhaAction2: 'Team lift anything over 50 lb',
+              jhaLadderUse: 'yes', jhaLadderSafe: 'yes',
+              jhaLadderWhyNotLift: 'Corridor too narrow for a scissor lift at this location.',
+              jhaAdditionalNotes: 'Corridor shared with drywall crew until 10am.'
+            },
+            crew: { employees: ['Demo Foreman', 'Alex Rivera (Demo)', 'Jordan Blake (Demo)', 'Sam Whitfield (Demo)'],
+                    groups: [{ task: 'Ladders / Stairways Use', activity: 'Hanging rod and strut', members: ['Alex Rivera (Demo)', 'Jordan Blake (Demo)'] }] },
+            photos: [] },
+          { id: 'demo-jha-b-r1', root_jha_id: 'demo-jha-b', previous_revision_id: null, revision_number: 1,
+            original_submitted_at: at(7, 10), revised_at: null, revised_by: 'Demo Foreman',
+            job_id: job, work_date: today, status: 'superseded',
+            data: {
+              jhaDescriptionOfWork: 'Install condenser water piping, Mechanical Room 302',
+              jhaJobsiteSafety: 'Hard hat, glasses, gloves, hearing protection near pumps.',
+              jhaTask1: 'Welding, Cutting or Brazing', jhaHazard1: 'Fire Hazard', jhaAction1: 'Hot work permit and fire watch in place',
+              jhaLadderUse: 'no', jhaAdditionalNotes: 'Original scope before the afternoon addition.'
+            },
+            crew: { employees: ['Demo Foreman', 'Casey Nolan (Demo)', 'Taylor Reed (Demo)'], groups: [] },
+            photos: [] },
+          { id: 'demo-jha-b-r2', root_jha_id: 'demo-jha-b', previous_revision_id: 'demo-jha-b-r1', revision_number: 2,
+            original_submitted_at: at(7, 10), revised_at: at(11, 25), revised_by: 'Demo Foreman',
+            job_id: job, work_date: today, status: 'submitted',
+            data: {
+              jhaDescriptionOfWork: 'Install condenser water piping, Mechanical Room 302 (added pump pad work)',
+              jhaJobsiteSafety: 'Hard hat, glasses, gloves, hearing protection near pumps.',
+              jhaTask1: 'Welding, Cutting or Brazing', jhaHazard1: 'Fire Hazard', jhaAction1: 'Hot work permit and fire watch in place',
+              jhaTask2: 'Hoisting & Rigging', jhaHazard2: 'Equipment or Rigging Failure', jhaAction2: 'Inspect slings before every lift',
+              jhaLadderUse: 'no', jhaAdditionalNotes: 'Added pump pad rigging after the morning walk.'
+            },
+            crew: { employees: ['Demo Foreman', 'Casey Nolan (Demo)', 'Taylor Reed (Demo)', 'Morgan Ellis (Demo)'],
+                    groups: [{ task: 'Hoisting & Rigging', activity: 'Setting pumps on the pad', members: ['Casey Nolan (Demo)', 'Morgan Ellis (Demo)'] }] },
+            photos: [] },
+          { id: 'demo-jha-c-r1', root_jha_id: 'demo-jha-c', previous_revision_id: null, revision_number: 1,
+            original_submitted_at: at(6, 55), revised_at: null, revised_by: 'Demo Foreman',
+            job_id: job, work_date: today, status: 'submitted',
+            data: {
+              jhaDescriptionOfWork: 'Demo existing ductwork, Level 1 north',
+              jhaJobsiteSafety: 'Dust walls up, respirators available, housekeeping each break.',
+              jhaTask1: 'Material Handling', jhaHazard1: 'Cuts, abrasions, and lacerations', jhaAction1: 'Cut-resistant gloves',
+              jhaLadderUse: 'no', jhaAdditionalNotes: ''
+            },
+            crew: { employees: ['Demo Foreman', 'Alex Rivera (Demo)'], groups: [] },
+            photos: [] }
+        ];
+      }
+
+      // Current job + current date only.
+      function jhaRootsForToday() {
+        var today = jhaTodayISO(), jobId = (NG.job && NG.job.id) || null, roots = {};
+        DEMO_JHA_STORE.forEach(function (r) {
+          if (r.job_id !== jobId || r.work_date !== today) return;
+          if (!roots[r.root_jha_id] || r.revision_number > roots[r.root_jha_id].revision_number) roots[r.root_jha_id] = r;
+        });
+        return Object.keys(roots).map(function (k) { return roots[k]; })
+          .sort(function (a, b) { return String(a.original_submitted_at).localeCompare(b.original_submitted_at); });
+      }
+      function jhaHistory(rootId) {
+        return DEMO_JHA_STORE.filter(function (r) { return r.root_jha_id === rootId; })
+          .sort(function (a, b) { return a.revision_number - b.revision_number; });
+      }
+      // One original + N revisions still counts as ONE completed daily JHA.
+      function demoDailyJhaCompliance() { return jhaRootsForToday().length; }
+
+      /* ---------------- Revise Submitted JHA: the picker ---------------- */
+      function ensureReviseView() {
+        var v = document.getElementById('reviseJhaView');
+        if (v) return v;
+        v = document.createElement('div');
+        v.id = 'reviseJhaView'; v.className = 'view';
+        v.innerHTML = '<div class="form-container"><button type="button" class="back-button" id="reviseJhaBack">&larr; Back</button>' +
+          '<h2 class="form-title">Revise Submitted JHA</h2>' +
+          '<p class="jha-row-hint" id="reviseJhaSub"></p><div id="reviseJhaList"></div></div>';
+        (document.querySelector('.app-container') || document.body).appendChild(v);
+        v.querySelector('#reviseJhaBack').addEventListener('click', function () { window.showView('landing'); });
+        return v;
+      }
+      function renderReviseList() {
+        var v = ensureReviseView();
+        var rows = jhaRootsForToday();
+        var job = NG.job || {};
+        v.querySelector('#reviseJhaSub').textContent =
+          'Submitted today on ' + (job.name || '') + (job.job_number ? ' (' + job.job_number + ')' : '') +
+          ' · ' + jhaTodayISO();
+        var list = v.querySelector('#reviseJhaList');
+        if (!rows.length) {
+          list.innerHTML = '<div class="jha-row-hint">No JHAs have been submitted for this job today.</div>';
+        } else {
+          list.innerHTML = rows.map(function (r) {
+            var n = (r.crew && r.crew.employees && r.crew.employees.length) || 0;
+            return '<button type="button" class="action-button action-button--primary jha-revise-item" data-revise-root="' + esc(r.root_jha_id) + '" ' +
+              'style="width:100%;text-align:left;margin-bottom:10px;display:block">' +
+              '<div style="font-weight:800">' + esc(r.data.jhaDescriptionOfWork || 'JHA') + '</div>' +
+              '<div style="font-size:12.5px;opacity:.85;margin-top:4px">' +
+                'Submitted ' + esc(jhaTime(r.original_submitted_at)) +
+                (r.revised_at ? ' · Last revised ' + esc(jhaTime(r.revised_at)) : '') +
+                ' · Revision ' + r.revision_number +
+              '</div>' +
+              '<div style="font-size:12.5px;opacity:.85">By ' + esc(r.revised_by) + ' · ' + n + ' employee' + (n === 1 ? '' : 's') + '</div>' +
+              '</button>';
+          }).join('');
+          Array.prototype.forEach.call(list.querySelectorAll('[data-revise-root]'), function (b) {
+            b.addEventListener('click', function () { startRevision(b.getAttribute('data-revise-root')); });
+          });
+        }
+        window.showView('reviseJha');
+      }
+
+      /* ---------------- load latest revision into the form -------------- */
+      function startRevision(rootId) {
+        var hist = jhaHistory(rootId);
+        var latest = hist[hist.length - 1];
+        if (!latest) return;
+        JHA_CTX = {
+          root_jha_id: latest.root_jha_id,
+          previous_revision_id: latest.id,
+          revision_number: latest.revision_number + 1,
+          original_submitted_at: latest.original_submitted_at,
+          job_id: latest.job_id,
+          work_date: latest.work_date,
+          carriedPhotos: (latest.photos || []).slice(),   // existing photos stay part of the revision
+          source: latest
+        };
+        if (typeof window.openJhaForm === 'function') window.openJhaForm();
+        applyLocks();
+        fillJhaForm(latest);
+        renderJhaBanner();
+      }
+      function fillJhaForm(rec) {
+        var form = document.getElementById('jhaForm'); if (!form || !rec) return;
+        Object.keys(rec.data || {}).forEach(function (k) {
+          var els = form.querySelectorAll('[name="' + k + '"]');
+          if (!els.length) return;
+          if (els[0].type === 'radio') {
+            Array.prototype.forEach.call(els, function (r) { r.checked = (r.value === rec.data[k]); });
+            els[0].dispatchEvent(new Event('change', { bubbles: true }));
+          } else {
+            els[0].value = rec.data[k];
+            els[0].dispatchEvent(new Event('input', { bubbles: true }));
+            els[0].dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        });
+        JHA_CREW = { employees: ((rec.crew && rec.crew.employees) || []).slice(),
+                     groups: JSON.parse(JSON.stringify((rec.crew && rec.crew.groups) || [])) };
+        renderCrew();
+        syncLadderPanel();
+      }
+      function renderJhaBanner() {
+        var view = document.getElementById('inspectionJhaView'); if (!view) return;
+        var old = document.getElementById('jhaRevisionBanner'); if (old) old.remove();
+        if (!JHA_CTX) return;
+        var b = document.createElement('div');
+        b.id = 'jhaRevisionBanner';
+        b.style.cssText = 'background:#1e3a8a;color:#fff;border-radius:10px;padding:12px 14px;margin-bottom:14px;text-align:center';
+        b.innerHTML = '<div style="font-weight:900;letter-spacing:.06em;font-size:13px">REVISED JHA</div>' +
+          '<div style="font-weight:800;font-size:18px;margin-top:2px">Revision ' + JHA_CTX.revision_number + '</div>' +
+          '<div style="font-size:12.5px;opacity:.9;margin-top:4px">Original submitted ' + esc(jhaTime(JHA_CTX.original_submitted_at)) + '</div>';
+        var host = view.querySelector('.form-container') || view;
+        host.insertBefore(b, host.firstChild);
+      }
+
+      /* ---------------- crew picker (searchable, up to 30) -------------- */
+      var JHA_CREW = { employees: [], groups: [] };
+
+      function crewRoster() {
+        return ((NG.people || []).map(function (p) { return p.name || String(p); })).filter(Boolean);
+      }
+      function renderCrew() {
+        var rosterBox = document.getElementById('jhaCrewRoster');
+        var selBox = document.getElementById('jhaCrewSelected');
+        var countEl = document.getElementById('jhaCrewCount');
+        if (!rosterBox || !selBox) return;
+        var q = ((document.getElementById('jhaCrewSearch') || {}).value || '').trim().toLowerCase();
+        var roster = crewRoster().filter(function (n) { return !q || n.toLowerCase().indexOf(q) !== -1; });
+        rosterBox.innerHTML = roster.map(function (n) {
+          var on = JHA_CREW.employees.indexOf(n) !== -1;
+          return '<button type="button" class="jha-crew-chip' + (on ? ' is-on' : '') + '" data-crew-add="' + esc(n) + '">' +
+            (on ? '&#10003; ' : '+ ') + esc(n) + '</button>';
+        }).join('') || '<div class="jha-row-hint">No one matches that search.</div>';
+        selBox.innerHTML = JHA_CREW.employees.length
+          ? JHA_CREW.employees.map(function (n) {
+              return '<span class="jha-crew-pill">' + esc(n) +
+                '<button type="button" class="jha-crew-x" data-crew-del="' + esc(n) + '" aria-label="Remove">&times;</button></span>';
+            }).join('')
+          : '<div class="jha-row-hint">Nobody added yet.</div>';
+        if (countEl) countEl.textContent = String(JHA_CREW.employees.length);
+        Array.prototype.forEach.call(rosterBox.querySelectorAll('[data-crew-add]'), function (b) {
+          b.addEventListener('click', function () { toggleCrew(b.getAttribute('data-crew-add')); });
+        });
+        Array.prototype.forEach.call(selBox.querySelectorAll('[data-crew-del]'), function (b) {
+          b.addEventListener('click', function () { toggleCrew(b.getAttribute('data-crew-del'), true); });
+        });
+        renderAssignments();
+        syncCrewData();
+      }
+      function toggleCrew(name, forceOff) {
+        var i = JHA_CREW.employees.indexOf(name);
+        if (i !== -1 || forceOff) {
+          if (i !== -1) JHA_CREW.employees.splice(i, 1);
+          JHA_CREW.groups.forEach(function (g) {
+            var j = g.members.indexOf(name); if (j !== -1) g.members.splice(j, 1);
+          });
+        } else {
+          if (JHA_CREW.employees.length >= JHA_MAX_EMPLOYEES) {
+            toast('error', 'Limit reached', 'A JHA can list up to ' + JHA_MAX_EMPLOYEES + ' employees.');
+            return;
+          }
+          JHA_CREW.employees.push(name);
+        }
+        renderCrew();
+      }
+      function syncCrewData() {
+        var h = document.getElementById('jhaCrewData');
+        if (h) h.value = JSON.stringify(JHA_CREW);
+      }
+
+      // Tasks currently written into the JHA rows.
+      function jhaTasksInForm() {
+        var out = [];
+        Array.prototype.forEach.call(document.querySelectorAll('#jhaTaskRows input[name^="jhaTask"]'), function (i) {
+          if (!/^jhaTask\d+$/.test(i.name)) return;   // skip the "Other" specify inputs
+          var v = String(i.value || '').trim(); if (v && v !== 'Other') out.push(v);
+        });
+        return out;
+      }
+      function renderAssignments() {
+        var host = document.getElementById('jhaAssignRows'); if (!host) return;
+        var inForm = jhaTasksInForm();
+        host.innerHTML = JHA_CREW.groups.map(function (g, gi) {
+          var builtIn = (window.JHA_PRESETS && window.JHA_PRESETS.tasks) ? window.JHA_PRESETS.tasks : [];
+          var opts = ['<option value="">Select the task…</option>'];
+          if (inForm.length) {
+            opts.push('<optgroup label="On this JHA">' + inForm.map(function (t) {
+              return '<option value="' + esc(t) + '"' + (g.task === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('') + '</optgroup>');
+          }
+          var others = builtIn.filter(function (t) { return t !== 'Other' && inForm.indexOf(t) === -1; });
+          if (others.length) {
+            opts.push('<optgroup label="Other built-in tasks">' + others.map(function (t) {
+              return '<option value="' + esc(t) + '"' + (g.task === t ? ' selected' : '') + '>' + esc(t) + '</option>'; }).join('') + '</optgroup>');
+          }
+          var missing = g.task && inForm.indexOf(g.task) === -1;
+          return '<div class="jha-assign-row" data-assign="' + gi + '">' +
+            '<div class="form-group"><label class="form-label">Task</label>' +
+              '<select class="form-input" data-assign-task="' + gi + '">' + opts.join('') + '</select></div>' +
+            (missing ? '<div class="jha-assign-warn">This task is not listed on the JHA yet.' +
+              ' <button type="button" class="jha-assign-add" data-assign-addtask="' + gi + '">Add it to the JHA</button></div>' : '') +
+            '<div class="form-group"><label class="form-label">What they are doing</label>' +
+              '<input type="text" class="form-input" data-assign-activity="' + gi + '" value="' + esc(g.activity || '') + '" placeholder="e.g. hanging rod and strut"></div>' +
+            '<div class="form-group"><label class="form-label">Who</label><div class="jha-crew-roster">' +
+              (JHA_CREW.employees.length ? JHA_CREW.employees.map(function (n) {
+                var on = g.members.indexOf(n) !== -1;
+                return '<button type="button" class="jha-crew-chip' + (on ? ' is-on' : '') + '" data-assign-member="' + gi + '|' + esc(n) + '">' +
+                  (on ? '&#10003; ' : '+ ') + esc(n) + '</button>';
+              }).join('') : '<div class="jha-row-hint">Add employees above first.</div>') +
+            '</div></div>' +
+            '<button type="button" class="jha-assign-remove" data-assign-del="' + gi + '">Remove this assignment</button>' +
+            '</div>';
+        }).join('');
+        Array.prototype.forEach.call(host.querySelectorAll('[data-assign-task]'), function (s) {
+          s.addEventListener('change', function () { JHA_CREW.groups[+s.getAttribute('data-assign-task')].task = s.value; renderAssignments(); syncCrewData(); });
+        });
+        Array.prototype.forEach.call(host.querySelectorAll('[data-assign-activity]'), function (i) {
+          i.addEventListener('input', function () { JHA_CREW.groups[+i.getAttribute('data-assign-activity')].activity = i.value; syncCrewData(); });
+        });
+        Array.prototype.forEach.call(host.querySelectorAll('[data-assign-member]'), function (b) {
+          b.addEventListener('click', function () {
+            var parts = b.getAttribute('data-assign-member').split('|');
+            var g = JHA_CREW.groups[+parts[0]], n = parts.slice(1).join('|');
+            var i = g.members.indexOf(n); if (i === -1) g.members.push(n); else g.members.splice(i, 1);
+            renderAssignments(); syncCrewData();
+          });
+        });
+        Array.prototype.forEach.call(host.querySelectorAll('[data-assign-del]'), function (b) {
+          b.addEventListener('click', function () { JHA_CREW.groups.splice(+b.getAttribute('data-assign-del'), 1); renderAssignments(); syncCrewData(); });
+        });
+        // Fast way to pull a missing built-in task into the JHA itself.
+        Array.prototype.forEach.call(host.querySelectorAll('[data-assign-addtask]'), function (b) {
+          b.addEventListener('click', function () { addTaskToJha(JHA_CREW.groups[+b.getAttribute('data-assign-addtask')].task); });
+        });
+      }
+      function addTaskToJha(task) {
+        if (!task) return;
+        var empty = null;
+        Array.prototype.forEach.call(document.querySelectorAll('#jhaTaskRows input[name^="jhaTask"]'), function (i) {
+          if (!/^jhaTask\d+$/.test(i.name)) return;   // skip the "Other" specify inputs
+          if (!empty && !String(i.value || '').trim()) empty = i;
+        });
+        if (!empty && typeof window.appendJhaTaskRow === 'function') {
+          window.appendJhaTaskRow();
+          var all = Array.prototype.filter.call(
+            document.querySelectorAll('#jhaTaskRows input[name^="jhaTask"]'),
+            function (i) { return /^jhaTask\d+$/.test(i.name); });
+          empty = all[all.length - 1];
+        }
+        if (!empty) { toast('error', 'No room', 'All JHA rows are full — clear one first.'); return; }
+        empty.value = task;
+        empty.dispatchEvent(new Event('input', { bubbles: true }));
+        toast('success', 'Added to the JHA', task + ' is now a task row. Add its hazard and action.');
+        renderAssignments();
+        try { empty.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+      }
+
+      /* ---------------- "Other" conditional text fields ----------------- */
+      function wireOtherFields() {
+        Array.prototype.forEach.call(document.querySelectorAll('#jhaForm .jha-combo-wrap'), function (wrap) {
+          var input = wrap.querySelector('input[name]'); if (!input || wrap.dataset.otherWired) return;
+          wrap.dataset.otherWired = '1';
+          var spec = document.createElement('input');
+          spec.type = 'text'; spec.className = 'form-input jha-other-input';
+          spec.name = input.name + 'Other'; spec.id = input.id + 'Other';
+          spec.placeholder = 'Please specify'; spec.style.cssText = 'margin-top:8px;display:none';
+          wrap.parentNode.insertBefore(spec, wrap.nextSibling);
+          var sync = function () {
+            var isOther = String(input.value || '').trim().toLowerCase() === 'other';
+            spec.style.display = isOther ? '' : 'none';
+            if (isOther) spec.setAttribute('required', 'required'); else { spec.removeAttribute('required'); spec.value = ''; }
+          };
+          input.addEventListener('input', sync); input.addEventListener('change', sync);
+          sync();
+        });
+      }
+
+      /* ---------------- ladder conditional ------------------------------ */
+      function syncLadderPanel() {
+        var form = document.getElementById('jhaForm'); if (!form) return;
+        var use = form.querySelector('input[name="jhaLadderUse"]:checked');
+        var panel = document.getElementById('jhaLadderPanel'); if (!panel) return;
+        var on = !!use && use.value === 'yes';
+        panel.style.display = on ? '' : 'none';
+        var why = document.getElementById('jhaLadderWhyNotLift');
+        if (why) { if (on) why.setAttribute('required', 'required'); else { why.removeAttribute('required'); } }
+        Array.prototype.forEach.call(form.querySelectorAll('input[name="jhaLadderSafe"]'), function (r) {
+          if (on) r.setAttribute('required', 'required'); else r.removeAttribute('required');
+        });
+        var safe = form.querySelector('input[name="jhaLadderSafe"]:checked');
+        var riskGroup = document.getElementById('jhaLadderRiskGroup');
+        var risk = document.getElementById('jhaLadderGreaterRisk');
+        var showRisk = on && safe && safe.value === 'no';
+        if (riskGroup) riskGroup.style.display = showRisk ? '' : 'none';
+        if (risk) { if (showRisk) risk.setAttribute('required', 'required'); else risk.removeAttribute('required'); }
+      }
+
+      /* ---------------- build + submit a revision ----------------------- */
+      function collectJhaFormData() {
+        var form = document.getElementById('jhaForm'), out = {};
+        if (!form) return out;
+        Array.prototype.forEach.call(form.querySelectorAll('[name]'), function (el) {
+          if (el.name === 'jhaCrewData') return;
+          if (el.type === 'radio') { if (el.checked) out[el.name] = el.value; }
+          else if (el.type === 'checkbox') { if (el.checked) out[el.name] = el.value || 'on'; }
+          else out[el.name] = el.value;
+        });
+        return out;
+      }
+      // Existing photos on the selected JHA are carried forward; new ones are
+      // appended. Nothing is ever dropped.
+      function collectJhaPhotos(payload) {
+        var carried = (JHA_CTX && JHA_CTX.carriedPhotos) ? JHA_CTX.carriedPhotos.slice() : [];
+        var added = [], f = (payload && payload.fields) || {};
+        Object.keys(f).forEach(function (k) {
+          if (/_photos$/.test(k) && Object.prototype.toString.call(f[k]) === '[object Array]') added = added.concat(f[k]);
+        });
+        return carried.concat(added);
+      }
+      function buildJhaRecord(payload) {
+        var now = new Date().toISOString();
+        var data = collectJhaFormData();
+        var crew = JSON.parse(JSON.stringify(JHA_CREW));
+        var photos = collectJhaPhotos(payload);
+        if (JHA_CTX) {
+          return { id: 'demo-jha-' + Date.now(), root_jha_id: JHA_CTX.root_jha_id,
+            previous_revision_id: JHA_CTX.previous_revision_id, revision_number: JHA_CTX.revision_number,
+            original_submitted_at: JHA_CTX.original_submitted_at, revised_at: now,
+            revised_by: NG.user || 'Demo Foreman', job_id: JHA_CTX.job_id, work_date: JHA_CTX.work_date,
+            status: 'submitted', data: data, crew: crew, photos: photos };
+        }
+        var root = 'demo-jha-' + Date.now();
+        return { id: root + '-r1', root_jha_id: root, previous_revision_id: null, revision_number: 1,
+          original_submitted_at: now, revised_at: null, revised_by: NG.user || 'Demo Foreman',
+          job_id: (NG.job && NG.job.id) || null, work_date: jhaTodayISO(), status: 'submitted',
+          data: data, crew: crew, photos: photos };
+      }
+      function decorateJhaDoc(dmodel, rec) {
+        dmodel.title = 'Job Hazard Analysis';
+        dmodel.meta = dmodel.meta || {};
+        dmodel.meta['Status'] = rec.revision_number > 1 ? 'REVISED' : 'Original';
+        dmodel.meta['Revision'] = String(rec.revision_number);
+        dmodel.meta['Original submitted'] = jhaTime(rec.original_submitted_at);
+        if (rec.revised_at) dmodel.meta['Latest revision'] = jhaTime(rec.revised_at);
+        dmodel.meta['Description of Work'] = rec.data.jhaDescriptionOfWork || '';
+        var it = function (label, response, photos) {
+          return { label: label, response: response == null || response === '' ? '—' : String(response),
+                   type: 'text', notes: '', flagged: false, photos: photos || [] };
+        };
+        var crewItems = [it('Employees (' + rec.crew.employees.length + ')', rec.crew.employees.join(', '))];
+        rec.crew.groups.forEach(function (g, i) {
+          crewItems.push(it('Assignment ' + (i + 1) + ' — ' + (g.task || '—'),
+            (g.activity || '—') + '  ·  ' + (g.members.join(', ') || 'no one assigned')));
+        });
+        dmodel.sections.push({ title: 'Employees and Assignments', items: crewItems });
+
+        var ladder = [it('Planned or expected use of any ladder?', rec.data.jhaLadderUse || '—')];
+        if (rec.data.jhaLadderUse === 'yes') {
+          ladder.push(it('Can this work be done safely from a ladder?', rec.data.jhaLadderSafe || '—'));
+          ladder.push(it('Why a one-man scissor lift / tying off will not work', rec.data.jhaLadderWhyNotLift));
+          var obs = [1, 2, 3, 4, 5].map(function (n) { return rec.data['jhaLadderObstacle' + n]; })
+            .filter(function (v) { return v && String(v).trim(); });
+          if (obs.length) ladder.push(it('Above-ceiling hindrances / obstacles', obs.join('; ')));
+          if (rec.data.jhaLadderSafe === 'no') {
+            ladder.push(it('How fall protection poses a greater risk than not using it', rec.data.jhaLadderGreaterRisk));
+          }
+        }
+        dmodel.sections.push({ title: 'Ladder Use', items: ladder });
+
+        if (rec.photos && rec.photos.length) {
+          dmodel.sections.push({ title: 'Photos', items: [it('Attached photos (' + rec.photos.length + ')', '', rec.photos)] });
+        }
+        var hist = jhaHistory(rec.root_jha_id);
+        dmodel.sections.push({ title: 'Revision History', items: hist.map(function (h) {
+          return it('Revision ' + h.revision_number, (h.revision_number === 1
+            ? 'Original submitted ' + jhaTime(h.original_submitted_at)
+            : 'Revised ' + jhaTime(h.revised_at)) + '  ·  ' + h.revised_by);
+        }) });
+        return dmodel;
+      }
+
+      /* ---------------- init when the JHA form is shown ----------------- */
+      function jhaInit() {
+        if (!document.getElementById('jhaForm')) return;
+        wireOtherFields();
+        var form = document.getElementById('jhaForm');
+        if (!form.dataset.jhaV2Wired) {
+          form.dataset.jhaV2Wired = '1';
+          var s = document.getElementById('jhaCrewSearch');
+          if (s) s.addEventListener('input', renderCrew);
+          var add = document.getElementById('jhaAddAssignBtn');
+          if (add) add.addEventListener('click', function () {
+            JHA_CREW.groups.push({ task: '', activity: '', members: [] }); renderAssignments(); syncCrewData();
+          });
+          form.addEventListener('change', function (e) {
+            if (e.target && (e.target.name === 'jhaLadderUse' || e.target.name === 'jhaLadderSafe')) syncLadderPanel();
+            if (e.target && /^jhaTask\d+$/.test(e.target.name || '')) renderAssignments();
+          });
+          form.addEventListener('input', function (e) {
+            if (e.target && /^jhaTask\d+$/.test(e.target.name || '')) renderAssignments();
+          });
+        }
+        renderCrew();
+        syncLadderPanel();
+        renderJhaBanner();
       }
 
       // ---------- boot: validate ticket, auto-open form, lock identity ----------
@@ -5995,6 +6627,16 @@ ${photoUrls}`;
         NG.equipment = DEMO_HOME.equipment;
         NG.people = DEMO_HOME.people;
         NG.hotworkLocations = DEMO_HOME.hotwork_locations;
+        seedDemoJhas();   // fake submitted JHAs for DEMO-001, today
+        // Demo-only introspection handle (used by the local review checks).
+        NG.demoJha = {
+          store: function () { return DEMO_JHA_STORE; },
+          roots: jhaRootsForToday,
+          history: jhaHistory,
+          compliance: demoDailyJhaCompliance,
+          ctx: function () { return JHA_CTX; },
+          maxEmployees: JHA_MAX_EMPLOYEES
+        };
         setTimeout(function () {
           mountDemoBanner();
           mountDemoQuickLinks();
