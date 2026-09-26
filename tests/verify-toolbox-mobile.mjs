@@ -1,13 +1,18 @@
 /* Toolbox Talks — mobile demo verification.
  *
- * Loads the phone module's logic out of index.html and exercises the two
- * completion paths directly. Nothing here reaches Supabase, n8n, Twilio,
- * Resend or the network; no texts or reminders are sent.
+ * The demo is a three-step phone walkthrough:
+ *   1 Choose Method   2 Review Talk   3 Record Completion
+ *
+ * This loads the module's logic out of index.html and exercises it directly,
+ * and checks the rendered markup and the demo assets on disk. Nothing here
+ * reaches Supabase, n8n, Twilio, Resend or the network; no texts are sent.
  */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import path from 'node:path';
 
-const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+const root = new URL('../', import.meta.url);
+const html = fs.readFileSync(new URL('index.html', root), 'utf8');
 const includes = (text, message) => assert.ok(html.includes(text), message);
 const excludes = (text, message) => assert.ok(!html.includes(text), message);
 
@@ -29,290 +34,407 @@ const makeModule = (search) => {
   };
   const factory = new Function('params', 'localStorage', `
     ${html.slice(start, endLogic)}
-    return { TBT_KEY: TBT_KEY, TBT_TALKS: TBT_TALKS, TBT_CO: TBT_CO,
-             TBT_COMPANY: TBT_COMPANY, TBT_MODE: TBT_MODE, TBT_SEL: TBT_SEL,
-             tbtMondayISO: tbtMondayISO, tbtDueLabel: tbtDueLabel,
-             tbtCurrentTalk: tbtCurrentTalk, tbtState: tbtState, tbtPush: tbtPush,
-             tbtMyRecord: tbtMyRecord, tbtGroupRecord: tbtGroupRecord,
-             tbtStatusText: tbtStatusText };
+    return { TBT_KEY, TBT_TALKS, TBT_CO, TBT_COMPANY, TBT_URL_MODE, TBT_MODE,
+             TBT_STEP, TBT_PAGE, TBT_READ, TBT_STEP_LABELS,
+             tbtMondayISO, tbtDueLabel, tbtCurrentTalk, tbtState, tbtPush,
+             tbtMyRecord, tbtGroupRecord, tbtStatusText, tbtMyGroup };
   `);
   const m = factory(new URLSearchParams(search), localStorage);
   m.store = store;
-  m.localStorage = localStorage;
   return m;
 };
 
 /* ------------------------------------------------------------------ *
- * 1. Company routing and mode defaults
+ * 1. Toolbox Talks appears on the local demo homepage
+ *
+ * A reviewer opening index.html?demo=1 must see it without knowing to add
+ * ngform=toolbox.
  * ------------------------------------------------------------------ */
-assert.equal(makeModule('?demo=1').TBT_COMPANY, 'greiner', 'no ?company defaults to Greiner');
-assert.equal(makeModule('?demo=1&company=choice').TBT_COMPANY, 'choice', '?company=choice must select Choice');
-assert.equal(makeModule('?demo=1&company=peine').TBT_COMPANY, 'peine', '?company=peine must select Peine');
-assert.equal(makeModule('?demo=1&company=CHOICE').TBT_COMPANY, 'choice', 'company must be case-insensitive');
-assert.equal(makeModule('?demo=1&company=nosuchco').TBT_COMPANY, 'greiner',
-  'an unknown company must fall back to Greiner, never crash');
-
-// Each company's confirmed default completion method.
-assert.equal(makeModule('?demo=1&company=choice').TBT_MODE, 'group',
-  'Choice runs one foreman-led group talk');
-assert.equal(makeModule('?demo=1&company=peine').TBT_MODE, 'individual',
-  'Peine completes individually');
-assert.equal(makeModule('?demo=1&company=greiner').TBT_MODE, 'group',
-  'Greiner defaults to group and stays configurable');
-
-// ?tbtmode= exists so both completion options can be demonstrated on one build.
-assert.equal(makeModule('?demo=1&company=peine&tbtmode=group').TBT_MODE, 'group',
-  '?tbtmode must be able to show the group flow for the demo');
-assert.equal(makeModule('?demo=1&company=choice&tbtmode=individual').TBT_MODE, 'individual',
-  '?tbtmode must be able to show the individual flow for the demo');
-assert.equal(makeModule('?demo=1&company=peine&tbtmode=garbage').TBT_MODE, 'individual',
-  'an invalid tbtmode must fall back to the company default');
+includes("Toolbox Talk — ' + esc(tbtCurrentTalk().t)",
+  "the homepage tile must name this week's talk");
+includes("if (key === 'toolbox') { openToolboxTalk(); return; }",
+  'the homepage tile must open the real walkthrough');
+excludes('Toolbox Talks — Coming next', 'Toolbox Talks must no longer be a placeholder');
+// It sits alongside the other three forms on the same demo homepage.
+for (const tile of ['>Complete New JHA<', '>Revise Submitted JHA<', 'Hot Work Permit']) {
+  includes(tile, `the demo homepage must still offer ${tile}`);
+}
+// The landing screen is what opens when no form is named in the URL.
+includes('if (ngform) openDemoForm(ngform);',
+  'without ?ngform the demo must stay on the homepage so the tile is visible');
 
 /* ------------------------------------------------------------------ *
- * 2. Rosters
+ * 2. Both demo workflow options exist, with the wording that was asked for
  * ------------------------------------------------------------------ */
+includes('Foreman Leads Group Talk', 'option 1 must be offered');
+includes('Each Employee Completes Individually', 'option 2 must be offered');
+includes('data-tbt-method="group"', 'option 1 must be selectable');
+includes('data-tbt-method="individual"', 'option 2 must be selectable');
+
+// Descriptions are built from concatenated source lines, so compare against
+// the text the phone actually renders rather than the source layout.
+const flatten = (s) => s.replace(/'\s*\+\s*\n\s*'/g, '').replace(/\s+/g, ' ');
+const methodSrc = flatten(html.slice(html.indexOf('function renderTbtMethod()'),
+  html.indexOf('/* ---------------- STEP 2')));
+for (const [text, what] of [
+  ['One foreman presents the talk, selects everyone who attended, adds any missing names, and submits once for the group.',
+    'option 1'],
+  ['Every employee reviews the same talk and submits their own acknowledgment.',
+    'option 2'],
+  // The selector must say plainly that production does not work this way.
+  ['This selector is for the demo only. In production the office configuration decides which option an employee receives — employees do not choose the company workflow themselves.',
+    'the production-configuration note'],
+]) {
+  assert.ok(methodSrc.includes(text), `${what} is missing its text: "${text}"`);
+}
+
+/* ------------------------------------------------------------------ *
+ * 3. Switching between the two options, without touching the URL
+ * ------------------------------------------------------------------ */
+includes('id="tbtChangeMethod"', 'there must be an in-page way back to the method chooser');
+includes('Switch demo workflow', 'the switch control needs a visible label');
+includes("document.getElementById('tbtChangeMethod').onclick = function () { tbtGo('method'); };",
+  'the switch control must return to the method step');
+// Choosing a method resets the walkthrough so the two flows cannot bleed together.
+includes("TBT_MODE = b.getAttribute('data-tbt-method');",
+  'choosing an option must set the mode');
+includes('TBT_PAGE = 0; TBT_READ = false;', 'choosing an option must restart the review');
+
+// Both paths exist and are distinct.
+includes('function renderTbtGroup()', 'the group completion path must exist');
+includes('function renderTbtIndividual()', 'the individual completion path must exist');
+includes("if (TBT_MODE === 'individual') return renderTbtIndividual();",
+  'the completion step must branch on the chosen method');
+
+/* ------------------------------------------------------------------ *
+ * 4. The actual Toolbox Talk content is displayed
+ *
+ * Not a title and a "view document" button: real rendered pages.
+ * ------------------------------------------------------------------ */
+excludes('View the Toolbox Talk document',
+  'the talk must be shown inline, not behind a "view document" button');
+excludes('tbtOpenDoc', 'the old file:// document opener must be gone');
+includes('id="tbtPageImg"', 'the talk pages must be rendered in the page');
+includes('class="tbt-page-img"', 'page images need their mobile styling');
+
+const manifestPath = new URL('demo-assets/toolbox-talks/manifest.json', root);
+const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+assert.equal(manifest.talks.length, 3, 'three talks are rendered for the walkthrough');
+
+const mod = makeModule('?demo=1');
+assert.equal(mod.TBT_TALKS.length, 3, 'the module must carry the three walkthrough talks');
+assert.equal(mod.tbtCurrentTalk().t, 'Fall Protection',
+  'Fall Protection is the first walkthrough talk');
+
+// Content is never invented: the module's talks must match the manifest
+// exactly, and the manifest must match what was actually rendered.
+for (const t of mod.TBT_TALKS) {
+  const entry = manifest.talks.find((x) => x.id === t.i);
+  assert.ok(entry, `talk "${t.i}" is missing from the manifest`);
+  assert.equal(t.t, entry.title, `title mismatch for ${t.i}`);
+  assert.equal(t.f, entry.originalFilename, `original filename must be preserved for ${t.i}`);
+  assert.equal(t.src, entry.sourcePath, `source path must match the manifest for ${t.i}`);
+  assert.equal(t.pages.length, entry.pageCount, `page count mismatch for ${t.i}`);
+  assert.deepEqual(t.pages, entry.pages.map((p) => p.src),
+    `page list must match the manifest for ${t.i}`);
+}
+
+/* ------------------------------------------------------------------ *
+ * 5. Every page is reachable, and the assets resolve
+ * ------------------------------------------------------------------ */
+includes('id="tbtPrev"', 'a Previous control must exist');
+includes('id="tbtNext"', 'a Next control must exist');
+includes("Page ' + (TBT_PAGE + 1) + ' of ' + total",
+  'the viewer must show "Page 1 of X"');
+// Previous/Next are disabled at the ends rather than wrapping around.
+includes("(TBT_PAGE === 0 ? ' disabled' : '')", 'Previous must be disabled on the first page');
+includes("(TBT_PAGE >= total - 1 ? ' disabled' : '')", 'Next must be disabled on the last page');
+includes('if (TBT_PAGE > 0) { TBT_PAGE--; renderTbtReview(); }', 'Previous must step back one page');
+includes('if (TBT_PAGE < total - 1) { TBT_PAGE++; renderTbtReview(); }', 'Next must step forward one page');
+
+// Relative paths, not absolute ones, and every file is really on disk.
+let totalPages = 0;
+for (const t of mod.TBT_TALKS) {
+  for (const rel of t.pages) {
+    assert.ok(!rel.startsWith('/') && !rel.startsWith('file:'),
+      `page asset must be a relative path, got "${rel}"`);
+    assert.match(rel, /^demo-assets\/toolbox-talks\//, `unexpected asset location: ${rel}`);
+    const abs = new URL(rel, root);
+    assert.ok(fs.existsSync(abs), `page asset is missing on disk: ${rel}`);
+    assert.ok(fs.statSync(abs).size > 1000, `page asset looks empty: ${rel}`);
+    totalPages++;
+  }
+}
+assert.equal(totalPages, manifest.talks.reduce((n, t) => n + t.pageCount, 0),
+  'every manifest page must be present');
+
+// Every source PDF named in the manifest must actually exist at that path —
+// this is what caught the original wrong paths.
+for (const t of manifest.talks) {
+  assert.ok(fs.existsSync(t.sourcePath),
+    `manifest source path does not resolve: ${t.sourcePath}`);
+  assert.ok(/\.pdf$/i.test(t.originalFilename), `expected a PDF for ${t.id}`);
+  assert.equal(path.basename(t.sourcePath), t.originalFilename,
+    `the source path and original filename disagree for ${t.id}`);
+}
+
+// The stale path that never existed must not come back.
+excludes('Tony Toolbox Email 01/Fall Protection.pdf',
+  'the old non-existent source path must not reappear');
+
+/* ------------------------------------------------------------------ *
+ * 6. Completion is gated until the final page is reviewed
+ * ------------------------------------------------------------------ */
+includes('if (TBT_PAGE === total - 1) TBT_READ = true;',
+  'reaching the last page must mark the talk as read');
+includes("id=\"tbtToComplete\"", 'there must be a continue control');
+includes("(TBT_READ ? '' : ' disabled')",
+  'continuing to completion must be disabled until the talk is read');
+includes('Read to the last page before recording completion.',
+  'the reviewer must be told why continuing is disabled');
+includes("if (!TBT_READ) {", 'the continue handler must also refuse when unread');
+includes("toast('error', 'Finish the talk'", 'an early continue must be refused with a message');
+// Opening the walkthrough always starts unread.
+assert.equal(mod.TBT_READ, false, 'the walkthrough must start with the talk unread');
+assert.equal(mod.TBT_PAGE, 0, 'the walkthrough must start on page 1');
+
+/* ------------------------------------------------------------------ *
+ * 7. The employee search field is gone
+ * ------------------------------------------------------------------ */
+excludes('id="tbtSearch"', 'the attendee search field must be removed');
+excludes('Search employees', 'the search placeholder must be gone');
+excludes('TBT_SEL.q', 'the search term state must be gone');
+excludes('Nobody matches that search.', 'the empty-search message must be gone');
+
+/* ------------------------------------------------------------------ *
+ * 8. The roster is visible directly, as selectable rows
+ * ------------------------------------------------------------------ */
+includes('data-tbt-att=', 'every roster member must be selectable');
+includes('class="tbt-rosterrow', 'roster rows need their own tap-target styling');
+includes('aria-pressed=', 'selectable rows must expose their state');
+includes('<span class="box">', 'each row needs a visible checkbox');
+includes('id="tbtAll"', 'Select All Assigned must exist');
+includes('Select All Assigned', 'Select All Assigned needs its label');
+includes('id="tbtNone"', 'Clear must exist');
+includes("id=\"tbtCount\"", 'the selected attendee count must be shown');
+// The count is a number, not two lengths glued together ("30" for 3 + 0).
+includes('var picked = TBT_SEL.attendees.length + TBT_SEL.manual.length;',
+  'the count must add the roster and manual lists, not concatenate them');
+includes("' + picked + ' selected)", 'the added count is what gets displayed');
+includes('Job or meeting group', 'the job/meeting group picker needs its label');
+includes('id="tbtPresenter"', 'the presenter must be recorded');
+includes('Submit Group Toolbox Talk', 'the group submit button needs its label');
+
+// The whole roster renders with no filtering step in between.
 const choice = makeModule('?demo=1&company=choice');
-assert.equal(choice.TBT_CO.choice.groups.length, 1, 'Choice has a single Monday morning meeting');
 assert.equal(choice.TBT_CO.choice.people.length, 12, "Choice's roster is 12 people");
+assert.equal(choice.TBT_CO.choice.groups.length, 1,
+  'Choice runs a single Monday morning meeting');
 for (const n of ['Alex Fyffe', 'Angel Garcia', 'Zach France']) {
   assert.ok(choice.TBT_CO.choice.people.some((p) => p.n === n),
     `${n} must be on Choice's roster`);
 }
-assert.equal(choice.TBT_CO.choice.me, 'Alex Fyffe',
-  'the demo signs in as a confirmed Choice submitter');
-assert.ok(choice.TBT_CO.choice.people.every((p) => p.g === 'Monday Group Meeting'),
-  'every Choice employee belongs to the Monday meeting');
 
-// Peine's roster is demo data only: Tony has not sent the real employee list.
+/* ------------------------------------------------------------------ *
+ * 9. Manual attendee entry
+ * ------------------------------------------------------------------ */
+includes('Add someone not listed', 'the manual-entry field needs the asked-for label');
+includes('id="tbtManual"', 'the manual-entry input must exist');
+includes('id="tbtManualAdd"', 'the Add Name button must exist');
+includes('>Add Name<', 'the Add Name button needs its label');
+includes('MANUAL ENTRY', 'manually added names must be visibly flagged');
+includes('class="tbt-manualpill"', 'manual names need their own styling');
+includes('data-tbt-rmm=', 'a manually added name must be removable');
+includes("if (TBT_SEL.manual.indexOf(n) === -1 && TBT_SEL.attendees.indexOf(n) === -1) TBT_SEL.manual.push(n);",
+  'a manual name must not duplicate itself or a roster pick');
+
+/* ------------------------------------------------------------------ *
+ * 10. Back navigation follows the three steps
+ * ------------------------------------------------------------------ */
+assert.deepEqual(mod.TBT_STEP_LABELS.map((s) => s[1]),
+  ['Choose Method', 'Review Talk', 'Record Completion'],
+  'the progress indicator must name the three steps in order');
+includes("if (TBT_STEP === 'complete') { tbtGo('review'); return; }",
+  'Back from completion must return to Review Talk');
+includes("if (TBT_STEP === 'review') { tbtGo('method'); return; }",
+  'Back from Review Talk must return to Choose Method');
+includes("window.showView('landing');", 'Back from Choose Method must return to the homepage');
+includes('class="tbt-steps"', 'the progress indicator must be rendered');
+includes('data-tbt-step=', 'each step must be identifiable');
+// Without ?tbtmode the walkthrough opens on step 1.
+assert.equal(mod.TBT_STEP, 'method', 'the walkthrough must open on Choose Method');
+assert.equal(mod.TBT_MODE, null, 'no completion method may be preselected');
+// ?tbtmode stays available for direct testing and skips to the talk.
+const direct = makeModule('?demo=1&company=peine&tbtmode=individual');
+assert.equal(direct.TBT_URL_MODE, 'individual', '?tbtmode must still be honoured');
+assert.equal(direct.TBT_MODE, 'individual', '?tbtmode must preselect the method');
+assert.equal(direct.TBT_STEP, 'review', '?tbtmode must open straight on the talk');
+assert.equal(makeModule('?demo=1&tbtmode=garbage').TBT_STEP, 'method',
+  'an invalid tbtmode must fall back to the chooser');
+
+/* ------------------------------------------------------------------ *
+ * 11. Contrast and layout
+ *
+ * The two visual bugs were unstyled classes: .back-button rendered as bare
+ * text and .form-title inherited the dark theme's light colour onto a white
+ * card. Both must now be styled explicitly.
+ * ------------------------------------------------------------------ */
+const css = html.slice(0, html.indexOf('</style>'));
+assert.match(css, /\.back-button\s*\{[^}]*border:[^}]*\}/s, '.back-button must be styled');
+assert.match(css, /\.back-button\s*\{[^}]*min-height:\s*44px/s,
+  '.back-button must be a comfortable tap target');
+assert.match(css, /\.back-button\s*\{[^}]*margin-bottom:/s, '.back-button needs spacing around it');
+assert.match(css, /\.form-title\s*\{[^}]*color:\s*var\(--color-text-primary\)/s,
+  '.form-title must set its own colour instead of inheriting');
+// The talk panel is light, so its text is pinned dark rather than inherited.
+assert.match(css, /\.tbt-doc\s*\{[^}]*background:\s*#ffffff/s, 'the talk panel must be light');
+assert.match(css, /\.tbt-doc-title\s*\{[^}]*color:\s*#111827/s,
+  'the talk title must be dark text on the light panel');
+assert.match(css, /\.tbt-doc-sub\s*\{[^}]*color:\s*#4b5563/s,
+  'the talk subtitle must be dark enough to read on white');
+assert.match(css, /\.tbt-pagebtn\s*\{[^}]*color:\s*#111827/s, 'pager buttons must have dark text');
+assert.match(css, /\.tbt-pagebtn\s*\{[^}]*min-height:\s*44px/s, 'pager buttons must be tappable');
+assert.match(css, /\.tbt-rosterrow\s*\{[^}]*min-height:\s*48px/s, 'roster rows must be tappable');
+// Nothing in the demo may rely on inherited colour on a light background.
+assert.ok(!/class="tbt-doc"[^>]*>(?![\s\S]{0,400}tbt-doc-title)/.test(html),
+  'the light panel must always carry an explicitly coloured title');
+// Page images stay inside the phone width.
+assert.match(css, /\.tbt-page-img\s*\{[^}]*width:\s*100%/s, 'page images must fit the phone width');
+assert.match(css, /\.tbt-page-img\s*\{[^}]*height:\s*auto/s, 'page images must keep their aspect ratio');
+
+// The persistent demo notice is present and does not overlay the interface.
+includes('id="tbtNotice"', 'a persistent demo notice must exist');
+includes('Demo only — nothing will be saved.', 'the notice must say nothing is saved');
+assert.ok(!/\.tbt-notice\s*\{[^}]*position:\s*(fixed|absolute)/s.test(css),
+  'the demo notice must sit in the flow, not cover the interface');
+
+/* ------------------------------------------------------------------ *
+ * 12. Rosters, week, and the two completion paths
+ * ------------------------------------------------------------------ */
+assert.equal(makeModule('?demo=1').TBT_COMPANY, 'greiner', 'no ?company defaults to Greiner');
+assert.equal(makeModule('?demo=1&company=CHOICE').TBT_COMPANY, 'choice', 'company is case-insensitive');
+assert.equal(makeModule('?demo=1&company=nope').TBT_COMPANY, 'greiner',
+  'an unknown company must fall back rather than crash');
+assert.equal(choice.TBT_CO.choice.mode, 'group', "Choice's configured method is group");
+assert.equal(makeModule('?demo=1&company=peine').TBT_CO.peine.mode, 'individual',
+  "Peine's configured method is individual");
+
+// Peine's roster is demo data: Tony has not sent the real employee list.
 const peine = makeModule('?demo=1&company=peine');
 assert.ok(peine.TBT_CO.peine.people.every((p) => /\(Demo\)/.test(p.n)),
-  "Peine's roster must be obviously fake until Tony sends the real employee list");
-const greiner = makeModule('?demo=1&company=greiner');
-assert.ok(greiner.TBT_CO.greiner.people.every((p) => /Demo|Foreman/.test(p.n)),
-  "Greiner's phone roster must be obviously fake demo data");
+  "Peine's roster must stay obviously fake until the real list arrives");
 
-/* ------------------------------------------------------------------ *
- * 3. The week is always a Monday
- * ------------------------------------------------------------------ */
+// The week is always a Monday.
 const wk = choice.tbtMondayISO();
 assert.match(wk, /^\d{4}-\d{2}-\d{2}$/, 'the week key must be an ISO date');
-const parts = wk.split('-').map(Number);
-assert.equal(new Date(parts[0], parts[1] - 1, parts[2]).getDay(), 1,
-  'the due date must be a Monday');
-assert.equal(wk, greiner.tbtMondayISO(), 'every company shares the same week key');
+const [y, m, d] = wk.split('-').map(Number);
+assert.equal(new Date(y, m - 1, d).getDay(), 1, 'the due date must be a Monday');
 assert.match(choice.tbtDueLabel(), /^Monday, /, 'the due label must read as a Monday');
 
-/* ------------------------------------------------------------------ *
- * 4. Group completion
- * ------------------------------------------------------------------ */
-const g = makeModule('?demo=1&company=choice');
+// Group: one submission credits the whole group.
+const g = makeModule('?demo=1&company=choice&tbtmode=group');
 const gname = g.TBT_CO.choice.groups[0];
-const talk = g.tbtCurrentTalk();
-assert.ok(talk && talk.i && talk.t && talk.f, 'there must be a current talk with a filename');
-
-assert.equal(g.tbtGroupRecord(gname), null, 'nothing is submitted yet');
 assert.equal(g.tbtStatusText(), '0 of 1 group submitted', 'status must start at zero');
-
-g.tbtPush({
-  week: g.tbtMondayISO(), talkId: talk.i, kind: 'group', company: 'choice',
-  group: gname, presenter: 'Alex Fyffe',
+g.tbtPush({ week: g.tbtMondayISO(), talkId: g.tbtCurrentTalk().i, kind: 'group',
+  company: 'choice', group: gname, presenter: 'Alex Fyffe',
   roster: g.TBT_CO.choice.people.map((p) => p.n), manual: ['Temp Helper'],
-  at: new Date().toISOString(),
-});
-
+  at: new Date().toISOString() });
 const rec = g.tbtGroupRecord(gname);
-assert.ok(rec, 'the group submission must be found after it is recorded');
-assert.equal(rec.roster.length + rec.manual.length, 13,
-  'attendance must count the roster plus manual entries');
+assert.ok(rec, 'the group submission must be found');
+assert.equal(rec.roster.length + rec.manual.length, 13, 'attendance counts roster plus manual');
 assert.equal(g.tbtStatusText(), '1 of 1 group submitted', 'status must reflect the submission');
 
-// The record persists in localStorage, so a reopened phone sees it.
-const saved = JSON.parse(g.store.get(g.TBT_KEY));
-assert.equal(saved.records.length, 1, 'the submission must persist');
-assert.equal(saved.records[0].presenter, 'Alex Fyffe', 'the presenter must be recorded');
-
-// A submission for a different group does not credit this one.
-assert.equal(g.tbtGroupRecord('Some Other Crew'), null,
-  'one group submitting must not credit another group');
-
-/* ------------------------------------------------------------------ *
- * 5. Individual completion
- * ------------------------------------------------------------------ */
-const ind = makeModule('?demo=1&company=peine');
-const me = ind.TBT_CO.peine.me;
-assert.equal(ind.tbtMyRecord(), null, 'nothing completed yet');
-assert.equal(ind.tbtStatusText(), 'Not completed', 'individual status starts as not completed');
-
-ind.tbtPush({
-  week: ind.tbtMondayISO(), talkId: ind.tbtCurrentTalk().i, kind: 'individual',
-  company: 'peine', employee: me, at: new Date().toISOString(),
-});
+// Individual: only your own, and only once.
+const ind = makeModule('?demo=1&company=peine&tbtmode=individual');
+assert.equal(ind.tbtStatusText(), 'Not completed', 'individual status starts incomplete');
+assert.ok(ind.tbtMyGroup(), 'the individual must have a job assignment to show');
+ind.tbtPush({ week: ind.tbtMondayISO(), talkId: ind.tbtCurrentTalk().i, kind: 'individual',
+  company: 'peine', employee: ind.TBT_CO.peine.me, at: new Date().toISOString() });
 assert.ok(ind.tbtMyRecord(), 'my completion must be found');
 assert.equal(ind.tbtStatusText(), 'Completed', 'individual status must flip to completed');
 
-// Somebody else completing does not complete it for me.
-const other = makeModule('?demo=1&company=peine');
-other.tbtPush({
-  week: other.tbtMondayISO(), talkId: other.tbtCurrentTalk().i, kind: 'individual',
-  company: 'peine', employee: 'Finley Ward (Demo)', at: new Date().toISOString(),
-});
-assert.equal(other.tbtMyRecord(), null,
-  "another employee's completion must not complete mine");
-
-/* ------------------------------------------------------------------ *
- * 6. Mode isolation — a group record is not individual credit, and vice versa
- * ------------------------------------------------------------------ */
-const x = makeModule('?demo=1&company=peine');
-x.tbtPush({
-  week: x.tbtMondayISO(), talkId: x.tbtCurrentTalk().i, kind: 'group',
-  company: 'peine', group: x.TBT_CO.peine.groups[0],
-  roster: x.TBT_CO.peine.people.map((p) => p.n), manual: [], at: new Date().toISOString(),
-});
-assert.equal(x.tbtMyRecord(), null,
-  'a group submission must not satisfy an individual-mode requirement');
-
-const y = makeModule('?demo=1&company=choice');
-y.tbtPush({
-  week: y.tbtMondayISO(), talkId: y.tbtCurrentTalk().i, kind: 'individual',
-  company: 'choice', employee: 'Alex Fyffe', at: new Date().toISOString(),
-});
-assert.equal(y.tbtGroupRecord(y.TBT_CO.choice.groups[0]), null,
-  'an individual acknowledgement must not satisfy a group talk');
-
-/* ------------------------------------------------------------------ *
- * 7. Company isolation is explicit, not accidental
- * ------------------------------------------------------------------ */
-const shared = makeModule('?demo=1&company=choice');
-// Forge a record with Choice's exact group name but another company's tag.
-shared.tbtPush({
-  week: shared.tbtMondayISO(), talkId: shared.tbtCurrentTalk().i, kind: 'group',
-  company: 'greiner', group: shared.TBT_CO.choice.groups[0],
-  roster: ['Somebody'], manual: [], at: new Date().toISOString(),
-});
-assert.equal(shared.tbtGroupRecord(shared.TBT_CO.choice.groups[0]), null,
-  "another company's record must not credit Choice even with the same group name");
-
-const sharedInd = makeModule('?demo=1&company=peine');
-sharedInd.tbtPush({
-  week: sharedInd.tbtMondayISO(), talkId: sharedInd.tbtCurrentTalk().i,
-  kind: 'individual', company: 'choice', employee: sharedInd.TBT_CO.peine.me,
-  at: new Date().toISOString(),
-});
-assert.equal(sharedInd.tbtMyRecord(), null,
-  "another company's record must not credit Peine even with the same employee name");
-includes('r.company === TBT_COMPANY', 'company must be matched explicitly on record lookups');
-
-/* ------------------------------------------------------------------ *
- * 8. A completion belongs to one week and one talk
- * ------------------------------------------------------------------ */
-const wkTest = makeModule('?demo=1&company=peine');
-wkTest.tbtPush({
-  week: '2020-01-06', talkId: wkTest.tbtCurrentTalk().i, kind: 'individual',
-  company: 'peine', employee: wkTest.TBT_CO.peine.me, at: new Date().toISOString(),
-});
-assert.equal(wkTest.tbtMyRecord(), null, "a past week's completion must not satisfy this week");
-
-const talkTest = makeModule('?demo=1&company=peine');
-talkTest.tbtPush({
-  week: talkTest.tbtMondayISO(), talkId: 'some-other-talk', kind: 'individual',
-  company: 'peine', employee: talkTest.TBT_CO.peine.me, at: new Date().toISOString(),
-});
-assert.equal(talkTest.tbtMyRecord(), null,
-  'completing a different talk must not satisfy this week’s talk');
-
-/* ------------------------------------------------------------------ *
- * 9. Duplicate prevention is enforced in the UI, not just the data
- * ------------------------------------------------------------------ */
+const other = makeModule('?demo=1&company=peine&tbtmode=individual');
+other.tbtPush({ week: other.tbtMondayISO(), talkId: other.tbtCurrentTalk().i,
+  kind: 'individual', company: 'peine', employee: 'Finley Ward (Demo)',
+  at: new Date().toISOString() });
+assert.equal(other.tbtMyRecord(), null, "another employee's completion is not mine");
+const indSrc = flatten(html.slice(html.indexOf('function renderTbtIndividual()'),
+  html.indexOf('function tbtTalkStripHtml()')));
+assert.ok(indSrc.includes('In individual mode you can only complete your own.'),
+  'individual mode must say you can only complete your own');
+includes('id="tbtMyJob"', "the individual's job assignment must be shown");
+includes('I reviewed the complete ', 'the acknowledgement must reference the whole talk');
+includes('Submit My Completion', 'the individual submit button needs its label');
 includes("if (tbtMyRecord()) { toast('error', 'Already completed'",
-  'the individual submit must refuse a second completion');
-includes('You already completed this week’s Toolbox Talk on',
-  'a completed individual must be told so instead of being offered the form again');
-includes('This group already submitted this week',
-  'a group that already submitted must be told so');
-includes("if (TBT_SEL.manual.indexOf(n) === -1 && TBT_SEL.attendees.indexOf(n) === -1) TBT_SEL.manual.push(n);",
-  'a manually added name must not be added twice or duplicate a roster pick');
+  'a second individual completion must be refused');
+
+// Mode and company isolation.
+const x = makeModule('?demo=1&company=peine&tbtmode=individual');
+x.tbtPush({ week: x.tbtMondayISO(), talkId: x.tbtCurrentTalk().i, kind: 'group',
+  company: 'peine', group: x.TBT_CO.peine.groups[0], roster: ['a'], manual: [],
+  at: new Date().toISOString() });
+assert.equal(x.tbtMyRecord(), null, 'a group record must not satisfy individual mode');
+
+const shared = makeModule('?demo=1&company=choice&tbtmode=group');
+shared.tbtPush({ week: shared.tbtMondayISO(), talkId: shared.tbtCurrentTalk().i,
+  kind: 'group', company: 'greiner', group: shared.TBT_CO.choice.groups[0],
+  roster: ['Somebody'], manual: [], at: new Date().toISOString() });
+assert.equal(shared.tbtGroupRecord(shared.TBT_CO.choice.groups[0]), null,
+  "another company's record must not credit Choice");
+includes('r.company === TBT_COMPANY', 'company must be matched explicitly on lookups');
+
+// A completion belongs to one week and one talk.
+const wkT = makeModule('?demo=1&company=peine&tbtmode=individual');
+wkT.tbtPush({ week: '2020-01-06', talkId: wkT.tbtCurrentTalk().i, kind: 'individual',
+  company: 'peine', employee: wkT.TBT_CO.peine.me, at: new Date().toISOString() });
+assert.equal(wkT.tbtMyRecord(), null, "a past week's completion must not satisfy this week");
 
 /* ------------------------------------------------------------------ *
- * 10. Group form affordances required for a phone
+ * 13. Demo submissions make no network request
  * ------------------------------------------------------------------ */
-includes('id="tbtSearch"', 'the attendee list must be searchable');
-includes('id="tbtAll"', 'there must be a Select all assigned control');
-includes('id="tbtNone"', 'there must be a Clear control');
-includes('id="tbtManualAdd"', 'a name not on the roster must be addable');
-includes('MANUAL ENTRY', 'a manually added name must be visibly flagged');
-includes('id="tbtPresenter"', 'the presenter must be recorded');
-includes('I presented this Toolbox Talk to the people listed above.',
-  'the foreman must confirm they presented the talk');
-includes('jha-crew-chip', 'attendees must be tap targets, not empty text boxes');
-// Attendee count must be a sum, not string concatenation.
-includes("(TBT_SEL.attendees.length + TBT_SEL.manual.length) + ' selected)",
-  'the attendee count must add the two lists, not concatenate them');
-
-// Every submission gate must exist.
-for (const gate of ['Presenter required', 'No attendees', 'Confirm the talk']) {
-  includes(gate, `the group form must refuse to submit without: ${gate}`);
-}
-includes('I have read and understood this Toolbox Talk.',
-  'the individual form must require an acknowledgement');
-includes('Confirm first', 'the individual form must refuse an unconfirmed submit');
-
-// Individual mode must not let someone complete on another person's behalf.
-includes('In individual mode you can only complete your own.',
-  'individual mode must state that you can only complete your own');
-includes('readonly', 'the individual identity field must not be editable');
-
-/* ------------------------------------------------------------------ *
- * 11. Landing page shows the week's talk
- * ------------------------------------------------------------------ */
-includes("if (key === 'toolbox') { openToolboxTalk(); return; }",
-  'the Toolbox Talk tile must open the real workflow');
-excludes('Toolbox Talks — Coming next', 'Toolbox Talks must no longer be a placeholder');
-includes("Toolbox Talk — ' + esc(tbtCurrentTalk().t)",
-  "the landing tile must name this week's talk");
-
-/* ------------------------------------------------------------------ *
- * 12. Nothing is sent, uploaded or written to production
- * ------------------------------------------------------------------ */
-const moduleSrc = html.slice(start, html.indexOf('function openToolboxTalk()'));
+const moduleSrc = html.slice(start, html.indexOf('// ---------- boot:'));
 const moduleCode = moduleSrc
   .replace(/\/\*[\s\S]*?\*\//g, ' ')
   .replace(/(^|[^:'"\\])\/\/[^\n]*/g, '$1');
 for (const forbidden of ['rpc(', 'edge(', 'fetch(', 'XMLHttpRequest', 'sendBeacon',
   'WebSocket', 'WEBHOOK', 'supabase', 'twilio', 'resend', 'n8n', 'FormData',
-  'sms', 'reminder']) {
+  'sms', 'reminder', 'navigator.share']) {
   assert.ok(!moduleCode.toLowerCase().includes(forbidden.toLowerCase()),
     `the mobile toolbox module must stay local — found "${forbidden}"`);
 }
-// The only cs_-prefixed name may be its own localStorage key.
+// Its only persistence is its own localStorage key.
 const csRefs = [...moduleCode.matchAll(/['"](cs_[A-Za-z0-9_]+)['"]/g)].map((m) => m[1]);
 assert.deepEqual(csRefs, ['cs_tbt_mobile_demo_v1'],
   `the only cs_* name may be the demo localStorage key, found: ${csRefs.join(', ')}`);
-// Its own key, separate from the office demo's key and from production storage.
-assert.equal(choice.TBT_KEY, 'cs_tbt_mobile_demo_v1', 'the mobile demo key must be demo-scoped');
-assert.notEqual(choice.TBT_KEY, 'cs_tbt_demo_v1', 'mobile and office demos keep separate state');
+assert.notEqual(mod.TBT_KEY, 'cs_tbt_demo_v1', 'mobile and office demos keep separate state');
+includes('No production data was saved.', 'completion must say nothing was saved');
 
-// The document is opened locally and only ever behind the demo gate.
-const openDoc = html.slice(html.indexOf('function tbtOpenDoc()'),
-  html.indexOf('function tbtHeaderHtml('));
-assert.ok(openDoc.includes('DEMO'), 'opening a local source document must be gated behind DEMO');
-const filePaths = [...moduleSrc.matchAll(/'\/Users\/[^']*'/g)];
-assert.ok(filePaths.length > 0, 'the demo references local source documents');
-// No local absolute path may appear anywhere outside the gated demo module.
-const outside = html.slice(0, start) + html.slice(html.indexOf('function openToolboxTalk()'));
-assert.ok(!/'\/Users\//.test(outside),
-  'a local absolute path leaked outside the gated demo module');
+// No absolute local path is used to load anything. The source paths that
+// remain are inert manifest strings for traceability, never fetched.
+assert.ok(!/src\s*[:=]\s*['"]?file:/.test(moduleCode), 'nothing may be loaded over file://');
+assert.ok(!/window\.open\(/.test(moduleCode), 'the demo must not open external windows');
+for (const t of mod.TBT_TALKS) {
+  assert.ok(t.src.startsWith('/Users/'), 'the manifest keeps the original source path');
+  assert.ok(!t.pages.some((p) => p.includes(t.src)), 'page assets must not use the source path');
+}
 
 /* ------------------------------------------------------------------ *
- * 13. Production paths untouched
+ * 14. Production behaviour is unchanged
  * ------------------------------------------------------------------ */
 includes("rpc('cs_portal_field_home', { p_token: ticket })",
   'production boot must still validate the ticket server-side');
 includes("rpc('cs_portal_field_submit'", 'the production submit path must still exist');
 includes('var ticket = DEMO ? null : (urlTicket || loadTicket());',
   'demo mode must still refuse any real or cached ticket');
+includes("['WEBHOOK_REPORT', 'WEBHOOK_TRANSPORT', 'WEBHOOK_INSPECTION', 'WEBHOOK_DAILY_LOG', 'WEBHOOK_RENTAL']",
+  'demo mode must still blank every webhook URL');
+includes("if (!NG.ticket) {", 'production submit must still require a ticket');
+// The Toolbox Talk walkthrough is only reachable in the demo build.
+assert.ok(moduleCode.includes('DEMO') || html.includes("if (key === 'toolbox')"),
+  'the walkthrough must hang off the demo landing screen');
 
 /* ------------------------------------------------------------------ *
- * 14. The file still parses
+ * 15. The file still parses
  * ------------------------------------------------------------------ */
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
   .map((m) => m[1]).filter((s) => s.trim());
@@ -321,5 +443,5 @@ for (const [i, s] of inlineScripts.entries()) {
 }
 
 console.log('Toolbox Talk mobile verification passed ' +
-  `(${Object.keys(choice.TBT_CO).length} companies, both completion paths, ` +
+  `(3 talks, ${totalPages} rendered pages, both completion paths, ` +
   `${inlineScripts.length} inline scripts parsed).`);

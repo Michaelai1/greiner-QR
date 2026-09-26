@@ -1,0 +1,71 @@
+{
+  "note": "Demo assets for the Toolbox Talk mobile walkthrough. Each image is a page rendered verbatim from the PDF Tony emailed - nothing is summarised, rewritten or invented. Only the three talks used in the walkthrough are rendered here; the other source documents stay out of Git.",
+  "renderedWidthPx": 900,
+  "talks": [
+    {
+      "id": "fall",
+      "title": "Fall Protection",
+      "originalFilename": "Fall Protection.pdf",
+      "sourcePath": "/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Choice Thread Batch 06/Fall Protection.pdf",
+      "sourceSha256": "151f1940e4918d98fb2810f399ca6540707e27f66b72b9b699c766e03f4fd041",
+      "pageCount": 2,
+      "pages": [
+        {
+          "src": "demo-assets/toolbox-talks/fall/page-01.jpg",
+          "w": 900,
+          "h": 1273
+        },
+        {
+          "src": "demo-assets/toolbox-talks/fall/page-02.png",
+          "w": 900,
+          "h": 1273
+        }
+      ]
+    },
+    {
+      "id": "ladders",
+      "title": "Ladders 1",
+      "originalFilename": "Ladders 1.pdf",
+      "sourcePath": "/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Choice Thread Batch 04/Ladders 1.pdf",
+      "sourceSha256": "bc92ceacd9f67c8e0f5f2b36e8d18259a60221d1292a8855705e854a48d78bad",
+      "pageCount": 2,
+      "pages": [
+        {
+          "src": "demo-assets/toolbox-talks/ladders/page-01.jpg",
+          "w": 900,
+          "h": 1273
+        },
+        {
+          "src": "demo-assets/toolbox-talks/ladders/page-02.png",
+          "w": 900,
+          "h": 1273
+        }
+      ]
+    },
+    {
+      "id": "exc",
+      "title": "Excavation Safety",
+      "originalFilename": "Excavation Safety.pdf",
+      "sourcePath": "/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Choice Thread Batch 06/Excavation Safety.pdf",
+      "sourceSha256": "b1bc7e719cb3b36bd88e50ebf6af5c589b1540238e4d8afda4d644177732f64e",
+      "pageCount": 3,
+      "pages": [
+        {
+          "src": "demo-assets/toolbox-talks/exc/page-01.jpg",
+          "w": 900,
+          "h": 1273
+        },
+        {
+          "src": "demo-assets/toolbox-talks/exc/page-02.png",
+          "w": 900,
+          "h": 1273
+        },
+        {
+          "src": "demo-assets/toolbox-talks/exc/page-03.png",
+          "w": 900,
+          "h": 1273
+        }
+      ]
+    }
+  ]
+}

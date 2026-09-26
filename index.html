@@ -1268,6 +1268,231 @@
             opacity: 0.85;
         }
         
+        /* Shared phone nav control. These two classes were used by the JHA
+           revision and Toolbox Talk views but had no styling at all, which is
+           why Back rendered as unstyled text and the title inherited the dark
+           theme's light colour onto a white card. */
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            background: transparent;
+            border: 1px solid var(--accentBorder);
+            color: var(--accent);
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            min-height: 44px;              /* comfortable tap target */
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            margin-bottom: var(--spacing-lg);
+            transition: background var(--transition-fast), border-color var(--transition-fast);
+        }
+        .back-button:hover { background: var(--accentSoft); }
+        .back-button:active { opacity: 0.85; }
+        .form-title {
+            color: var(--color-text-primary);
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            margin: 0 0 var(--spacing-md);
+        }
+
+        /* ---------------- Toolbox Talk demo ---------------- */
+        /* Every colour here is explicit. The document panel is deliberately
+           light ("paper") because it frames scanned white PDF pages, so its
+           text is set dark rather than inheriting the dark theme. */
+        .tbt-steps {
+            display: flex;
+            gap: 6px;
+            margin-bottom: var(--spacing-md);
+        }
+        .tbt-step {
+            flex: 1;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .02em;
+            padding: 8px 4px;
+            border-radius: 8px;
+            background: var(--color-bg-card-mid);
+            border: 1px solid var(--color-border);
+            color: var(--color-text-secondary);
+            line-height: 1.25;
+        }
+        .tbt-step.is-done { color: var(--accent); border-color: var(--accentBorder); }
+        .tbt-step.is-on {
+            background: var(--accentSoft);
+            border-color: var(--accentBorder);
+            color: var(--accent);
+        }
+        .tbt-notice {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(234, 179, 8, 0.12);
+            border: 1px solid rgba(234, 179, 8, 0.45);
+            color: #fbd24e;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 12.5px;
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+        }
+        .tbt-optcard {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: var(--color-bg-card);
+            border: 1.5px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+            cursor: pointer;
+            color: var(--color-text-primary);
+            transition: border-color var(--transition-fast), background var(--transition-fast);
+        }
+        .tbt-optcard:hover { border-color: var(--accentBorder); background: var(--color-bg-card-mid); }
+        .tbt-optcard.is-on { border-color: var(--accent); background: var(--accentSoft); }
+        .tbt-optcard .t {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            margin-bottom: 5px;
+        }
+        .tbt-optcard .d {
+            font-size: 13px;
+            line-height: 1.45;
+            color: var(--color-text-secondary);
+        }
+        .tbt-optcard .badge {
+            display: inline-block;
+            margin-top: 9px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .04em;
+            color: var(--accent);
+        }
+        /* Light "paper" panel for the talk itself */
+        .tbt-doc {
+            background: #ffffff;
+            border: 1px solid #d5dbe3;
+            border-radius: var(--radius-md);
+            padding: 14px;
+            margin-bottom: var(--spacing-md);
+        }
+        .tbt-doc-title {
+            color: #111827;               /* dark on light, never inherited */
+            font-size: 19px;
+            font-weight: 800;
+            margin: 0 0 2px;
+        }
+        .tbt-doc-sub {
+            color: #4b5563;
+            font-size: 12px;
+            margin-bottom: 12px;
+            word-break: break-word;
+        }
+        .tbt-page-img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #fff;
+        }
+        .tbt-pager {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .tbt-pager .count {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: #111827;
+        }
+        .tbt-pagebtn {
+            min-height: 44px;
+            min-width: 84px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #9aa4b2;
+            background: #f3f4f6;
+            color: #111827;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .tbt-pagebtn:disabled { opacity: .45; cursor: default; }
+        .tbt-rosterlist {
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .tbt-rosterrow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            text-align: left;
+            min-height: 48px;
+            padding: 10px 12px;
+            background: var(--color-bg-card);
+            border: 0;
+            border-bottom: 1px solid var(--color-border);
+            color: var(--color-text-primary);
+            font-size: 14.5px;
+            cursor: pointer;
+        }
+        .tbt-rosterrow:last-child { border-bottom: 0; }
+        .tbt-rosterrow.is-on { background: var(--accentSoft); }
+        .tbt-rosterrow .box {
+            flex: 0 0 auto;
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            border: 1.5px solid var(--accentBorder);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--accent);
+            background: transparent;
+        }
+        .tbt-rosterrow.is-on .box { background: var(--accent); color: #05230f; }
+        .tbt-manualpill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(234, 179, 8, 0.12);
+            border: 1px solid rgba(234, 179, 8, 0.5);
+            color: #fbd24e;
+            border-radius: 999px;
+            padding: 5px 10px;
+            font-size: 12.5px;
+            font-weight: 600;
+            margin: 0 6px 6px 0;
+        }
+        .tbt-manualpill .tag {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .05em;
+            opacity: .95;
+        }
+        .tbt-manualpill button {
+            background: transparent;
+            border: 0;
+            color: #fbd24e;
+            font-size: 15px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0 0 0 2px;
+        }
+
         .inspection-checklist-row {
             background: var(--color-bg-card);
             border: 1px solid var(--color-border);
@@ -6019,10 +6244,10 @@ ${photoUrls}`;
             'style="width:100%;margin-bottom:8px">Hot Work Permit</button>' +
           '<button type="button" class="action-button action-button--primary" data-demoform="toolbox" ' +
             'style="width:100%">Toolbox Talk — ' + esc(tbtCurrentTalk().t) + '</button>' +
+          // No completion method is named here: the walkthrough asks for one
+          // first, so claiming one on the tile would contradict the next screen.
           '<div style="font-size:12px;color:#6b7280;margin-top:6px;text-align:center">' +
-            esc(TBT_CO[TBT_COMPANY].name) + ' · due ' + esc(tbtDueLabel()) + ' · ' +
-            (TBT_MODE === 'group' ? 'Foreman-led group talk' : 'Individual completion') + ' · ' +
-            esc(tbtStatusText()) + '</div>';
+            esc(TBT_CO[TBT_COMPANY].name) + ' · due ' + esc(tbtDueLabel()) + '</div>';
         landing.insertBefore(d, landing.firstChild);
         Array.prototype.forEach.call(d.querySelectorAll('[data-demoform]'), function (btn) {
           btn.addEventListener('click', function () { openDemoForm(btn.getAttribute('data-demoform')); });
@@ -6625,22 +6850,36 @@ ${photoUrls}`;
 
 
       /* ================= TOOLBOX TALKS — mobile demo =====================
-         Two completion paths, both entirely local:
-           group      - a foreman presents and records attendance for a job/group
-           individual - the signed-in employee acknowledges for themselves
-         Company comes from ?company=choice|peine|greiner (default greiner).
-         Nothing is uploaded, no webhook, no text, no Supabase write.
+         A three-step phone walkthrough, entirely local:
+           1 Choose Method   - group or individual (demo selector only)
+           2 Review Talk     - the real pages of the talk Tony emailed
+           3 Record Completion
+         Nothing is uploaded, no webhook, no text, no Supabase write. The
+         method selector exists so both options can be shown from one build;
+         in production the office configuration decides which one an employee
+         receives, and employees never pick it themselves.
          =================================================================== */
       var TBT_KEY = 'cs_tbt_mobile_demo_v1';
-      // The first three seeded talks from the office demo's queue. The phone
-      // only ever needs the current week's talk; the rest live in the office.
+
+      /* The talks used in the walkthrough. Page images are rendered verbatim
+         from the PDFs Tony emailed and live in demo-assets/toolbox-talks/ as
+         relative paths, so the demo works from any checkout. originalFilename
+         and sourcePath are kept for traceability and mirror
+         demo-assets/toolbox-talks/manifest.json. */
       var TBT_TALKS = [
         { i: 'fall', t: 'Fall Protection', f: 'Fall Protection.pdf',
-          path: '/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Tony Toolbox Email 01/Fall Protection.pdf' },
+          src: '/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Choice Thread Batch 06/Fall Protection.pdf',
+          pages: ['demo-assets/toolbox-talks/fall/page-01.jpg',
+                  'demo-assets/toolbox-talks/fall/page-02.png'] },
         { i: 'ladders', t: 'Ladders 1', f: 'Ladders 1.pdf',
-          path: '/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Tony Toolbox Email 01/Ladders 1.pdf' },
+          src: '/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Choice Thread Batch 04/Ladders 1.pdf',
+          pages: ['demo-assets/toolbox-talks/ladders/page-01.jpg',
+                  'demo-assets/toolbox-talks/ladders/page-02.png'] },
         { i: 'exc', t: 'Excavation Safety', f: 'Excavation Safety.pdf',
-          path: '/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Tony Toolbox Email 01/Excavation Safety.pdf' }
+          src: '/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Choice Thread Batch 06/Excavation Safety.pdf',
+          pages: ['demo-assets/toolbox-talks/exc/page-01.jpg',
+                  'demo-assets/toolbox-talks/exc/page-02.png',
+                  'demo-assets/toolbox-talks/exc/page-03.png'] }
       ];
       var TBT_CO = {
         greiner: { name: 'Greiner Brothers', mode: 'group',
@@ -6667,11 +6906,23 @@ ${photoUrls}`;
         var c = (params.get('company') || '').toLowerCase();
         return TBT_CO[c] ? c : 'greiner';
       })();
-      var TBT_MODE = (function () {
+      // ?tbtmode= stays for direct testing. Without it the walkthrough opens on
+      // the method chooser, which is how a reviewer is meant to see it.
+      var TBT_URL_MODE = (function () {
         var m = (params.get('tbtmode') || '').toLowerCase();
-        return (m === 'group' || m === 'individual') ? m : TBT_CO[TBT_COMPANY].mode;
+        return (m === 'group' || m === 'individual') ? m : null;
       })();
-      var TBT_SEL = { group: null, attendees: [], manual: [], q: '', presenter: '', presented: false };
+      var TBT_MODE = TBT_URL_MODE;             // null until the reviewer chooses
+      var TBT_STEP = TBT_URL_MODE ? 'review' : 'method';
+      var TBT_PAGE = 0;                        // page index inside the talk
+      var TBT_READ = false;                    // reached the final page?
+      var TBT_SEL = { group: null, attendees: [], manual: [], presenter: '', presented: false };
+
+      var TBT_STEP_LABELS = [
+        ['method', 'Choose Method'],
+        ['review', 'Review Talk'],
+        ['complete', 'Record Completion']
+      ];
 
       function tbtMondayISO() {
         var d = new Date(); d.setHours(12, 0, 0, 0);
@@ -6712,96 +6963,190 @@ ${photoUrls}`;
         var done = gs.filter(function (g) { return tbtGroupRecord(g); }).length;
         return done + ' of ' + gs.length + ' group' + (gs.length === 1 ? '' : 's') + ' submitted';
       }
+      function tbtMyGroup() {
+        var me = TBT_CO[TBT_COMPANY].me;
+        return (TBT_CO[TBT_COMPANY].people.filter(function (p) { return p.n === me; })[0] || {}).g || '';
+      }
 
       /* ---------------- the toolbox view ---------------- */
       function ensureTbtView() {
         var v = document.getElementById('toolboxTalkView');
         if (v) return v;
         v = document.createElement('div'); v.id = 'toolboxTalkView'; v.className = 'view';
-        v.innerHTML = '<div class="form-container"><button type="button" class="back-button" id="tbtBack">&larr; Back</button>' +
-          '<h2 class="form-title">Toolbox Talk</h2><div id="tbtBody"></div></div>';
+        v.innerHTML = '<div class="form-container">' +
+          '<button type="button" class="back-button" id="tbtBack">&larr; Back</button>' +
+          '<h2 class="form-title">Toolbox Talk</h2>' +
+          '<div class="tbt-notice" id="tbtNotice"><span>&#9888;</span>' +
+            '<span>Demo only — nothing will be saved.</span></div>' +
+          '<div class="tbt-steps" id="tbtSteps"></div>' +
+          '<div id="tbtBody"></div></div>';
         (document.querySelector('.app-container') || document.body).appendChild(v);
-        v.querySelector('#tbtBack').addEventListener('click', function () { window.showView('landing'); });
+        v.querySelector('#tbtBack').addEventListener('click', tbtBack);
         return v;
       }
-      // Local source documents are a review-demo convenience only. Outside the
-      // demo gate this never touches a file:// path — the real build will serve
-      // the talk from storage instead.
-      function tbtOpenDoc() {
-        var t = tbtCurrentTalk();
-        if (!DEMO) {
-          toast('error', 'Not available', 'The Toolbox Talk document is not published yet.');
-          return;
-        }
-        try { window.open('file://' + encodeURI(t.path), '_blank'); }
-        catch (e) { toast('error', 'Could not open', 'The local file could not be opened.'); }
+      // Back walks the three steps in order, then leaves for the homepage.
+      function tbtBack() {
+        if (TBT_STEP === 'complete') { tbtGo('review'); return; }
+        if (TBT_STEP === 'review') { tbtGo('method'); return; }
+        window.showView('landing');
       }
-      function tbtDocButton() {
-        return '<button type="button" class="action-button action-button--primary" id="tbtViewDoc" style="width:100%;margin-bottom:12px">View the Toolbox Talk document</button>';
+      function tbtStepsHtml() {
+        var order = TBT_STEP_LABELS.map(function (s) { return s[0]; });
+        var at = order.indexOf(TBT_STEP);
+        return TBT_STEP_LABELS.map(function (s, i) {
+          var cls = 'tbt-step' + (i === at ? ' is-on' : (i < at ? ' is-done' : ''));
+          return '<div class="' + cls + '" data-tbt-step="' + s[0] + '">' + esc(s[1]) + '</div>';
+        }).join('');
       }
-      function tbtHeaderHtml() {
-        var t = tbtCurrentTalk(), co = TBT_CO[TBT_COMPANY];
-        return '<div style="border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin-bottom:14px;background:#fff">' +
-          '<div style="font-size:11.5px;font-weight:800;letter-spacing:.05em;color:#6b7280">THIS WEEK’S TALK · ' + esc(co.name) + '</div>' +
-          '<div style="font-size:18px;font-weight:800;margin-top:3px">' + esc(t.t) + '</div>' +
-          '<div style="font-size:12.5px;color:#6b7280;margin-top:4px">Due ' + esc(tbtDueLabel()) +
-            ' · ' + (TBT_MODE === 'group' ? 'Foreman-led group talk' : 'Individual completion') +
-            ' · ' + esc(tbtStatusText()) + '</div></div>';
+      function tbtGo(step) {
+        TBT_STEP = step;
+        tbtRender();
+      }
+      function tbtRender() {
+        ensureTbtView();
+        document.getElementById('tbtSteps').innerHTML = tbtStepsHtml();
+        if (TBT_STEP === 'method') return renderTbtMethod();
+        if (TBT_STEP === 'review') return renderTbtReview();
+        if (TBT_MODE === 'individual') return renderTbtIndividual();
+        return renderTbtGroup();
       }
 
-      /* ---------------- OPTION 1: foreman-led group ---------------- */
+      /* ---------------- STEP 1: choose the demo workflow ---------------- */
+      function renderTbtMethod() {
+        var co = TBT_CO[TBT_COMPANY], t = tbtCurrentTalk();
+        var body = document.getElementById('tbtBody');
+        body.innerHTML =
+          '<div class="tbt-doc" style="padding:12px 14px">' +
+            '<div class="tbt-doc-title" style="font-size:16px">' + esc(t.t) + '</div>' +
+            '<div class="tbt-doc-sub" style="margin-bottom:0">' + esc(co.name) +
+              ' · due ' + esc(tbtDueLabel()) + '</div></div>' +
+          '<p style="color:var(--color-text-secondary);font-size:13.5px;line-height:1.5;margin:0 0 12px">' +
+            'Choose which completion workflow to demonstrate.</p>' +
+          '<button type="button" class="tbt-optcard' + (TBT_MODE === 'group' ? ' is-on' : '') +
+            '" data-tbt-method="group">' +
+            '<div class="t">Foreman Leads Group Talk</div>' +
+            '<div class="d">One foreman presents the talk, selects everyone who attended, ' +
+              'adds any missing names, and submits once for the group.</div>' +
+            (co.mode === 'group' ? '<div class="badge">' + esc(co.name).toUpperCase() + ' USES THIS</div>' : '') +
+          '</button>' +
+          '<button type="button" class="tbt-optcard' + (TBT_MODE === 'individual' ? ' is-on' : '') +
+            '" data-tbt-method="individual">' +
+            '<div class="t">Each Employee Completes Individually</div>' +
+            '<div class="d">Every employee reviews the same talk and submits their own ' +
+              'acknowledgment.</div>' +
+            (co.mode === 'individual' ? '<div class="badge">' + esc(co.name).toUpperCase() + ' USES THIS</div>' : '') +
+          '</button>' +
+          '<p style="color:var(--color-text-secondary);font-size:12.5px;line-height:1.5;margin:14px 0 0">' +
+            'This selector is for the demo only. In production the office configuration ' +
+            'decides which option an employee receives — employees do not choose the ' +
+            'company workflow themselves.</p>';
+        Array.prototype.forEach.call(body.querySelectorAll('[data-tbt-method]'), function (b) {
+          b.onclick = function () {
+            TBT_MODE = b.getAttribute('data-tbt-method');
+            TBT_PAGE = 0; TBT_READ = false;
+            TBT_SEL = { group: null, attendees: [], manual: [], presenter: '', presented: false };
+            tbtGo('review');
+          };
+        });
+      }
+
+      /* ---------------- STEP 2: review the actual talk ---------------- */
+      function renderTbtReview() {
+        var t = tbtCurrentTalk(), co = TBT_CO[TBT_COMPANY];
+        var total = t.pages.length;
+        if (TBT_PAGE >= total) TBT_PAGE = total - 1;
+        if (TBT_PAGE < 0) TBT_PAGE = 0;
+        if (TBT_PAGE === total - 1) TBT_READ = true;
+        var body = document.getElementById('tbtBody');
+        body.innerHTML =
+          '<div class="tbt-doc">' +
+            '<h3 class="tbt-doc-title">' + esc(t.t) + '</h3>' +
+            '<div class="tbt-doc-sub">' + esc(t.f) + ' · ' + esc(co.name) +
+              ' · due ' + esc(tbtDueLabel()) + '</div>' +
+            '<img class="tbt-page-img" id="tbtPageImg" alt="' + esc(t.t) + ', page ' +
+              (TBT_PAGE + 1) + ' of ' + total + '" src="' + esc(t.pages[TBT_PAGE]) + '">' +
+            '<div class="tbt-pager">' +
+              '<button type="button" class="tbt-pagebtn" id="tbtPrev"' +
+                (TBT_PAGE === 0 ? ' disabled' : '') + '>&larr; Previous</button>' +
+              '<div class="count" id="tbtPageCount">Page ' + (TBT_PAGE + 1) + ' of ' + total + '</div>' +
+              '<button type="button" class="tbt-pagebtn" id="tbtNext"' +
+                (TBT_PAGE >= total - 1 ? ' disabled' : '') + '>Next &rarr;</button>' +
+            '</div>' +
+          '</div>' +
+          (TBT_READ ? '' :
+            '<p id="tbtReadHint" style="color:var(--color-text-secondary);font-size:13px;margin:0 0 10px">' +
+              'Read to the last page before recording completion.</p>') +
+          '<button type="button" class="submit-button" id="tbtToComplete"' +
+            (TBT_READ ? '' : ' disabled') + '>Continue to completion</button>' +
+          '<button type="button" class="back-button" id="tbtChangeMethod" ' +
+            'style="width:100%;justify-content:center;margin:12px 0 0">Switch demo workflow</button>';
+
+        document.getElementById('tbtPrev').onclick = function () {
+          if (TBT_PAGE > 0) { TBT_PAGE--; renderTbtReview(); }
+        };
+        document.getElementById('tbtNext').onclick = function () {
+          if (TBT_PAGE < total - 1) { TBT_PAGE++; renderTbtReview(); }
+        };
+        document.getElementById('tbtToComplete').onclick = function () {
+          if (!TBT_READ) {
+            toast('error', 'Finish the talk', 'Read to the last page before recording completion.');
+            return;
+          }
+          tbtGo('complete');
+        };
+        document.getElementById('tbtChangeMethod').onclick = function () { tbtGo('method'); };
+      }
+
+      /* ---------------- STEP 3A: foreman-led group ---------------- */
       function renderTbtGroup() {
         var co = TBT_CO[TBT_COMPANY];
         if (!TBT_SEL.group) TBT_SEL.group = co.groups[0];
         if (!TBT_SEL.presenter) TBT_SEL.presenter = co.me || '';
         var roster = co.people.filter(function (p) { return p.g === TBT_SEL.group; });
-        var q = (TBT_SEL.q || '').toLowerCase();
-        var shown = roster.filter(function (p) { return !q || p.n.toLowerCase().indexOf(q) !== -1; });
         var already = tbtGroupRecord(TBT_SEL.group);
+        var picked = TBT_SEL.attendees.length + TBT_SEL.manual.length;
         var body = document.getElementById('tbtBody');
-        body.innerHTML = tbtHeaderHtml() + tbtDocButton() +
-          (already ? '<div style="background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:10px;padding:12px;margin-bottom:12px;font-weight:700">' +
-            'This group already submitted this week (' + (already.roster.length + already.manual.length) + ' attended).</div>' : '') +
-          '<div class="form-group"><label class="form-label">Job / meeting group</label>' +
+        body.innerHTML = tbtTalkStripHtml() +
+          (already ? '<div class="tbt-notice" style="background:rgba(61,207,130,.12);' +
+            'border-color:var(--accentBorder);color:var(--accent)"><span>&#10003;</span><span>' +
+            'This group already submitted this week (' + (already.roster.length + already.manual.length) +
+            ' attended).</span></div>' : '') +
+          '<div class="form-group"><label class="form-label" for="tbtGroupSel">Job or meeting group</label>' +
             '<select class="form-input" id="tbtGroupSel">' + co.groups.map(function (g) {
-              return '<option' + (g === TBT_SEL.group ? ' selected' : '') + '>' + esc(g) + '</option>'; }).join('') + '</select></div>' +
-          '<div class="form-group"><label class="form-label">Presenter <span class="required">*</span></label>' +
-            '<input type="text" class="form-input" id="tbtPresenter" value="' + esc(TBT_SEL.presenter) + '" placeholder="Who presented"></div>' +
-          '<div class="form-group"><label class="form-label">Attendees (' + (TBT_SEL.attendees.length + TBT_SEL.manual.length) + ' selected)</label>' +
-            '<input type="search" class="form-input" id="tbtSearch" placeholder="Search employees…" value="' + esc(TBT_SEL.q) + '" style="margin-bottom:8px">' +
-            '<div style="display:flex;gap:8px;margin-bottom:8px">' +
-              '<button type="button" class="inspection-add-row-btn" id="tbtAll" style="flex:1">Select all assigned</button>' +
-              '<button type="button" class="inspection-add-row-btn" id="tbtNone" style="flex:1">Clear</button></div>' +
-            '<div class="jha-crew-roster">' + (shown.length ? shown.map(function (p) {
+              return '<option' + (g === TBT_SEL.group ? ' selected' : '') + '>' + esc(g) + '</option>'; }).join('') +
+            '</select></div>' +
+          '<div class="form-group"><label class="form-label" for="tbtPresenter">Presenter <span class="required">*</span></label>' +
+            '<input type="text" class="form-input" id="tbtPresenter" value="' + esc(TBT_SEL.presenter) +
+              '" placeholder="Who presented"></div>' +
+          '<div class="form-group">' +
+            '<label class="form-label">Attendees <span id="tbtCount">(' + picked + ' selected)</span></label>' +
+            '<div style="display:flex;gap:8px;margin-bottom:10px">' +
+              '<button type="button" class="tbt-pagebtn" id="tbtAll" style="flex:1;min-width:0">Select All Assigned</button>' +
+              '<button type="button" class="tbt-pagebtn" id="tbtNone" style="flex:1;min-width:0">Clear</button></div>' +
+            '<div class="tbt-rosterlist">' + roster.map(function (p) {
               var on = TBT_SEL.attendees.indexOf(p.n) !== -1;
-              return '<button type="button" class="jha-crew-chip' + (on ? ' is-on' : '') + '" data-tbt-att="' + esc(p.n) + '">' +
-                (on ? '✓ ' : '+ ') + esc(p.n) + '</button>'; }).join('') :
-              '<div class="jha-row-hint">Nobody matches that search.</div>') + '</div></div>' +
-          '<div class="form-group"><label class="form-label">Someone not on the roster?</label>' +
+              return '<button type="button" class="tbt-rosterrow' + (on ? ' is-on' : '') +
+                '" data-tbt-att="' + esc(p.n) + '" aria-pressed="' + (on ? 'true' : 'false') + '">' +
+                '<span class="box">' + (on ? '&#10003;' : '') + '</span>' +
+                '<span>' + esc(p.n) + '</span></button>'; }).join('') + '</div></div>' +
+          '<div class="form-group"><label class="form-label" for="tbtManual">Add someone not listed</label>' +
             '<div style="display:flex;gap:8px">' +
               '<input type="text" class="form-input" id="tbtManual" placeholder="Type a name" style="flex:1">' +
-              '<button type="button" class="inspection-add-row-btn" id="tbtManualAdd">Add Name</button></div></div>' +
-          ((TBT_SEL.attendees.length + TBT_SEL.manual.length) ?
-            '<div class="jha-crew-selected">' +
-              TBT_SEL.attendees.map(function (n) {
-                return '<span class="jha-crew-pill">' + esc(n) + '<button type="button" class="jha-crew-x" data-tbt-rm="' + esc(n) + '">&times;</button></span>'; }).join('') +
-              TBT_SEL.manual.map(function (n) {
-                return '<span class="jha-crew-pill" style="background:#fff7ed;border-color:#fdba74;color:#7c2d12">' + esc(n) +
-                  ' <em style="font-style:normal;font-size:10.5px;font-weight:800">MANUAL ENTRY</em>' +
-                  '<button type="button" class="jha-crew-x" style="color:#7c2d12" data-tbt-rmm="' + esc(n) + '">&times;</button></span>'; }).join('') +
-            '</div>' : '') +
-          '<label class="check" style="display:flex;gap:9px;align-items:flex-start;margin:14px 0">' +
+              '<button type="button" class="tbt-pagebtn" id="tbtManualAdd">Add Name</button></div></div>' +
+          (TBT_SEL.manual.length ? '<div style="margin-bottom:12px">' + TBT_SEL.manual.map(function (n) {
+              return '<span class="tbt-manualpill">' + esc(n) +
+                '<span class="tag">MANUAL ENTRY</span>' +
+                '<button type="button" data-tbt-rmm="' + esc(n) + '" aria-label="Remove ' + esc(n) + '">&times;</button></span>';
+            }).join('') + '</div>' : '') +
+          '<label class="check" style="display:flex;gap:9px;align-items:flex-start;margin:14px 0;' +
+            'color:var(--color-text-primary);font-size:14px">' +
             '<input type="checkbox" id="tbtPresented"' + (TBT_SEL.presented ? ' checked' : '') + '>' +
             '<span>I presented this Toolbox Talk to the people listed above.</span></label>' +
-          '<button type="button" class="submit-button" id="tbtSubmitGroup">Submit group Toolbox Talk</button>';
+          '<button type="button" class="submit-button" id="tbtSubmitGroup">Submit Group Toolbox Talk</button>';
 
-        document.getElementById('tbtViewDoc').onclick = tbtOpenDoc;
         document.getElementById('tbtGroupSel').onchange = function () {
           TBT_SEL.group = this.value; TBT_SEL.attendees = []; TBT_SEL.manual = []; renderTbtGroup(); };
         document.getElementById('tbtPresenter').oninput = function () { TBT_SEL.presenter = this.value; };
-        var sq = document.getElementById('tbtSearch');
-        sq.oninput = function () { TBT_SEL.q = this.value; renderTbtGroup();
-          var el = document.getElementById('tbtSearch'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } };
         document.getElementById('tbtAll').onclick = function () {
           TBT_SEL.attendees = roster.map(function (p) { return p.n; }); renderTbtGroup(); };
         document.getElementById('tbtNone').onclick = function () {
@@ -6811,11 +7156,6 @@ ${photoUrls}`;
             var n = b.getAttribute('data-tbt-att'), i = TBT_SEL.attendees.indexOf(n);
             if (i === -1) TBT_SEL.attendees.push(n); else TBT_SEL.attendees.splice(i, 1);
             renderTbtGroup(); };
-        });
-        Array.prototype.forEach.call(body.querySelectorAll('[data-tbt-rm]'), function (b) {
-          b.onclick = function () {
-            var i = TBT_SEL.attendees.indexOf(b.getAttribute('data-tbt-rm'));
-            if (i !== -1) TBT_SEL.attendees.splice(i, 1); renderTbtGroup(); };
         });
         Array.prototype.forEach.call(body.querySelectorAll('[data-tbt-rmm]'), function (b) {
           b.onclick = function () {
@@ -6839,59 +7179,86 @@ ${photoUrls}`;
         };
       }
 
-      /* ---------------- OPTION 2: individual ---------------- */
+      /* ---------------- STEP 3B: individual ---------------- */
       function renderTbtIndividual() {
         var co = TBT_CO[TBT_COMPANY], me = co.me;
         var mine = tbtMyRecord();
         var body = document.getElementById('tbtBody');
-        body.innerHTML = tbtHeaderHtml() + tbtDocButton() +
-          '<div class="form-group"><label class="form-label">Completing as</label>' +
-            '<input type="text" class="form-input" value="' + esc(me) + '" readonly style="background:#eef1f5;color:#374151">' +
-            '<p class="jha-row-hint">Taken from your signed-in profile. In individual mode you can only complete your own.</p></div>' +
-          (mine ? '<div style="background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:10px;padding:14px;font-weight:700">' +
+        body.innerHTML = tbtTalkStripHtml() +
+          '<div class="form-group"><label class="form-label">Employee</label>' +
+            '<input type="text" class="form-input" id="tbtMe" value="' + esc(me) +
+              '" readonly style="background:var(--color-bg-input);color:var(--color-text-secondary)"></div>' +
+          '<div class="form-group"><label class="form-label">Job assignment</label>' +
+            '<input type="text" class="form-input" id="tbtMyJob" value="' + esc(tbtMyGroup()) +
+              '" readonly style="background:var(--color-bg-input);color:var(--color-text-secondary)">' +
+            '<p class="jha-row-hint">Taken from your signed-in profile. In individual mode you ' +
+              'can only complete your own.</p></div>' +
+          (mine ? '<div class="tbt-notice" style="background:rgba(61,207,130,.12);' +
+              'border-color:var(--accentBorder);color:var(--accent)"><span>&#10003;</span><span>' +
               'You already completed this week’s Toolbox Talk on ' +
-              esc(new Date(mine.at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })) + '.</div>'
-            : '<label class="check" style="display:flex;gap:9px;align-items:flex-start;margin:14px 0">' +
+              esc(new Date(mine.at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })) +
+              '.</span></div>'
+            : '<label class="check" style="display:flex;gap:9px;align-items:flex-start;margin:14px 0;' +
+                'color:var(--color-text-primary);font-size:14px">' +
                 '<input type="checkbox" id="tbtIndConfirm">' +
-                '<span>I have read and understood this Toolbox Talk.</span></label>' +
-              '<button type="button" class="submit-button" id="tbtSubmitInd">Submit my completion</button>');
-        document.getElementById('tbtViewDoc').onclick = tbtOpenDoc;
+                '<span>I reviewed the complete ' + esc(tbtCurrentTalk().t) + ' Toolbox Talk and understand it.</span></label>' +
+              '<button type="button" class="submit-button" id="tbtSubmitInd">Submit My Completion</button>');
         var btn = document.getElementById('tbtSubmitInd');
         if (btn) btn.onclick = function () {
           if (!document.getElementById('tbtIndConfirm').checked) {
             toast('error', 'Confirm first', 'Tick the box to confirm you read the talk.'); return; }
           if (tbtMyRecord()) { toast('error', 'Already completed', 'You have already completed this week’s talk.'); return; }
           var rec = { week: tbtMondayISO(), talkId: tbtCurrentTalk().i, kind: 'individual',
-            company: TBT_COMPANY, employee: me, group: (co.people.filter(function (p) { return p.n === me; })[0] || {}).g || '',
-            at: new Date().toISOString() };
+            company: TBT_COMPANY, employee: me, group: tbtMyGroup(), at: new Date().toISOString() };
           tbtPush(rec); renderTbtDone(rec);
         };
       }
 
+      // A compact reminder of which talk is being recorded, with a way back to
+      // the pages without losing the completion step.
+      function tbtTalkStripHtml() {
+        var t = tbtCurrentTalk(), co = TBT_CO[TBT_COMPANY];
+        return '<div class="tbt-doc" style="padding:12px 14px;margin-bottom:14px">' +
+          '<div class="tbt-doc-title" style="font-size:16px">' + esc(t.t) + '</div>' +
+          '<div class="tbt-doc-sub" style="margin-bottom:0">' + esc(co.name) + ' · ' +
+            (TBT_MODE === 'group' ? 'Foreman-led group talk' : 'Individual completion') +
+            ' · ' + esc(tbtStatusText()) + '</div></div>';
+      }
+
       function renderTbtDone(rec) {
         var body = document.getElementById('tbtBody'), t = tbtCurrentTalk();
-        var total = rec.kind === 'group' ? (rec.roster.length + rec.manual.length) : 1;
         body.innerHTML =
-          '<div id="tbtDoneNotice" style="background:#fff7ed;border:1px solid #fdba74;color:#7c2d12;border-radius:10px;padding:16px;text-align:center">' +
+          '<div id="tbtDoneNotice" class="tbt-notice" style="display:block;text-align:center;' +
+            'background:rgba(61,207,130,.12);border-color:var(--accentBorder);color:var(--accent)">' +
             '<div style="font-weight:800;font-size:17px">Toolbox Talk recorded</div>' +
-            '<div style="font-size:13.5px;margin-top:6px">' + esc(t.t) + ' · week of ' + esc(rec.week) + '</div>' +
-            '<div style="font-size:13.5px">' + (rec.kind === 'group'
+            '<div style="font-size:13.5px;margin-top:6px;font-weight:600">' + esc(t.t) +
+              ' · week of ' + esc(rec.week) + '</div>' +
+            '<div style="font-size:13.5px;font-weight:600">' + (rec.kind === 'group'
               ? 'Group: ' + esc(rec.group) + ' · presented by ' + esc(rec.presenter) + '<br>' +
-                total + ' attendee' + (total === 1 ? '' : 's') + ' (' + rec.roster.length + ' roster' +
+                (rec.roster.length + rec.manual.length) + ' attendees (' + rec.roster.length + ' roster' +
                 (rec.manual.length ? ' + ' + rec.manual.length + ' manual' : '') + ')'
               : 'Completed by ' + esc(rec.employee)) + '</div>' +
-            '<div style="font-weight:800;margin-top:10px">No production data was saved.</div></div>' +
-          '<button type="button" class="submit-button" id="tbtDoneBack" style="margin-top:12px;background:#fff;color:#0f172a;border:1px solid #d1d5db">Back to demo home</button>';
-        document.getElementById('tbtDoneBack').onclick = function () {
-          TBT_SEL = { group: null, attendees: [], manual: [], q: '', presenter: '', presented: false };
-          window.showView('landing');
+            '<div style="font-size:12.5px;margin-top:8px;font-weight:600">No production data was saved.</div>' +
+          '</div>' +
+          '<button type="button" class="submit-button" id="tbtRestart">Run the demo again</button>' +
+          '<button type="button" class="back-button" id="tbtDoneHome" ' +
+            'style="width:100%;justify-content:center;margin:12px 0 0">Back to homepage</button>';
+        document.getElementById('tbtRestart').onclick = function () {
+          TBT_PAGE = 0; TBT_READ = false;
+          TBT_SEL = { group: null, attendees: [], manual: [], presenter: '', presented: false };
+          tbtGo('method');
         };
+        document.getElementById('tbtDoneHome').onclick = function () { window.showView('landing'); };
       }
 
       function openToolboxTalk() {
         ensureTbtView();
         window.showView('toolboxTalk');
-        if (TBT_MODE === 'group') renderTbtGroup(); else renderTbtIndividual();
+        TBT_STEP = TBT_URL_MODE ? 'review' : 'method';
+        TBT_MODE = TBT_URL_MODE;
+        TBT_PAGE = 0; TBT_READ = false;
+        TBT_SEL = { group: null, attendees: [], manual: [], presenter: '', presented: false };
+        tbtRender();
       }
 
       // ---------- boot: validate ticket, auto-open form, lock identity ----------
