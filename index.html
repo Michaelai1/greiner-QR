@@ -2414,14 +2414,19 @@
                             <input type="text" class="form-input" id="hotWorkLocation" name="hotWorkLocation" required placeholder="Building or general location">
                             <div class="form-error">Required</div>
                         </div>
+                        <!-- Floor / Level and Specific Area / Room are deliberately free
+                             text. A crew must be able to file a permit immediately, without
+                             an administrator configuring buildings or floors for the job
+                             first. Building / General Location above is filled from the
+                             jobsite the user is signed in to.
+                             LATER: floors and areas already entered on this job could be
+                             offered back as job-specific autocomplete suggestions. Not
+                             built yet — deliberately no location memory in this version. -->
                         <div class="form-group">
                             <label class="form-label" for="hotWorkFloor">Floor / Level <span class="required">*</span></label>
-                            <select id="hotWorkBuildingSelect" class="form-input" data-ui-only="1" style="display:none;margin-bottom:8px"></select>
-                            <select id="hotWorkFloorSelect" class="form-input" data-ui-only="1" style="display:none;margin-bottom:8px"></select>
                             <input type="text" class="form-input" id="hotWorkFloor" name="hotWorkFloor" required placeholder="Floor or level">
                             <div class="form-error">Required</div>
                         </div>
-                        <input type="hidden" name="hotWorkBuilding" id="hotWorkBuilding">
                         <div class="form-group">
                             <label class="form-label" for="hotWorkArea">Specific Area / Room <span class="required">*</span></label>
                             <input type="text" class="form-input" id="hotWorkArea" name="hotWorkArea" required placeholder="Specific area or room">
@@ -5180,33 +5185,17 @@ ${photoUrls}`;
       // buildings/floors (cs_portal_field_home 'hotwork_locations'), show
       // Building + Floor dropdowns; otherwise the fields stay manual entry.
       // Values are configured per job — never invented in code.
-      function setupHotWorkLocation() {
-        var locs = (NG.job && NG.job.hotwork_locations) || NG.hotworkLocations || [];
-        var bSel = document.getElementById('hotWorkBuildingSelect');
-        var fSel = document.getElementById('hotWorkFloorSelect');
-        if (!bSel || !fSel) return;
-        if (!locs.length) { bSel.style.display = 'none'; fSel.style.display = 'none'; return; }
-        bSel.style.display = ''; fSel.style.display = '';
-        bSel.innerHTML = '<option value="">Select building…</option>' +
-          locs.map(function (b) { return '<option value="' + esc(b.building || b) + '">' + esc(b.building || b) + '</option>'; }).join('');
-        function fillFloors() {
-          var b = locs.filter(function (x) { return (x.building || x) === bSel.value; })[0];
-          var floors = (b && b.floors) || [];
-          fSel.innerHTML = '<option value="">Select floor…</option>' +
-            floors.map(function (f) { return '<option value="' + esc(f) + '">' + esc(f) + '</option>'; }).join('') +
-            '<option value="__other__">Other…</option>';
-        }
-        bSel.onchange = function () {
-          fillFloors();
-          var bf = document.querySelector('[name="hotWorkBuilding"]');
-          if (bf) bf.value = bSel.value;
-        };
-        fSel.onchange = function () {
-          var ff = document.querySelector('[name="hotWorkFloor"]');
-          if (ff && fSel.value !== '__other__') ff.value = fSel.value;
-        };
-        fillFloors();
-      }
+      // REMOVED: the Building / Floor dropdown hierarchy.
+      // It required an administrator to configure buildings and floors per job
+      // before a crew could file a permit. Floor / Level and Specific Area /
+      // Room are now required free-text fields instead, and Building / General
+      // Location is filled from the signed-in jobsite.
+      // This is kept as an explicit no-op so the old behaviour cannot come back
+      // through a stale call site, in demo mode or in the live version this
+      // branch becomes.
+      // LATER: previously entered floors/areas on a job could be surfaced as
+      // job-specific autocomplete suggestions. Not built — no location memory.
+      function setupHotWorkLocation() { /* intentionally disabled — see note above */ }
 
       // Aerial unit picker: a dropdown of the job's active lifts (from
       // cs_portal_field_home 'equipment' — server-scoped to the session's job,
@@ -5873,10 +5862,9 @@ ${photoUrls}`;
           foreman_name: 'Demo Foreman',
           external_hotwork: false,
           enabled_forms: null,
-          hotwork_locations: [
-            { building: 'Demo Building A', floors: ['1', '2', '3', 'Roof'] },
-            { building: 'Demo Building B', floors: ['1', 'Mezzanine'] }
-          ]
+          // No configured buildings/floors on purpose: Hot Work location is
+          // now free text, so nothing has to be set up before a crew submits.
+          hotwork_locations: []
         }],
         // Several fake employees so roster autocomplete can be exercised.
         people: [

@@ -12,6 +12,13 @@ includes("user: 'Demo Foreman'", 'Demo user must be Demo Foreman');
 includes("name: 'Demo Greiner Job'", 'Demo job name is missing');
 includes("job_number: 'DEMO-001'", 'Demo job number must be DEMO-001');
 
+// Hot Work location is free text now, so the demo must not ship fake
+// buildings/floors that would imply an admin has to configure them.
+assert.ok(!html.includes('Demo Building'),
+  'Demo must not contain fake Building fixtures — Hot Work location is free text');
+includes('hotwork_locations: []',
+  'Demo job must carry no configured hot-work buildings/floors');
+
 // several fake employees for roster testing
 const peopleBlock = html.slice(html.indexOf('people: ['), html.indexOf('equipment: ['));
 const demoPeople = [...peopleBlock.matchAll(/name: '([^']+)'/g)].map((m) => m[1]);
