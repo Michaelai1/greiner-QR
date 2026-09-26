@@ -281,6 +281,182 @@ try {
       `content overflows the phone width (${report.scrollW} > ${report.clientW})`);
   });
 
+  /* 14. Guided Talk: the second content format */
+  check('the PDF walkthrough still works unchanged', () => {
+    openWalkthrough();
+    const doc = js(`
+      document.querySelector('[data-tbt-method="group"]').click();
+      return JSON.stringify({
+        formats:Array.prototype.map.call(document.querySelectorAll('[data-tbt-format]'),
+          function(f){return f.textContent.trim()+(f.className.indexOf('is-on')>-1?'*':'');}),
+        hasImg:!!document.getElementById('tbtPageImg'),
+        count:(document.getElementById('tbtPageCount')||{}).textContent,
+        cont:document.getElementById('tbtToComplete').disabled
+      });`);
+    assert.deepEqual(doc.formats, ['View Original Document*', 'Guided Talk'],
+      'the document format must still be the default');
+    assert.equal(doc.hasImg, true, 'the PDF pages must still render');
+    assert.equal(doc.count, 'Page 1 of 2', 'the PDF pager must still work');
+    assert.equal(doc.cont, true, 'the PDF gate must still start locked');
+  });
+
+  check('Guided Talk shows verbatim sections with their source page', () => {
+    const g = js(`
+      document.querySelector('[data-tbt-format="guided"]').click();
+      return JSON.stringify({
+        count:document.getElementById('tbtSecCount').textContent,
+        heading:document.querySelector('.tbt-sec-h').textContent,
+        body:Array.prototype.map.call(document.querySelectorAll('.tbt-sec-b'),
+          function(p){return p.textContent;}),
+        src:document.querySelector('.tbt-sec-src').textContent,
+        sub:document.querySelector('.tbt-doc-sub').textContent,
+        check:document.querySelector('.tbt-sec-check span').textContent,
+        prog:document.querySelector('.tbt-secprog .lbl').textContent,
+        cont:document.getElementById('tbtToComplete').disabled,
+        note:(document.getElementById('tbtFmtNote')||{textContent:''}).textContent
+      });`);
+    assert.equal(g.count, 'Section 1 of 8', 'the guided view must show section progress');
+    assert.equal(g.heading, 'Fall Protection', 'the first section heading comes from the PDF');
+    assert.ok(g.body.join(' ').includes('falls remain one of the top causes of fatalities'),
+      'the section must carry the original wording');
+    assert.equal(g.src, 'From Fall Protection.pdf, page 1',
+      'each section must name its source file and page');
+    assert.match(g.sub, /Fall Protection\.pdf · page 1/, 'the header must cite the source page');
+    assert.equal(g.check, 'This section was covered', 'group wording on the checkbox');
+    assert.equal(g.prog, '0 of 8 sections checked', 'progress starts empty');
+    assert.equal(g.cont, true, 'completion starts locked');
+    assert.match(g.note, /demo only/i, 'the format selector must carry its demo-only note');
+  });
+
+  check('every guided section is reachable and cites a real page', () => {
+    const walk = js(`
+      while(!document.getElementById('tbtSecPrev').disabled)
+        document.getElementById('tbtSecPrev').click();
+      var out=[];
+      for(var i=0;i<20;i++){
+        out.push({n:document.getElementById('tbtSecCount').textContent,
+                  h:document.querySelector('.tbt-sec-h').textContent,
+                  src:document.querySelector('.tbt-sec-src').textContent,
+                  paras:document.querySelectorAll('.tbt-sec-b').length});
+        if(document.getElementById('tbtSecNext').disabled) break;
+        document.getElementById('tbtSecNext').click();
+      }
+      return JSON.stringify(out);`);
+    assert.equal(walk.length, 8, `expected 8 reachable sections, got ${walk.length}`);
+    walk.forEach((s, i) => {
+      assert.equal(s.n, `Section ${i + 1} of 8`, `section ${i + 1} mislabelled: ${s.n}`);
+      assert.ok(s.h, `section ${i + 1} has no heading`);
+      assert.ok(s.paras > 0, `section ${i + 1} has no content`);
+      assert.match(s.src, /^From Fall Protection\.pdf, pages? \d/,
+        `section ${i + 1} does not cite its source page: ${s.src}`);
+    });
+    // The section that runs over the page break must say so.
+    assert.ok(walk.some((s) => /pages 1–2/.test(s.src)),
+      'the section spanning the page break must cite both pages');
+  });
+
+  check('checked progress is preserved while navigating', () => {
+    const p = js(`
+      while(!document.getElementById('tbtSecPrev').disabled)
+        document.getElementById('tbtSecPrev').click();
+      document.getElementById('tbtSecDone').click();          // tick section 1
+      var afterTick=document.querySelector('.tbt-secprog .lbl').textContent;
+      document.getElementById('tbtSecNext').click();           // section 2
+      var s2=document.getElementById('tbtSecDone').checked;
+      document.getElementById('tbtSecPrev').click();           // back to 1
+      var s1=document.getElementById('tbtSecDone').checked;
+      return JSON.stringify({afterTick:afterTick, section2Unchecked:s2, section1StillChecked:s1});`);
+    assert.equal(p.afterTick, '1 of 8 sections checked', 'ticking must move progress');
+    assert.equal(p.section2Unchecked, false, 'a tick must not leak to other sections');
+    assert.equal(p.section1StillChecked, true, 'a tick must survive navigating away and back');
+  });
+
+  check('completion stays locked until every section is checked', () => {
+    const partial = js(`
+      while(!document.getElementById('tbtSecPrev').disabled)
+        document.getElementById('tbtSecPrev').click();
+      // tick all but the last
+      for(var i=0;i<7;i++){
+        if(!document.getElementById('tbtSecDone').checked)
+          document.getElementById('tbtSecDone').click();
+        document.getElementById('tbtSecNext').click();
+      }
+      return JSON.stringify({prog:document.querySelector('.tbt-secprog .lbl').textContent,
+                             cont:document.getElementById('tbtToComplete').disabled});`);
+    assert.equal(partial.prog, '7 of 8 sections checked');
+    assert.equal(partial.cont, true, '7 of 8 must still be locked');
+    const blocked = js(`document.getElementById('tbtToComplete').click();
+      return JSON.stringify({step:(document.querySelector('.tbt-step.is-on')||{}).textContent.replace(/\s+/g,' ').trim()});`);
+    assert.equal(blocked.step, 'Review Talk', 'a locked Continue must not advance');
+    const full = js(`
+      if(!document.getElementById('tbtSecDone').checked)
+        document.getElementById('tbtSecDone').click();
+      return JSON.stringify({prog:document.querySelector('.tbt-secprog .lbl').textContent,
+                             cont:document.getElementById('tbtToComplete').disabled});`);
+    assert.equal(full.prog, '8 of 8 sections checked');
+    assert.equal(full.cont, false, 'all 8 checked must unlock completion');
+  });
+
+  check('Guided Talk leads into group completion', () => {
+    const grp = js(`document.getElementById('tbtToComplete').click();
+      return JSON.stringify({
+        step:(document.querySelector('.tbt-step.is-on')||{}).textContent.replace(/\s+/g,' ').trim(),
+        roster:document.querySelectorAll('[data-tbt-att]').length,
+        submit:(document.getElementById('tbtSubmitGroup')||{}).textContent});`);
+    assert.equal(grp.step, 'Record Completion');
+    assert.ok(grp.roster > 0, 'the group roster must render after a guided talk');
+    assert.equal(grp.submit, 'Submit Group Toolbox Talk');
+  });
+
+  check('Guided Talk leads into individual completion, with its own wording', () => {
+    goto(`${PAGE}&company=peine`);
+    js(`try{localStorage.removeItem('cs_tbt_mobile_demo_v1');}catch(e){} return 'ok';`);
+    goto(`${PAGE}&company=peine`);
+    const ind = js(`
+      var b=null;
+      Array.prototype.forEach.call(document.querySelectorAll('[data-demoform]'),function(x){
+        if(/Toolbox/.test(x.textContent)) b=x; });
+      b.click();
+      document.querySelector('[data-tbt-method="individual"]').click();
+      document.querySelector('[data-tbt-format="guided"]').click();
+      return JSON.stringify({check:document.querySelector('.tbt-sec-check span').textContent,
+                             count:document.getElementById('tbtSecCount').textContent});`);
+    assert.equal(ind.check, 'I reviewed this section',
+      'individual mode must reword the section checkbox');
+    assert.equal(ind.count, 'Section 1 of 8');
+    const done = js(`
+      for(var i=0;i<8;i++){
+        if(!document.getElementById('tbtSecDone').checked)
+          document.getElementById('tbtSecDone').click();
+        if(!document.getElementById('tbtSecNext').disabled)
+          document.getElementById('tbtSecNext').click();
+      }
+      document.getElementById('tbtToComplete').click();
+      return JSON.stringify({
+        step:(document.querySelector('.tbt-step.is-on')||{}).textContent.replace(/\s+/g,' ').trim(),
+        me:(document.getElementById('tbtMe')||{}).value,
+        submit:(document.getElementById('tbtSubmitInd')||{}).textContent});`);
+    assert.equal(done.step, 'Record Completion');
+    assert.ok(done.me, 'the individual must be named');
+    assert.equal(done.submit, 'Submit My Completion');
+  });
+
+  check('switching format keeps each format progress', () => {
+    const kept = js(`
+      document.getElementById('tbtBack').click();               // back to Review Talk
+      var onGuided=!!document.getElementById('tbtSecCount');
+      var progBefore=document.querySelector('.tbt-secprog .lbl').textContent;
+      document.querySelector('[data-tbt-format="doc"]').click();
+      var onDoc=!!document.getElementById('tbtPageImg');
+      document.querySelector('[data-tbt-format="guided"]').click();
+      return JSON.stringify({onGuided:onGuided, onDoc:onDoc, progBefore:progBefore,
+        progAfter:document.querySelector('.tbt-secprog .lbl').textContent});`);
+    assert.equal(kept.onGuided, true, 'Back must return to the guided format it left');
+    assert.equal(kept.onDoc, true, 'the document format must still open');
+    assert.equal(kept.progAfter, kept.progBefore,
+      'guided progress must survive a trip through the document format');
+  });
+
   /* 13. A real submission makes zero network requests */
   check('demo submissions make zero network requests', () => {
     openWalkthrough();
@@ -322,4 +498,4 @@ if (failures) {
   console.error(`\nToolbox Talk runtime verification FAILED (${failures} check(s)).`);
   process.exit(1);
 }
-console.log('Toolbox Talk runtime verification passed (13 checks, phone width 390x844).');
+console.log('Toolbox Talk runtime verification passed (21 checks, phone width 390x844).');

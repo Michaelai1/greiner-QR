@@ -1,0 +1,78 @@
+Text extracted verbatim from Fall Protection.pdf.
+Source: /Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Choice Thread Batch 06/Fall Protection.pdf
+Committed so the Guided Talk verbatim test can run without the PDF or a PDF library.
+Per-page timestamp footers removed; nothing else altered.
+----------------------------------------------------------------------
+ 
+Greiner Brothers, Inc.
+Safety Meeting App - Meeting Report
+Date & Time: 
+Leader: 
+Location: 
+Project: 
+Topic: Fall Protection
+Fall Protection
+It may seem that a job can be performed more efficiently without spending the time to
+protect against falls. However, falls remain one of the top causes of fatalities in
+construction. Workers have fallen off edges of every description, especially floors and
+roofs, and through openings in floors, roofs, and walls. Fall protection is required
+whenever a worker faces serious risk of injury, including:
+* on structures where a worker could fall more than 7 feet
+* on thrustouts, trusses, beams, purlins, and plates at heights over 15 feet
+* on a sloped roof
+Use Barriers
+To prevent accidental falls at worksites, guardrails and toeboards or other effective
+barriers to falls should be used. However, there will be areas where guardrails or other
+barriers are not feasible. In these cases, workers must use approved personal fall
+protection systems or positioning devices.
+Fall Arrests 
+Two basic types of person fall protection systems that require tie off are fall arrest and
+travel restraint. Fall arrest systems stop a fall within a few feet of the worker's original
+position. A full body harness is required with a fall arrest system. The system typically
+consists of a full body harness, a lanyard, a rope grab, a lifeline, and a lifeline anchor. A
+fall arrest system must be worn when working on a rolling scaffold that is being moved
+or when a worker is getting on, working from or getting off suspended access
+equipment.
+Travel Restraints
+A travel restraint system prevents falls by restraining a worker from getting too close
+to an unprotected edge. This system usually consists of a safety belt or full body
+harness, a lanyard, a rope grab, a lifeline, and a lifeline anchor.
+Safety Nets
+When conventional fall protection or personal fall protection are not practical, safety
+nets must be used instead. Before using safety nets, check to see that the nets are
+hung with enough clearance to prevent a falling person from hitting the surface or
+structure below.
+Net Locations
+Safety nets should be placed within 10 vertical feet and never more than 30 feet below
+
+
+the working surface. Nets must extend at least eight feet beyond the building or
+structure. If the vertical distance from the working level to the net is greater than 5
+feet, then the net must extend 10 feet beyond the building. A net from 10 feet to 30
+feet below the working surface must extend 13 feet.
+Right Equipment, Right Job
+If you use any type of fall protection equipment, including personal fall protection or
+safety nets, be sure to check that you are using the right equipment for the job,
+labeled as meeting the requirements of the American National Standards Institute
+(ANSI), and that the equipment is in good condition.
+Fall Protection Saves Lives
+Whenever feasible, employers should always set up temporary floors, guardrails,
+toeboards, or other physical barriers to falls, instead of having workers rely on tying off
+and nets for fall protection. When not feasible, personal fall protection or safety nets
+must be used. No work should proceed unless the necessary fall protection is in place.
+The use of fall protection can prevent serious injury and save your life.
+Attendees: 
+Leader Signature:
+No Signature Recorded
+Notes
+Disclaimer:  Necessary measures have been taken to ensure the accuracy and reliability of the
+information herein; however, Safety Meeting App (Safety App LLC) makes no representation, warranty,
+or guarantee either expressed or implied, in connection therewith.  Safety Meeting App (Safety App LLC)
+disclaims any liability or responsibility for any direct or indirect loss or consequential damages resulting
+from the use of any of the information herein, or for the violation of any federal, state or municipal
+regulation with which any of the information may conflict.
+This product is sold with the understanding that Safety Meeting App (Safety App LLC) are not engaged in
+rendering legal advice or safety consultation. If legal advice or expert assistance is required, the service
+of a competent person should be sought.  It is the responsibility of each contractor to know the OSHA
+requirements for the state in which they are working.
+

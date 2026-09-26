@@ -36,8 +36,11 @@ const makeModule = (search) => {
     ${html.slice(start, endLogic)}
     return { TBT_KEY, TBT_TALKS, TBT_CO, TBT_COMPANY, TBT_URL_MODE, TBT_MODE,
              TBT_STEP, TBT_PAGE, TBT_READ, TBT_STEP_LABELS,
+             TBT_URL_FORMAT, TBT_FORMAT, TBT_SECTION, TBT_SECTION_DONE,
              tbtMondayISO, tbtDueLabel, tbtCurrentTalk, tbtState, tbtPush,
-             tbtMyRecord, tbtGroupRecord, tbtStatusText, tbtMyGroup };
+             tbtMyRecord, tbtGroupRecord, tbtStatusText, tbtMyGroup,
+             tbtHasGuided, tbtSections, tbtSectionsDone, tbtSectionsDoneCount,
+             tbtReviewed };
   `);
   const m = factory(new URLSearchParams(search), localStorage);
   m.store = store;
@@ -140,6 +143,129 @@ for (const t of mod.TBT_TALKS) {
 }
 
 /* ------------------------------------------------------------------ *
+ * 4b. Guided Talk — the second content format
+ *
+ * Content format is a separate axis from the completion method: either
+ * method can be reached through either format.
+ * ------------------------------------------------------------------ */
+includes('data-tbt-format="doc"', 'the original-document format must be selectable');
+includes('data-tbt-format="guided"', 'the Guided Talk format must be selectable');
+includes('>View Original Document<', 'the document option needs its label');
+includes('>Guided Talk<', 'the guided option needs its label');
+includes('id="tbtFmtNote"', 'the format selector must carry a demo-only note');
+assert.ok(flatten(html.slice(html.indexOf('function tbtFormatBarHtml()'),
+  html.indexOf('function tbtWireFormatBar()')))
+  .includes('Format switching is for the demo only. In production the office chooses ' +
+            'the default format for each Toolbox Talk.'),
+  'the format selector must say the office chooses the default in production');
+
+// Only Fall Protection has a guided version so far.
+const guidedTalks = mod.TBT_TALKS.filter((t) => t.sections && t.sections.length);
+assert.equal(guidedTalks.length, 1, 'only one talk should be converted so far');
+assert.equal(guidedTalks[0].i, 'fall', 'Fall Protection is the converted talk');
+includes('function tbtHasGuided(', 'the guided format must be offered only where it exists');
+assert.match(html, /if \(!tbtHasGuided\(tbtCurrentTalk\(\)\)\) return '';/,
+  'a talk with no guided version must not offer the switcher');
+
+const guided = manifest.talks.find((t) => t.id === 'fall').guided;
+assert.ok(guided, 'the manifest must record the guided conversion');
+assert.equal(guided.sectionCount, 8, 'Fall Protection has 8 sections');
+assert.equal(guided.sections.length, 8, 'the manifest must list all 8 sections');
+assert.equal(guidedTalks[0].sections.length, guided.sectionCount,
+  'the module and the manifest must agree on the section count');
+
+// Guided content is verbatim: it must match the manifest, and the manifest
+// must match the text actually inside the source PDF.
+guidedTalks[0].sections.forEach((sec, i) => {
+  const m = guided.sections[i];
+  assert.equal(sec.h, m.heading, `section ${i + 1} heading must match the manifest`);
+  assert.deepEqual(sec.p, m.paras, `section ${i + 1} text must match the manifest`);
+  assert.equal(sec.pg, m.page, `section ${i + 1} page must match the manifest`);
+  assert.equal(sec.pgl, m.pageLabel, `section ${i + 1} page label must match the manifest`);
+});
+
+// Every section names its source page, and the pages are real.
+const talkPageCount = manifest.talks.find((t) => t.id === 'fall').pageCount;
+guidedTalks[0].sections.forEach((sec, i) => {
+  assert.ok(sec.pgl, `section ${i + 1} must name its source page`);
+  assert.match(sec.pgl, /^pages? \d+(–\d+)?$/, `odd page label on section ${i + 1}: ${sec.pgl}`);
+  assert.ok(sec.pg >= 1 && sec.pg <= talkPageCount,
+    `section ${i + 1} cites page ${sec.pg}, outside the ${talkPageCount}-page document`);
+  assert.ok(sec.p.length > 0, `section ${i + 1} must carry its content`);
+});
+includes('From ' + "' + esc(t.f) + ', ' + esc(s.pgl)",
+  'each section must display its source filename and page');
+
+// Nothing is summarised: the section text must appear in the source PDF.
+// demo-assets/toolbox-talks/fall-source-text.txt is the extracted source,
+// committed so this check does not need the PDF or a PDF library.
+const sourceText = fs.readFileSync(
+  new URL('demo-assets/toolbox-talks/fall-source-text.txt', root), 'utf8');
+const norm = (t) => t.replace(/\u2019/g, "'").replace(/\s+/g, ' ').trim();
+const flatSource = norm(sourceText);
+for (const [i, sec] of guidedTalks[0].sections.entries()) {
+  assert.ok(flatSource.includes(norm(sec.h)),
+    `section ${i + 1} heading is not verbatim from the source: "${sec.h}"`);
+  for (const para of sec.p) {
+    const probe = norm(para).replace(/^\*\s*/, '');
+    assert.ok(flatSource.includes(probe),
+      `section ${i + 1} text is not verbatim from the source: "${probe.slice(0, 70)}..."`);
+  }
+}
+// And nothing was dropped: every body line of the source talk is covered.
+const covered = norm(guidedTalks[0].sections
+  .map((s) => s.h + ' ' + s.p.join(' ')).join(' ')).replace(/\*/g, '');
+for (const probe of ['It may seem that a job can be performed more efficiently',
+  'guardrails and toeboards or other effective barriers',
+  'A full body harness is required with a fall arrest system',
+  'restraining a worker from getting too close to an unprotected edge',
+  'safety nets must be used instead',
+  'Nets must extend at least eight feet beyond the building',
+  'American National Standards Institute',
+  'The use of fall protection can prevent serious injury and save your life']) {
+  assert.ok(covered.includes(norm(probe)),
+    `guided sections dropped source content: "${probe}"`);
+}
+
+/* Guided completion gate and progress */
+includes('function tbtSectionsDone()', 'the gate must know when every section is ticked');
+includes('function tbtSectionsDoneCount()', 'progress must be countable');
+includes("Section ' + (TBT_SECTION + 1) +", 'the viewer must show "Section N of X"');
+includes("doneCount + ' of ' + total + ' sections checked", 'progress must be shown');
+includes('id="tbtSecPrev"', 'Previous must exist in the guided view');
+includes('id="tbtSecNext"', 'Next must exist in the guided view');
+includes('TBT_SECTION_DONE[TBT_SECTION] = this.checked;',
+  'ticking a section must be recorded');
+includes('var TBT_SECTION_DONE = [];',
+  'ticked sections must live outside the render so they survive navigation');
+includes("(allDone ? '' : ' disabled')",
+  'completion must stay locked until every section is checked');
+includes('Check every section before recording completion.',
+  'the reviewer must be told why completion is locked');
+includes("if (!tbtSectionsDone()) {", 'the continue handler must re-check the gate');
+
+// Checkbox wording differs by completion method.
+const guidedSrc = flatten(html.slice(html.indexOf('function renderTbtGuided()'),
+  html.indexOf('/* ---------------- STEP 3A')));
+assert.ok(guidedSrc.includes("'I reviewed this section'") &&
+          guidedSrc.includes("'This section was covered'"),
+  'both checkbox wordings must exist');
+assert.match(guidedSrc, /TBT_MODE === 'individual'\s*\? 'I reviewed this section' : 'This section was covered'/,
+  'the checkbox must be worded for the chosen completion method');
+
+// The gate is per-format, and the document format keeps its own rule.
+includes("return TBT_FORMAT === 'guided' ? tbtSectionsDone() : TBT_READ;",
+  'each format must supply its own completion gate');
+
+/* The document walkthrough is unchanged */
+includes('function renderTbtDoc()', 'the document walkthrough must still exist');
+assert.equal(mod.TBT_FORMAT, 'doc', 'the original document is still the default format');
+assert.equal(makeModule('?demo=1&tbtformat=guided').TBT_FORMAT, 'guided',
+  '?tbtformat=guided must open the guided version for testing');
+assert.equal(makeModule('?demo=1&tbtformat=nonsense').TBT_FORMAT, 'doc',
+  'an invalid tbtformat must fall back to the document');
+
+/* ------------------------------------------------------------------ *
  * 5. Every page is reachable, and the assets resolve
  * ------------------------------------------------------------------ */
 includes('id="tbtPrev"', 'a Previous control must exist');
@@ -149,8 +275,8 @@ includes("Page ' + (TBT_PAGE + 1) + ' of ' + total",
 // Previous/Next are disabled at the ends rather than wrapping around.
 includes("(TBT_PAGE === 0 ? ' disabled' : '')", 'Previous must be disabled on the first page');
 includes("(TBT_PAGE >= total - 1 ? ' disabled' : '')", 'Next must be disabled on the last page');
-includes('if (TBT_PAGE > 0) { TBT_PAGE--; renderTbtReview(); }', 'Previous must step back one page');
-includes('if (TBT_PAGE < total - 1) { TBT_PAGE++; renderTbtReview(); }', 'Next must step forward one page');
+includes('if (TBT_PAGE > 0) { TBT_PAGE--; renderTbtDoc(); }', 'Previous must step back one page');
+includes('if (TBT_PAGE < total - 1) { TBT_PAGE++; renderTbtDoc(); }', 'Next must step forward one page');
 
 // Relative paths, not absolute ones, and every file is really on disk.
 let totalPages = 0;

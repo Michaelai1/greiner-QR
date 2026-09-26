@@ -1426,6 +1426,108 @@
             cursor: pointer;
         }
         .tbt-pagebtn:disabled { opacity: .45; cursor: default; }
+        /* Content-format switcher: original document vs guided sections */
+        .tbt-fmt {
+            display: flex;
+            gap: 6px;
+            margin-bottom: var(--spacing-md);
+        }
+        .tbt-fmtbtn {
+            flex: 1;
+            min-width: 0;
+            min-height: 42px;
+            padding: 8px 6px;
+            border-radius: 10px;
+            border: 1px solid var(--color-border);
+            background: var(--color-bg-card-mid);
+            color: var(--color-text-secondary);
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            line-height: 1.25;
+        }
+        .tbt-fmtbtn.is-on {
+            background: var(--accentSoft);
+            border-color: var(--accentBorder);
+            color: var(--accent);
+        }
+        /* A guided section, on the light "paper" panel */
+        .tbt-sec { margin-bottom: 12px; }
+        .tbt-sec-h {
+            color: #111827;
+            font-size: 17px;
+            font-weight: 800;
+            margin: 4px 0 8px;
+            line-height: 1.3;
+        }
+        .tbt-sec-b {
+            color: #1f2937;
+            font-size: 15px;
+            line-height: 1.6;
+            margin: 0 0 10px;
+        }
+        .tbt-sec-bullet {
+            position: relative;
+            padding-left: 18px;
+            margin-bottom: 6px;
+        }
+        .tbt-sec-bullet::before {
+            content: "•";
+            position: absolute;
+            left: 4px;
+            color: #4b5563;
+            font-weight: 700;
+        }
+        .tbt-sec-src {
+            color: #6b7280;
+            font-size: 11.5px;
+            font-weight: 600;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 8px;
+            margin-top: 12px;
+        }
+        .tbt-sec-check {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 48px;
+            padding: 10px 12px;
+            border: 1.5px solid #9aa4b2;
+            border-radius: 10px;
+            background: #f3f4f6;
+            color: #111827;
+            font-size: 14.5px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .tbt-sec-check.is-on {
+            border-color: #15803d;
+            background: #dcfce7;
+            color: #14532d;
+        }
+        .tbt-sec-check input { width: 20px; height: 20px; flex: 0 0 auto; }
+        .tbt-secprog { margin-bottom: 10px; }
+        .tbt-secprog .bar {
+            height: 6px;
+            border-radius: 999px;
+            background: var(--color-bg-card-mid);
+            border: 1px solid var(--color-border);
+            overflow: hidden;
+        }
+        .tbt-secprog .bar span {
+            display: block;
+            height: 100%;
+            background: var(--accent);
+            transition: width var(--transition-fast);
+        }
+        .tbt-secprog .lbl {
+            margin-top: 6px;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--color-text-secondary);
+            text-align: center;
+        }
+
         .tbt-rosterlist {
             border: 1px solid var(--color-border);
             border-radius: var(--radius-md);
@@ -6870,7 +6972,31 @@ ${photoUrls}`;
         { i: 'fall', t: 'Fall Protection', f: 'Fall Protection.pdf',
           src: '/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Choice Thread Batch 06/Fall Protection.pdf',
           pages: ['demo-assets/toolbox-talks/fall/page-01.jpg',
-                  'demo-assets/toolbox-talks/fall/page-02.png'] },
+                  'demo-assets/toolbox-talks/fall/page-02.png'],
+          /* Guided Talk sections, extracted verbatim from the source PDF: every
+             heading, paragraph and bullet is the original wording, and pg is the
+             page of Fall Protection.pdf it came from. Nothing is summarised,
+             shortened or invented. Mirrors the "guided" block in
+             demo-assets/toolbox-talks/manifest.json. Only this talk has a guided
+             version so far. */
+          sections: [
+            { h: 'Fall Protection', pg: 1, pgl: 'page 1',
+              p: ['It may seem that a job can be performed more efficiently without spending the time to protect against falls. However, falls remain one of the top causes of fatalities in construction. Workers have fallen off edges of every description, especially floors and roofs, and through openings in floors, roofs, and walls. Fall protection is required whenever a worker faces serious risk of injury, including:', '* on structures where a worker could fall more than 7 feet', '* on thrustouts, trusses, beams, purlins, and plates at heights over 15 feet', '* on a sloped roof'] },
+            { h: 'Use Barriers', pg: 1, pgl: 'page 1',
+              p: ['To prevent accidental falls at worksites, guardrails and toeboards or other effective barriers to falls should be used. However, there will be areas where guardrails or other barriers are not feasible. In these cases, workers must use approved personal fall protection systems or positioning devices.'] },
+            { h: 'Fall Arrests', pg: 1, pgl: 'page 1',
+              p: ['Two basic types of person fall protection systems that require tie off are fall arrest and travel restraint. Fall arrest systems stop a fall within a few feet of the worker\'s original position. A full body harness is required with a fall arrest system. The system typically consists of a full body harness, a lanyard, a rope grab, a lifeline, and a lifeline anchor. A fall arrest system must be worn when working on a rolling scaffold that is being moved or when a worker is getting on, working from or getting off suspended access equipment.'] },
+            { h: 'Travel Restraints', pg: 1, pgl: 'page 1',
+              p: ['A travel restraint system prevents falls by restraining a worker from getting too close to an unprotected edge. This system usually consists of a safety belt or full body harness, a lanyard, a rope grab, a lifeline, and a lifeline anchor.'] },
+            { h: 'Safety Nets', pg: 1, pgl: 'page 1',
+              p: ['When conventional fall protection or personal fall protection are not practical, safety nets must be used instead. Before using safety nets, check to see that the nets are hung with enough clearance to prevent a falling person from hitting the surface or structure below.'] },
+            { h: 'Net Locations', pg: 1, pgl: 'pages 1–2',
+              p: ['Safety nets should be placed within 10 vertical feet and never more than 30 feet below the working surface. Nets must extend at least eight feet beyond the building or structure. If the vertical distance from the working level to the net is greater than 5 feet, then the net must extend 10 feet beyond the building. A net from 10 feet to 30 feet below the working surface must extend 13 feet.'] },
+            { h: 'Right Equipment, Right Job', pg: 2, pgl: 'page 2',
+              p: ['If you use any type of fall protection equipment, including personal fall protection or safety nets, be sure to check that you are using the right equipment for the job, labeled as meeting the requirements of the American National Standards Institute (ANSI), and that the equipment is in good condition.'] },
+            { h: 'Fall Protection Saves Lives', pg: 2, pgl: 'page 2',
+              p: ['Whenever feasible, employers should always set up temporary floors, guardrails, toeboards, or other physical barriers to falls, instead of having workers rely on tying off and nets for fall protection. When not feasible, personal fall protection or safety nets must be used. No work should proceed unless the necessary fall protection is in place. The use of fall protection can prevent serious injury and save your life.'] }
+          ] },
         { i: 'ladders', t: 'Ladders 1', f: 'Ladders 1.pdf',
           src: '/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Choice Thread Batch 04/Ladders 1.pdf',
           pages: ['demo-assets/toolbox-talks/ladders/page-01.jpg',
@@ -6917,6 +7043,39 @@ ${photoUrls}`;
       var TBT_PAGE = 0;                        // page index inside the talk
       var TBT_READ = false;                    // reached the final page?
       var TBT_SEL = { group: null, attendees: [], manual: [], presenter: '', presented: false };
+
+      /* Content format is a separate axis from the completion method: either
+         completion method can be reached through either format.
+           doc    - page through the original scanned PDF (unchanged)
+           guided - the same talk split into sections, each ticked off
+         ?tbtformat= is for direct testing. In production the office should
+         eventually choose the default format for each Toolbox Talk. */
+      var TBT_URL_FORMAT = (function () {
+        var f = (params.get('tbtformat') || '').toLowerCase();
+        return (f === 'doc' || f === 'guided') ? f : null;
+      })();
+      var TBT_FORMAT = TBT_URL_FORMAT || 'doc';
+      var TBT_SECTION = 0;                     // current guided section
+      var TBT_SECTION_DONE = [];               // ticked sections, kept while navigating
+
+      function tbtHasGuided(talk) {
+        return !!(talk && talk.sections && talk.sections.length);
+      }
+      function tbtSections() { return tbtCurrentTalk().sections || []; }
+      function tbtSectionsDone() {
+        var n = tbtSections().length;
+        if (!n) return false;
+        for (var i = 0; i < n; i++) if (!TBT_SECTION_DONE[i]) return false;
+        return true;
+      }
+      function tbtSectionsDoneCount() {
+        return tbtSections().reduce(function (n, _, i) {
+          return n + (TBT_SECTION_DONE[i] ? 1 : 0); }, 0);
+      }
+      // Whichever format is on screen decides whether completion is unlocked.
+      function tbtReviewed() {
+        return TBT_FORMAT === 'guided' ? tbtSectionsDone() : TBT_READ;
+      }
 
       var TBT_STEP_LABELS = [
         ['method', 'Choose Method'],
@@ -7044,21 +7203,51 @@ ${photoUrls}`;
           b.onclick = function () {
             TBT_MODE = b.getAttribute('data-tbt-method');
             TBT_PAGE = 0; TBT_READ = false;
+            TBT_SECTION = 0; TBT_SECTION_DONE = [];
             TBT_SEL = { group: null, attendees: [], manual: [], presenter: '', presented: false };
             tbtGo('review');
           };
         });
       }
 
-      /* ---------------- STEP 2: review the actual talk ---------------- */
+      /* ---------------- STEP 2: review the actual talk ----------------
+         Two content formats over the same talk. The document walkthrough is
+         unchanged; Guided Talk is the alternative. Progress in one does not
+         reset the other, so a reviewer can flip between them freely. */
       function renderTbtReview() {
+        if (TBT_FORMAT === 'guided' && tbtHasGuided(tbtCurrentTalk())) return renderTbtGuided();
+        TBT_FORMAT = 'doc';
+        return renderTbtDoc();
+      }
+      // The format switcher, shown above whichever format is open.
+      function tbtFormatBarHtml() {
+        if (!tbtHasGuided(tbtCurrentTalk())) return '';
+        return '<div class="tbt-fmt">' +
+          '<button type="button" class="tbt-fmtbtn' + (TBT_FORMAT === 'doc' ? ' is-on' : '') +
+            '" data-tbt-format="doc">View Original Document</button>' +
+          '<button type="button" class="tbt-fmtbtn' + (TBT_FORMAT === 'guided' ? ' is-on' : '') +
+            '" data-tbt-format="guided">Guided Talk</button></div>' +
+          '<p id="tbtFmtNote" style="color:var(--color-text-secondary);font-size:12px;' +
+            'line-height:1.45;margin:-4px 0 12px">Format switching is for the demo only. ' +
+            'In production the office chooses the default format for each Toolbox Talk.</p>';
+      }
+      function tbtWireFormatBar() {
+        Array.prototype.forEach.call(
+          document.querySelectorAll('#tbtBody [data-tbt-format]'), function (b) {
+            b.onclick = function () {
+              TBT_FORMAT = b.getAttribute('data-tbt-format');
+              renderTbtReview();
+            };
+          });
+      }
+      function renderTbtDoc() {
         var t = tbtCurrentTalk(), co = TBT_CO[TBT_COMPANY];
         var total = t.pages.length;
         if (TBT_PAGE >= total) TBT_PAGE = total - 1;
         if (TBT_PAGE < 0) TBT_PAGE = 0;
         if (TBT_PAGE === total - 1) TBT_READ = true;
         var body = document.getElementById('tbtBody');
-        body.innerHTML =
+        body.innerHTML = tbtFormatBarHtml() +
           '<div class="tbt-doc">' +
             '<h3 class="tbt-doc-title">' + esc(t.t) + '</h3>' +
             '<div class="tbt-doc-sub">' + esc(t.f) + ' · ' + esc(co.name) +
@@ -7082,10 +7271,10 @@ ${photoUrls}`;
             'style="width:100%;justify-content:center;margin:12px 0 0">Switch demo workflow</button>';
 
         document.getElementById('tbtPrev').onclick = function () {
-          if (TBT_PAGE > 0) { TBT_PAGE--; renderTbtReview(); }
+          if (TBT_PAGE > 0) { TBT_PAGE--; renderTbtDoc(); }
         };
         document.getElementById('tbtNext').onclick = function () {
-          if (TBT_PAGE < total - 1) { TBT_PAGE++; renderTbtReview(); }
+          if (TBT_PAGE < total - 1) { TBT_PAGE++; renderTbtDoc(); }
         };
         document.getElementById('tbtToComplete').onclick = function () {
           if (!TBT_READ) {
@@ -7095,6 +7284,85 @@ ${photoUrls}`;
           tbtGo('complete');
         };
         document.getElementById('tbtChangeMethod').onclick = function () { tbtGo('method'); };
+        tbtWireFormatBar();
+      }
+
+      /* ---------------- STEP 2b: Guided Talk ----------------
+         One section at a time, each ticked off. The text is the source PDF's
+         own wording: headings, paragraphs and bullets are reproduced verbatim
+         and each section names the page it came from. */
+      function renderTbtGuided() {
+        var t = tbtCurrentTalk(), co = TBT_CO[TBT_COMPANY];
+        var secs = tbtSections(), total = secs.length;
+        if (TBT_SECTION >= total) TBT_SECTION = total - 1;
+        if (TBT_SECTION < 0) TBT_SECTION = 0;
+        var s = secs[TBT_SECTION];
+        var done = !!TBT_SECTION_DONE[TBT_SECTION];
+        var doneCount = tbtSectionsDoneCount();
+        var allDone = tbtSectionsDone();
+        // The wording differs by who is confirming: a foreman covering the
+        // section with a crew, or an employee reading it themselves.
+        var checkLabel = TBT_MODE === 'individual'
+          ? 'I reviewed this section' : 'This section was covered';
+        var body = document.getElementById('tbtBody');
+        body.innerHTML = tbtFormatBarHtml() +
+          '<div class="tbt-doc">' +
+            '<h3 class="tbt-doc-title">' + esc(t.t) + '</h3>' +
+            '<div class="tbt-doc-sub">' + esc(t.f) + ' · ' + esc(s.pgl) +
+              ' · ' + esc(co.name) + '</div>' +
+            '<div class="tbt-sec">' +
+              '<h4 class="tbt-sec-h">' + esc(s.h) + '</h4>' +
+              s.p.map(function (p) {
+                return /^\*/.test(p)
+                  ? '<p class="tbt-sec-b tbt-sec-bullet">' + esc(p.replace(/^\*\s*/, '')) + '</p>'
+                  : '<p class="tbt-sec-b">' + esc(p) + '</p>';
+              }).join('') +
+              '<div class="tbt-sec-src">From ' + esc(t.f) + ', ' + esc(s.pgl) + '</div>' +
+            '</div>' +
+            '<label class="tbt-sec-check' + (done ? ' is-on' : '') + '" for="tbtSecDone">' +
+              '<input type="checkbox" id="tbtSecDone"' + (done ? ' checked' : '') + '>' +
+              '<span>' + esc(checkLabel) + '</span></label>' +
+            '<div class="tbt-pager">' +
+              '<button type="button" class="tbt-pagebtn" id="tbtSecPrev"' +
+                (TBT_SECTION === 0 ? ' disabled' : '') + '>&larr; Previous</button>' +
+              '<div class="count" id="tbtSecCount">Section ' + (TBT_SECTION + 1) +
+                ' of ' + total + '</div>' +
+              '<button type="button" class="tbt-pagebtn" id="tbtSecNext"' +
+                (TBT_SECTION >= total - 1 ? ' disabled' : '') + '>Next &rarr;</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="tbt-secprog" id="tbtSecProg">' +
+            '<div class="bar"><span style="width:' +
+              Math.round(doneCount / total * 100) + '%"></span></div>' +
+            '<div class="lbl">' + doneCount + ' of ' + total + ' sections checked</div></div>' +
+          (allDone ? '' :
+            '<p id="tbtSecHint" style="color:var(--color-text-secondary);font-size:13px;margin:0 0 10px">' +
+              'Check every section before recording completion.</p>') +
+          '<button type="button" class="submit-button" id="tbtToComplete"' +
+            (allDone ? '' : ' disabled') + '>Continue to completion</button>' +
+          '<button type="button" class="back-button" id="tbtChangeMethod" ' +
+            'style="width:100%;justify-content:center;margin:12px 0 0">Switch demo workflow</button>';
+
+        // Ticks are held in TBT_SECTION_DONE, so paging away and back keeps them.
+        document.getElementById('tbtSecDone').onchange = function () {
+          TBT_SECTION_DONE[TBT_SECTION] = this.checked;
+          renderTbtGuided();
+        };
+        document.getElementById('tbtSecPrev').onclick = function () {
+          if (TBT_SECTION > 0) { TBT_SECTION--; renderTbtGuided(); }
+        };
+        document.getElementById('tbtSecNext').onclick = function () {
+          if (TBT_SECTION < total - 1) { TBT_SECTION++; renderTbtGuided(); }
+        };
+        document.getElementById('tbtToComplete').onclick = function () {
+          if (!tbtSectionsDone()) {
+            toast('error', 'Finish the talk', 'Check every section before recording completion.');
+            return;
+          }
+          tbtGo('complete');
+        };
+        document.getElementById('tbtChangeMethod').onclick = function () { tbtGo('method'); };
+        tbtWireFormatBar();
       }
 
       /* ---------------- STEP 3A: foreman-led group ---------------- */
@@ -7245,6 +7513,7 @@ ${photoUrls}`;
             'style="width:100%;justify-content:center;margin:12px 0 0">Back to homepage</button>';
         document.getElementById('tbtRestart').onclick = function () {
           TBT_PAGE = 0; TBT_READ = false;
+          TBT_SECTION = 0; TBT_SECTION_DONE = [];
           TBT_SEL = { group: null, attendees: [], manual: [], presenter: '', presented: false };
           tbtGo('method');
         };
@@ -7257,6 +7526,8 @@ ${photoUrls}`;
         TBT_STEP = TBT_URL_MODE ? 'review' : 'method';
         TBT_MODE = TBT_URL_MODE;
         TBT_PAGE = 0; TBT_READ = false;
+        TBT_FORMAT = TBT_URL_FORMAT || 'doc';
+        TBT_SECTION = 0; TBT_SECTION_DONE = [];
         TBT_SEL = { group: null, attendees: [], manual: [], presenter: '', presented: false };
         tbtRender();
       }
