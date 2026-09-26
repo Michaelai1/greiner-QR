@@ -5084,12 +5084,29 @@ ${photoUrls}`;
       var urlTicket = params.get('ticket');
       var ngform = (params.get('ngform') || '').toLowerCase();
       var asset = params.get('asset');
-      var ticket = urlTicket || loadTicket();
+      // ?demo=1 — a fully local review build (see the DEMO MODE block below).
+      // It deliberately refuses any real ticket, including one cached in
+      // localStorage from an earlier authenticated session, so a demo tab can
+      // never reach Supabase, the edge function, or a webhook.
+      var DEMO = params.get('demo') === '1';
+      var ticket = DEMO ? null : (urlTicket || loadTicket());
 
       // Crew forms now REQUIRE an authenticated field session: kill the n8n
       // inspection webhook outright and intercept every inspection submit below,
       // with or without a ticket. Non-inspection flows are left untouched.
       try { if (typeof CONFIG !== 'undefined' && CONFIG) CONFIG.WEBHOOK_INSPECTION = ''; } catch (e) {}
+
+      // Demo mode is local-only: blank EVERY outbound webhook so that even a
+      // legacy (non-inspection) form opened inside the demo cannot post
+      // anywhere. Belt and braces — demo submits are also intercepted below.
+      if (DEMO) {
+        try {
+          if (typeof CONFIG !== 'undefined' && CONFIG) {
+            ['WEBHOOK_REPORT', 'WEBHOOK_TRANSPORT', 'WEBHOOK_INSPECTION', 'WEBHOOK_DAILY_LOG', 'WEBHOOK_RENTAL']
+              .forEach(function (k) { CONFIG[k] = ''; });
+          }
+        } catch (e) {}
+      }
 
       // never leave the ticket in history / referrer
       if (urlTicket) { try { var u = new URL(location.href); u.searchParams.delete('ticket'); history.replaceState(null, '', u.toString()); } catch (e) {} }
@@ -5268,6 +5285,9 @@ ${photoUrls}`;
       // route inspection submissions to NextGen; everything else unchanged
       var _handleSaveData = window.handleSaveData;
       window.handleSaveData = function (url, payload, submitBtn, label) {
+        // DEMO short-circuit, first and unconditional: every submit in demo
+        // mode — inspection or legacy — ends here. Nothing is sent anywhere.
+        if (DEMO) return ngDemoSubmit(payload, submitBtn, label);
         if (payload && payload.form_type === 'inspection') {
           if (!NG.ticket) {
             if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = label || 'Submit'; }
@@ -5829,8 +5849,173 @@ ${photoUrls}`;
         window.showView('success');
       }
 
+      /* ==================== DEMO MODE (?demo=1) ==========================
+         A self-contained review build for showing the phone app without a
+         login and without touching anything real.
+
+         Isolation guarantees:
+           * DEMO refuses any ticket (including a cached one), so NG.ticket
+             stays null and the authenticated paths cannot run.
+           * Every submit is short-circuited in handleSaveData above, before
+             the inspection branch, so neither cs_portal_field_submit nor the
+             field-pdf edge function nor any n8n webhook is ever called.
+           * All webhook URLs are blanked for the tab.
+           * The only data used is DEMO_HOME below — obviously fake.
+         Nothing in this block runs unless ?demo=1 is present.
+         =================================================================== */
+      var DEMO_HOME = {
+        user: 'Demo Foreman',
+        jobs: [{
+          id: 'demo-job-001',
+          name: 'Demo Greiner Job',
+          job_number: 'DEMO-001',
+          address: '100 Demo Parkway, Indianapolis, IN',
+          foreman_name: 'Demo Foreman',
+          external_hotwork: false,
+          enabled_forms: null,
+          hotwork_locations: [
+            { building: 'Demo Building A', floors: ['1', '2', '3', 'Roof'] },
+            { building: 'Demo Building B', floors: ['1', 'Mezzanine'] }
+          ]
+        }],
+        // Several fake employees so roster autocomplete can be exercised.
+        people: [
+          { name: 'Demo Foreman', phone: '' },
+          { name: 'Alex Rivera (Demo)', phone: '' },
+          { name: 'Jordan Blake (Demo)', phone: '' },
+          { name: 'Sam Whitfield (Demo)', phone: '' },
+          { name: 'Casey Nolan (Demo)', phone: '' },
+          { name: 'Taylor Reed (Demo)', phone: '' },
+          { name: 'Morgan Ellis (Demo)', phone: '' }
+        ],
+        equipment: [
+          { unit_number: 'DEMO-LIFT-01', equipment_type: "Scissor lift — 13' electric" },
+          { unit_number: 'DEMO-LIFT-02', equipment_type: "Mast lift — 20' driveable" },
+          { unit_number: 'DEMO-FORK-01', equipment_type: 'Forklift — 6,000# telescopic' }
+        ]
+      };
+      DEMO_HOME.hotwork_locations = DEMO_HOME.jobs[0].hotwork_locations;
+
+      function mountDemoBanner() {
+        if (document.getElementById('demoBanner')) return;
+        var b = document.createElement('div');
+        b.id = 'demoBanner';
+        b.textContent = 'Greiner Review Demo — sample data only, nothing is saved';
+        b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#b45309;color:#fff;' +
+          'font-weight:800;font-size:13px;line-height:1.3;text-align:center;padding:9px 12px;' +
+          'box-shadow:0 2px 10px rgba(0,0,0,.25)';
+        document.body.appendChild(b);
+        document.body.style.paddingTop = ((b.offsetHeight || 36) + 4) + 'px';
+      }
+
+      function showDemoComingNext(key) {
+        var name = key === 'toolbox' ? 'Toolbox Talks' : 'JHA';
+        toast('success', name + ' — coming next',
+          'The revised ' + name + ' is not part of this review build yet.');
+      }
+
+      function openDemoForm(key) {
+        key = String(key || '').toLowerCase();
+        if (key === 'jha' || key === 'toolbox') { showDemoComingNext(key); return; }
+        var opener = OPENERS[key];
+        if (opener && typeof window[opener] === 'function') {
+          window[opener]();
+          applyLocks();
+        }
+      }
+
+      function mountDemoQuickLinks() {
+        var landing = document.getElementById('landingView');
+        if (!landing || document.getElementById('demoQuick')) return;
+        var d = document.createElement('div');
+        d.id = 'demoQuick';
+        d.style.cssText = 'margin:0 0 16px;padding:14px;border:1px solid #e5e7eb;border-radius:12px;background:#fff';
+        d.innerHTML =
+          '<div style="font-weight:800;font-size:14px;color:#0f172a;margin-bottom:2px">Greiner Review Demo</div>' +
+          '<div style="font-size:12.5px;color:#6b7280;margin-bottom:10px">' +
+            'Signed in as <b>Demo Foreman</b> · Demo Greiner Job (DEMO-001). Nothing you submit is saved.' +
+          '</div>' +
+          '<button type="button" class="action-button action-button--primary" data-demoform="hotwork" ' +
+            'style="width:100%;margin-bottom:8px">Hot Work Permit</button>' +
+          '<button type="button" class="action-button action-button--phase2" data-demoform="jha" ' +
+            'style="width:100%;margin-bottom:8px">JHA — Coming next</button>' +
+          '<button type="button" class="action-button action-button--phase2" data-demoform="toolbox" ' +
+            'style="width:100%">Toolbox Talks — Coming next</button>';
+        landing.insertBefore(d, landing.firstChild);
+        Array.prototype.forEach.call(d.querySelectorAll('[data-demoform]'), function (btn) {
+          btn.addEventListener('click', function () { openDemoForm(btn.getAttribute('data-demoform')); });
+        });
+      }
+
+      function renderDemoCompletion(title, blob, filename) {
+        var view = document.getElementById('successView'); if (!view) return;
+        var done = document.getElementById('doneBtn'); if (done) done.style.display = 'none';
+        var ra = document.getElementById('reportAnotherLink'); if (ra) ra.style.display = 'none';
+        var job = NG.job || {};
+        var box = document.getElementById('ngActions');
+        if (!box) {
+          box = document.createElement('div'); box.id = 'ngActions';
+          box.style.cssText = 'margin-top:18px;display:flex;flex-direction:column;gap:10px';
+          view.appendChild(box);
+        }
+        box.innerHTML =
+          '<div id="demoSubmitNotice" style="background:#fff7ed;border:1px solid #fdba74;color:#7c2d12;' +
+            'border-radius:10px;padding:14px;text-align:center;font-weight:700;font-size:15px">' +
+            'Demo submission completed. No data was saved.' +
+          '</div>' +
+          '<div style="text-align:center;color:#6b7280;font-size:13px">' +
+            esc(title) + ' · ' + esc(job.name || '') + ' · ' + esc(job.job_number || '') +
+          '</div>' +
+          (blob ? '<button class="submit-button" id="demoView">View PDF (local preview)</button>' : '') +
+          '<button class="submit-button" id="demoBack" ' +
+            'style="background:#fff;color:#0f172a;border:1px solid #d1d5db">Back to demo home</button>';
+        if (blob) {
+          document.getElementById('demoView').onclick = function () {
+            mvView(function () { return Promise.resolve(blob); }, filename, title);
+          };
+        }
+        document.getElementById('demoBack').onclick = function () { window.showView('landing'); };
+        window.showView('success');
+      }
+
+      // Demo submit: builds the PDF in memory only (jsPDF is already on the
+      // page and runs client-side), never uploads, never writes, never calls out.
+      function ngDemoSubmit(payload, submitBtn, label) {
+        var subtype = (payload && payload.inspection_subtype) || '';
+        var title = TITLES[subtype] || 'Demo Form';
+        var blob = null, filename = '';
+        try {
+          var form = document.getElementById(FORM_IDS[subtype]);
+          if (form) {
+            var dmodel = (subtype === 'job_site_analysis')
+              ? extractJsaDoc(form, payload)
+              : extractDoc(form, subtype, payload);
+            var pdf = renderDetailedPdf(dmodel);
+            blob = pdf.blob; filename = pdf.filename;
+          }
+        } catch (e) { blob = null; }
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = label || 'Submit'; }
+        renderDemoCompletion(title, blob, filename);
+        return Promise.resolve({ demo: true, saved: false });
+      }
+
       // ---------- boot: validate ticket, auto-open form, lock identity ----------
-      if (ticket) {
+      if (DEMO) {
+        NG.active = true; NG.demo = true; NG.ticket = null;
+        NG.user = DEMO_HOME.user;
+        NG.job = DEMO_HOME.jobs[0];
+        NG.equipment = DEMO_HOME.equipment;
+        NG.people = DEMO_HOME.people;
+        NG.hotworkLocations = DEMO_HOME.hotwork_locations;
+        setTimeout(function () {
+          mountDemoBanner();
+          mountDemoQuickLinks();
+          applyLocks();
+          // A direct link may name a form; otherwise stay on the landing
+          // screen so the reviewer sees normal navigation first.
+          if (ngform) openDemoForm(ngform);
+        }, 0);
+      } else if (ticket) {
         rpc('cs_portal_field_home', { p_token: ticket }).then(function (home) {
           NG.user = home.user || '';
           NG.job = (home.jobs && home.jobs[0]) || null;
