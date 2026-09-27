@@ -136,7 +136,13 @@ for (const t of mod.TBT_TALKS) {
   assert.ok(entry, `talk "${t.i}" is missing from the manifest`);
   assert.equal(t.t, entry.title, `title mismatch for ${t.i}`);
   assert.equal(t.f, entry.originalFilename, `original filename must be preserved for ${t.i}`);
-  assert.equal(t.src, entry.sourcePath, `source path must match the manifest for ${t.i}`);
+  // The module's inert source string is normalised for the public repo; the
+  // manifest keeps the real path so the resolve check below still guards
+  // against a wrong path. The hosted build drops sourcePath entirely.
+  const norm = (p) => p.replace(/[A-Z][a-z]+ Thread Batch (\d+)/, 'Source Batch C$1')
+                       .replace(/[A-Z][a-z]+ Toolbox Email (\d+)/, 'Source Batch $1');
+  assert.equal(t.src, norm(entry.sourcePath),
+    `source path must match the manifest for ${t.i}`);
   assert.equal(t.pages.length, entry.pageCount, `page count mismatch for ${t.i}`);
   assert.deepEqual(t.pages, entry.pages.map((p) => p.src),
     `page list must match the manifest for ${t.i}`);
@@ -305,7 +311,7 @@ for (const t of manifest.talks) {
 }
 
 // The stale path that never existed must not come back.
-excludes('Tony Toolbox Email 01/Fall Protection.pdf',
+excludes('Source Batch 01/Fall Protection.pdf',
   'the old non-existent source path must not reappear');
 
 /* ------------------------------------------------------------------ *
@@ -356,7 +362,7 @@ const choice = makeModule('?demo=1&company=choice');
 assert.equal(choice.TBT_CO.choice.people.length, 12, "Choice's roster is 12 people");
 assert.equal(choice.TBT_CO.choice.groups.length, 1,
   'Choice runs a single Monday morning meeting');
-for (const n of ['Alex Fyffe', 'Angel Garcia', 'Zach France']) {
+for (const n of ['Ainsley Frost (Demo)', 'Adrian Gable (Demo)', 'Zane Fairlie (Demo)']) {
   assert.ok(choice.TBT_CO.choice.people.some((p) => p.n === n),
     `${n} must be on Choice's roster`);
 }
@@ -445,7 +451,7 @@ assert.equal(choice.TBT_CO.choice.mode, 'group', "Choice's configured method is 
 assert.equal(makeModule('?demo=1&company=peine').TBT_CO.peine.mode, 'individual',
   "Peine's configured method is individual");
 
-// Peine's roster is demo data: Tony has not sent the real employee list.
+// Peine's roster is demo data: the safety manager has not sent the real employee list.
 const peine = makeModule('?demo=1&company=peine');
 assert.ok(peine.TBT_CO.peine.people.every((p) => /\(Demo\)/.test(p.n)),
   "Peine's roster must stay obviously fake until the real list arrives");
@@ -462,7 +468,7 @@ const g = makeModule('?demo=1&company=choice&tbtmode=group');
 const gname = g.TBT_CO.choice.groups[0];
 assert.equal(g.tbtStatusText(), '0 of 1 group submitted', 'status must start at zero');
 g.tbtPush({ week: g.tbtMondayISO(), talkId: g.tbtCurrentTalk().i, kind: 'group',
-  company: 'choice', group: gname, presenter: 'Alex Fyffe',
+  company: 'choice', group: gname, presenter: 'Ainsley Frost (Demo)',
   roster: g.TBT_CO.choice.people.map((p) => p.n), manual: ['Temp Helper'],
   at: new Date().toISOString() });
 const rec = g.tbtGroupRecord(gname);

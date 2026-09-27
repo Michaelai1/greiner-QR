@@ -2551,7 +2551,7 @@
                             <div class="form-error">Required</div>
                         </div>
                         <!-- Reviewed By removed for this demo. Supervisor approval can be
-                             added later if Tony asks for it. -->
+                             added later if the safety manager asks for it. -->
                         <div class="form-group">
                             <label class="form-label" for="jhaJobsiteSafety">Jobsite Safety Requirements — PPE, housekeeping, dust walls, spark-proof tools, etc. <span class="required">*</span></label>
                             <textarea class="form-textarea" id="jhaJobsiteSafety" name="jhaJobsiteSafety" rows="4" required placeholder="Describe requirements…"></textarea>
@@ -2710,7 +2710,7 @@
                             <div class="form-error">Required</div>
                         </div>
                         <!-- Ladder questions below are taken ONLY from the Greiner Brothers
-                             Ladder / Fall Protection Variance Form supplied by Tony. Nothing
+                             Ladder / Fall Protection Variance Form supplied by the safety manager. Nothing
                              here is invented. The form's three approval signatures
                              (Superintendent/Foreman, Site Safety Advisor, third-party safety
                              member) are deliberately NOT built - approval is out of scope for
@@ -3587,7 +3587,7 @@
                 'WG1', 'WG2',
                 // Observed in historical Purdue field submissions (rental lifts).
                 '53310', '53319', '56439', 'JLG 34282',
-                // Current Skyworks rentals per Tony's 2026-08-31 rental report.
+                // Current Skyworks rentals per the safety manager's 2026-08-31 rental report.
                 // Purdue C800:
                 '53308', '53309', '53313', '30879', '30984', '27152', '53317', '53315', '16028', '40929',
                 // Taylorsville C808:
@@ -5542,7 +5542,7 @@ ${photoUrls}`;
         if (NG.user) setLock('[name="aerialInspectorName"],[name="forkliftInspectorName"],[name="jhaAnalysisBy"],[name="aerialSignature"],[name="forkliftSignature"],[name="jsaSignature"]', NG.user);
         if (NG.job) setLock('[name="aerialJobsite"],[name="forkliftJobsite"],[name="jhaLocation"],[name="hotWorkLocation"]', NG.job.name + (NG.job.job_number ? ' (' + NG.job.job_number + ')' : ''));
         // Project info auto-populates from the authenticated job record — the
-        // field user never retypes what the job already stores (Tony req #2).
+        // field user never retypes what the job already stores (the safety manager req #2).
         if (NG.job) {
           setLock('[name="jhaProjectName"]', NG.job.name || '');
           // JHA Checklist: prefill Work Area/Facility + Job No. from the job
@@ -5560,7 +5560,7 @@ ${photoUrls}`;
         setupHotWorkLocation();
       }
 
-      // People autocomplete (Tony req #1): a native datalist of the people
+      // People autocomplete (the safety manager req #1): a native datalist of the people
       // assigned to THIS job (cs_portal_field_home 'people' — server-scoped to
       // the session's job, so no unrelated-job names leak). Attached to the
       // free person fields; multi-person fields (JHA employees) each keep their
@@ -5583,7 +5583,7 @@ ${photoUrls}`;
         });
       }
 
-      // Hot Work location hierarchy (Tony req #3): if the job has configured
+      // Hot Work location hierarchy (the safety manager req #3): if the job has configured
       // buildings/floors (cs_portal_field_home 'hotwork_locations'), show
       // Building + Floor dropdowns; otherwise the fields stay manual entry.
       // Values are configured per job — never invented in code.
@@ -6954,7 +6954,7 @@ ${photoUrls}`;
       /* ================= TOOLBOX TALKS — mobile demo =====================
          A three-step phone walkthrough, entirely local:
            1 Choose Method   - group or individual (demo selector only)
-           2 Review Talk     - the real pages of the talk Tony emailed
+           2 Review Talk     - the real pages of the talk the safety manager emailed
            3 Record Completion
          Nothing is uploaded, no webhook, no text, no Supabase write. The
          method selector exists so both options can be shown from one build;
@@ -6964,13 +6964,13 @@ ${photoUrls}`;
       var TBT_KEY = 'cs_tbt_mobile_demo_v1';
 
       /* The talks used in the walkthrough. Page images are rendered verbatim
-         from the PDFs Tony emailed and live in demo-assets/toolbox-talks/ as
+         from the PDFs the safety manager emailed and live in demo-assets/toolbox-talks/ as
          relative paths, so the demo works from any checkout. originalFilename
          and sourcePath are kept for traceability and mirror
          demo-assets/toolbox-talks/manifest.json. */
       var TBT_TALKS = [
         { i: 'fall', t: 'Fall Protection', f: 'Fall Protection.pdf',
-          src: '/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Choice Thread Batch 06/Fall Protection.pdf',
+          src: '/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Source Batch C06/Fall Protection.pdf',
           pages: ['demo-assets/toolbox-talks/fall/page-01.jpg',
                   'demo-assets/toolbox-talks/fall/page-02.png'],
           /* Guided Talk sections, extracted verbatim from the source PDF: every
@@ -6998,11 +6998,11 @@ ${photoUrls}`;
               p: ['Whenever feasible, employers should always set up temporary floors, guardrails, toeboards, or other physical barriers to falls, instead of having workers rely on tying off and nets for fall protection. When not feasible, personal fall protection or safety nets must be used. No work should proceed unless the necessary fall protection is in place. The use of fall protection can prevent serious injury and save your life.'] }
           ] },
         { i: 'ladders', t: 'Ladders 1', f: 'Ladders 1.pdf',
-          src: '/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Choice Thread Batch 04/Ladders 1.pdf',
+          src: '/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Source Batch C04/Ladders 1.pdf',
           pages: ['demo-assets/toolbox-talks/ladders/page-01.jpg',
                   'demo-assets/toolbox-talks/ladders/page-02.png'] },
         { i: 'exc', t: 'Excavation Safety', f: 'Excavation Safety.pdf',
-          src: '/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Choice Thread Batch 06/Excavation Safety.pdf',
+          src: '/Users/michaelcarey/Desktop/Griner Toolbox/Extracted/Source Batch C06/Excavation Safety.pdf',
           pages: ['demo-assets/toolbox-talks/exc/page-01.jpg',
                   'demo-assets/toolbox-talks/exc/page-02.png',
                   'demo-assets/toolbox-talks/exc/page-03.png'] }
@@ -7019,10 +7019,10 @@ ${photoUrls}`;
             { n: 'Taylor Reed (Demo)', g: 'Demo Job B — Central Plant' }
           ], me: 'Demo Foreman' },
         choice: { name: 'Choice', mode: 'group', groups: ['Monday Group Meeting'],
-          people: ['Alex Fyffe', 'Angel Garcia', 'Zach France', 'Bobby Douthit', 'Cian McGarr',
-                   'Cenon "T" Heim', 'Darvelle White', 'Joe Mikalouski', 'Jon Wennen',
-                   'Justin Rice', 'Kyle Palmer', 'Nick Barnes'].map(function (n) {
-                     return { n: n, g: 'Monday Group Meeting' }; }), me: 'Alex Fyffe' },
+          people: ['Ainsley Frost (Demo)', 'Adrian Gable (Demo)', 'Zane Fairlie (Demo)', 'Bailey Dunmore (Demo)', 'Callum Merrick (Demo)',
+                   'Corey "T" Hale (Demo)', 'Dorian Whitfield (Demo)', 'Jesse Marlow (Demo)', 'Jonah Welles (Demo)',
+                   'Jordan Rowe (Demo)', 'Kelsey Pratt (Demo)', 'Noel Bexley (Demo)'].map(function (n) {
+                     return { n: n, g: 'Monday Group Meeting' }; }), me: 'Ainsley Frost (Demo)' },
         peine: { name: 'Peine', mode: 'individual', groups: ['Peine Field (Demo)'],
           people: ['Avery Nolan (Demo)', 'Bailey Cruz (Demo)', 'Cameron Diaz-Lee (Demo)',
                    'Devon Marsh (Demo)', 'Emerson Pike (Demo)', 'Finley Ward (Demo)'].map(function (n) {
@@ -7575,7 +7575,7 @@ ${photoUrls}`;
           toast('error', 'Session expired', 'Open this form again from your Greiner dashboard to sign in.');
         });
       } else if (params.get('review') === '1' && OPENERS[ngform] && typeof window[OPENERS[ngform]] === 'function') {
-        // Admin/Tony review preview: open a form for visual review with no
+        // Admin/the safety manager review preview: open a form for visual review with no
         // session. Submit stays blocked (handleSaveData requires a ticket), so
         // no data is written. Gated on ?review=1 — the normal crew flow (which
         // always carries a ticket) is untouched.
