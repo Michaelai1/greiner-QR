@@ -1776,6 +1776,78 @@
             padding:10px; font-size:13px; font-weight:600; margin-bottom:10px; }
         .jha-assign-add { border:0; background:#b45309; color:#fff; border-radius:6px; padding:6px 10px;
             font-size:12.5px; font-weight:700; cursor:pointer; margin-left:4px; }
+        /* Ladder inspection card, aerial roster, revision picker and sheets —
+           built on the app's dark theme tokens. */
+        .jha-ladder-card, .jha-rev-card, .jha-rev-view, .jha-review {
+          background:var(--color-bg-card); color:var(--color-text-primary);
+          border:1px solid rgba(148,163,184,.28); border-radius:12px; }
+        .jha-ladder-card { padding:12px 14px; margin-top:10px; }
+        .jha-ladder-card.is-dnu, .jha-ladder-card.is-error { border-color:var(--color-error); background:rgba(248,113,113,.10); }
+        .jha-ladder-head { font-weight:800; font-size:14.5px; margin-bottom:6px; }
+        .jha-ladder-row { display:flex; justify-content:space-between; gap:12px; padding:6px 0; font-size:13.5px;
+          border-bottom:1px solid var(--color-border); }
+        .jha-ladder-row span { color:var(--color-text-secondary); flex:0 0 auto; }
+        .jha-ladder-row b { color:var(--color-text-primary); text-align:right; overflow-wrap:anywhere; min-width:0; }
+        .jha-ladder-row.is-dnu b { color:var(--color-error); }
+        .jha-ladder-msg { font-size:13.5px; margin:8px 0 0; line-height:1.45; }
+        .jha-ladder-dnu { margin-top:10px; background:#b91c1c; color:#fff; font-weight:800; font-size:13.5px;
+          border-radius:8px; padding:10px 12px; line-height:1.4; }
+        .jha-ladder-rec { margin-top:12px; padding-top:10px; border-top:1px dashed rgba(148,163,184,.35); }
+        .jha-ladder-rec .form-label { color:var(--color-text-primary); }
+        .jha-ladder-rec .err { color:var(--color-error); font-size:13px; font-weight:600; margin:8px 0 0; }
+        .jha-ladder-ack { display:flex; gap:10px; align-items:flex-start; font-size:14px; font-weight:600; margin:4px 0 10px;
+          color:var(--color-text-primary); }
+        .jha-ladder-ack input { width:22px; height:22px; flex:0 0 auto; margin-top:1px; accent-color:var(--color-accent); }
+        .jha-ladder-defect { border:1px solid rgba(248,113,113,.45); background:rgba(248,113,113,.08);
+          border-radius:10px; padding:10px; margin-top:6px; }
+        .jha-ladder-defect input[type=file] { max-width:100%; color:var(--color-text-secondary); }
+        .jha-sheet-secondary { border:1px solid rgba(148,163,184,.4); background:transparent; color:var(--color-text-primary);
+          border-radius:10px; padding:11px 14px; font-weight:700; font-size:14px; min-height:44px; cursor:pointer; }
+        .jha-rev-banner { background:var(--color-bg-card); color:var(--color-text-primary); border:1px solid rgba(148,163,184,.28);
+          border-left:4px solid var(--color-accent); border-radius:12px; padding:14px; margin-bottom:14px; }
+        .jha-rev-banner.jha-rev-need { box-shadow:0 0 0 3px #fbbf24; }
+        .jha-rev-banner-head { font-weight:900; font-size:18px; }
+        .jha-rev-banner-sub { font-size:13px; color:var(--color-text-secondary); margin-top:4px; line-height:1.4; }
+        .jha-rev-why { margin-top:12px; }
+        .jha-rev-why-label { display:block; font-weight:700; font-size:13.5px; margin-bottom:6px; color:var(--color-text-primary); }
+        .jha-rev-why-opts { display:flex; flex-wrap:wrap; gap:6px; }
+        .jha-rev-why-opt { border:1px solid rgba(148,163,184,.4); background:transparent; color:var(--color-text-primary);
+          border-radius:999px; padding:8px 12px; font-size:13px; font-weight:600; min-height:40px; cursor:pointer; }
+        .jha-rev-why-opt.is-on { background:var(--color-accent); border-color:var(--color-accent); color:#04121f; }
+        .jha-rev-group { font-size:13px; font-weight:800; letter-spacing:.04em; text-transform:uppercase;
+          color:var(--color-text-secondary); margin:16px 0 8px; }
+        .jha-rev-card { padding:12px; margin-bottom:10px; }
+        .jha-rev-card.is-capped { border-style:dashed; }
+        .jha-rev-card-title { font-weight:800; font-size:15px; margin-bottom:8px; overflow-wrap:anywhere; }
+        .jha-rev-grid { display:grid; grid-template-columns:auto 1fr; gap:4px 12px; font-size:13px; margin-bottom:10px; }
+        .jha-rev-grid span { color:var(--color-text-secondary); }
+        .jha-rev-grid b { color:var(--color-text-primary); text-align:right; overflow-wrap:anywhere; }
+        .jha-rev-capmsg { font-size:13px; color:#fcd34d; background:rgba(251,191,36,.12); border-radius:8px; padding:8px 10px; margin:0 0 8px; }
+        .jha-rev-notice { font-size:14px; color:var(--color-text-primary); background:rgba(148,163,184,.12);
+          border-radius:10px; padding:12px; margin-bottom:10px; line-height:1.45; }
+        .jha-rev-view { display:flex; flex-direction:column; gap:2px; width:100%; text-align:left;
+          padding:10px 12px; margin-bottom:8px; font-size:13.5px; cursor:pointer; }
+        .jha-rev-view span { color:var(--color-text-secondary); font-size:12.5px; }
+        .jha-sheet-wrap { position:fixed; inset:0; z-index:100000; background:rgba(2,6,23,.7);
+          display:flex; align-items:flex-end; justify-content:center; }
+        .jha-sheet { background:var(--color-bg-secondary); color:var(--color-text-primary); width:100%; max-width:640px;
+          max-height:88vh; overflow-y:auto; border-radius:16px 16px 0 0; border:1px solid rgba(148,163,184,.28);
+          padding:18px 16px calc(16px + env(safe-area-inset-bottom)); box-sizing:border-box; }
+        .jha-sheet-title { font-weight:900; font-size:18px; margin-bottom:8px; }
+        .jha-sheet-lede { font-size:14px; line-height:1.45; margin:0 0 10px; }
+        .jha-sheet-meta { font-size:13px; background:rgba(148,163,184,.12); border-radius:8px; padding:8px 10px; margin-bottom:10px; }
+        .jha-sheet-actions { display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+        .jha-sheet-actions .submit-button { margin:0; }
+        .jha-review { text-align:left; padding:10px 12px; }
+        .jha-review summary { font-weight:800; cursor:pointer; min-height:28px; }
+        .jha-review-sec { margin-top:10px; }
+        .jha-review-sec.is-legacy { background:rgba(148,163,184,.10); border-radius:8px; padding:6px 8px; }
+        .jha-review-title { font-weight:800; font-size:13px; color:var(--color-accent); margin-bottom:4px; }
+        .jha-review-row { padding:5px 0; border-bottom:1px solid var(--color-border); font-size:13.5px; }
+        .jha-review-row.is-flag .jha-review-a { color:var(--color-error); font-weight:800; }
+        .jha-review-q { color:var(--color-text-secondary); font-size:12.5px; }
+        .jha-review-a { color:var(--color-text-primary); white-space:pre-wrap; overflow-wrap:anywhere; }
+        .opt { color:var(--color-text-secondary); font-weight:500; font-size:.85em; }
         .jha-assign-remove { border:0; background:transparent; color:#b91c1c; font-size:13px; font-weight:600;
             cursor:pointer; padding:4px 0; }
         .jha-other-input { border-color:#b45309; }
@@ -2178,7 +2250,6 @@
                 <button type="button" class="inspection-type-btn" id="openForkliftInspectionBtn" aria-label="Forklift">Forklift</button>
                 <button type="button" class="inspection-type-btn" id="openJhaFormBtn" aria-label="JHA Task Hazard Control">JHA: Task / Hazard / Control</button>
                 <button type="button" class="inspection-type-btn" id="openHotWorkPermitBtn" aria-label="Hot Work Permit">Hot Work Permit</button>
-                <button type="button" class="inspection-type-btn" id="openJobSiteAnalysisBtn" aria-label="JHA Checklist Review">JHA: Checklist — Review</button>
             </div>
         </div>
         
@@ -2460,6 +2531,13 @@
                                 <label><input type="radio" name="fl_chk_overhead" value="defect"> Defect</label>
                             </div>
                         </div>
+                        <div class="form-group inspection-checklist-row">
+                            <div class="inspection-checklist-label">Manufacturer Operator's Manual Present and Readable</div>
+                            <div class="inspection-radio-row">
+                                <label><input type="radio" name="fl_chk_operator_manual" value="safe" data-display="Yes" required> Yes</label>
+                                <label><input type="radio" name="fl_chk_operator_manual" value="defect" data-display="No"> No</label>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-section">
                         <div class="form-group">
@@ -2513,20 +2591,12 @@
                             <div class="form-error">Required</div>
                         </div>
                         <div class="form-group">
-                            <span class="form-label">New or Revised <span class="required">*</span></span>
-                            <div class="jha-newrevised-row" role="radiogroup" aria-label="New or Revised">
-                                <label><input type="radio" name="jhaNewRevised" value="new" required> New</label>
-                                <label><input type="radio" name="jhaNewRevised" value="revised"> Revised</label>
-                            </div>
-                            <div class="form-error">Please select one</div>
-                        </div>
-                        <div class="form-group">
                             <label class="form-label" for="jhaStartTime">Start Time <span class="required">*</span></label>
                             <input type="time" class="form-input" id="jhaStartTime" name="jhaStartTime" required>
                             <div class="form-error">Required</div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="jhaCompleteTime">Complete Time <span class="required">*</span></label>
+                            <label class="form-label" for="jhaCompleteTime">Estimated Time of Completion <span class="required">*</span></label>
                             <input type="time" class="form-input" id="jhaCompleteTime" name="jhaCompleteTime" required>
                             <div class="form-error">Required</div>
                         </div>
@@ -2699,50 +2769,50 @@
                         <button type="button" class="inspection-add-row-btn" id="jhaAddAssignBtn">+ Add task assignment</button>
                         <input type="hidden" id="jhaCrewData" name="jhaCrewData">
                     </div>
-                    <div class="form-section">
+                    <!-- Ladder and Aerial Lift answers render from the shared JHA model
+                         (JHA-MODEL block), so the phone review, office detail and PDF
+                         read the same list. Tony's Oct 1 instruction retired the old
+                         ladder/fall-protection variance questions; older JHAs still show
+                         them from their stored answers. -->
+                    <div class="form-section" data-jha-model="ladder">
                         <div class="form-section-title">Ladder Use</div>
                         <div class="form-group">
-                            <span class="form-label">Planned or expected use of any ladder? <span class="required">*</span></span>
-                            <div class="jha-newrevised-row" role="radiogroup" aria-label="Planned or expected use of any ladder">
+                            <span class="form-label">Is any ladder use planned or expected today? <span class="required">*</span></span>
+                            <div class="jha-newrevised-row" role="radiogroup" aria-label="Is any ladder use planned or expected today">
                                 <label><input type="radio" name="jhaLadderUse" value="yes" required> Yes</label>
                                 <label><input type="radio" name="jhaLadderUse" value="no"> No</label>
                             </div>
                             <div class="form-error">Required</div>
                         </div>
-                        <!-- Ladder questions below are taken ONLY from the Greiner Brothers
-                             Ladder / Fall Protection Variance Form supplied by the safety manager. Nothing
-                             here is invented. The form's three approval signatures
-                             (Superintendent/Foreman, Site Safety Advisor, third-party safety
-                             member) are deliberately NOT built - approval is out of scope for
-                             this demo. -->
                         <div id="jhaLadderPanel" style="display:none">
-                            <p class="jha-row-hint">From the Greiner Brothers Ladder / Fall Protection Variance Form.</p>
                             <div class="form-group">
-                                <span class="form-label">Can this work be done safely from a ladder? <span class="required">*</span></span>
-                                <div class="jha-newrevised-row" role="radiogroup" aria-label="Can this work be done safely from a ladder">
-                                    <label><input type="radio" name="jhaLadderSafe" value="yes"> Yes</label>
-                                    <label><input type="radio" name="jhaLadderSafe" value="no"> No</label>
-                                </div>
+                                <label class="form-label" for="jhaLadderId">Ladder ID <span class="required">*</span></label>
+                                <input type="text" class="form-input" id="jhaLadderId" name="jhaLadderId" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="e.g. LAD-101">
+                                <p class="jha-row-hint" style="margin:6px 0 0">Enter or scan the ID displayed on the ladder.</p>
                                 <div class="form-error">Required</div>
                             </div>
+                            <input type="hidden" id="jhaLadderInspection" name="jhaLadderInspection">
+                            <div id="jhaLadderCard" aria-live="polite"></div>
+                        </div>
+                    </div>
+                    <div class="form-section" data-jha-model="aerial">
+                        <div class="form-section-title">Aerial Lifts</div>
+                        <div class="form-group">
+                            <span class="form-label">Will any aerial lift devices be used today? <span class="required">*</span></span>
+                            <div class="jha-newrevised-row" role="radiogroup" aria-label="Will any aerial lift devices be used today">
+                                <label><input type="radio" name="jhaAerialUse" value="yes" required> Yes</label>
+                                <label><input type="radio" name="jhaAerialUse" value="no"> No</label>
+                            </div>
+                            <div class="form-error">Required</div>
+                        </div>
+                        <div id="jhaAerialPanel" style="display:none">
                             <div class="form-group">
-                                <label class="form-label" for="jhaLadderWhyNotLift">Explain why a one-man scissor lift, or being tied off while using a ladder, will not work in this instance <span class="required">*</span></label>
-                                <textarea class="form-textarea" id="jhaLadderWhyNotLift" name="jhaLadderWhyNotLift" rows="3" placeholder="Be specific and detailed&hellip;"></textarea>
-                                <div class="form-error">Required</div>
+                                <span class="form-label">What competent person or persons will conduct the lift inspections? <span class="required">*</span></span>
+                                <p class="jha-row-hint" style="margin:0 0 8px">Select every person who may conduct an inspection today.</p>
+                                <div id="jhaAerialRoster" class="jha-crew-roster"></div>
+                                <div class="form-error">Select at least one person</div>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label" for="jhaLadderObstacle1">Above-ceiling hindrances / obstacles</label>
-                                <input type="text" class="form-input" id="jhaLadderObstacle1" name="jhaLadderObstacle1" placeholder="1." style="margin-bottom:6px">
-                                <input type="text" class="form-input" id="jhaLadderObstacle2" name="jhaLadderObstacle2" placeholder="2." style="margin-bottom:6px">
-                                <input type="text" class="form-input" id="jhaLadderObstacle3" name="jhaLadderObstacle3" placeholder="3." style="margin-bottom:6px">
-                                <input type="text" class="form-input" id="jhaLadderObstacle4" name="jhaLadderObstacle4" placeholder="4." style="margin-bottom:6px">
-                                <input type="text" class="form-input" id="jhaLadderObstacle5" name="jhaLadderObstacle5" placeholder="5.">
-                            </div>
-                            <div class="form-group" id="jhaLadderRiskGroup" style="display:none">
-                                <label class="form-label" for="jhaLadderGreaterRisk">Explain how the use of fall protection poses a greater risk than not using it <span class="required">*</span></label>
-                                <textarea class="form-textarea" id="jhaLadderGreaterRisk" name="jhaLadderGreaterRisk" rows="3" placeholder="Be specific and detailed&hellip;"></textarea>
-                                <div class="form-error">Required</div>
-                            </div>
+                            <input type="hidden" id="jhaAerialInspectors" name="jhaAerialInspectors">
                         </div>
                     </div>
                     <div class="form-section">
@@ -2810,6 +2880,11 @@
                         <div class="form-group">
                             <label class="form-label" for="hotWorkArea">Specific Area / Room <span class="required">*</span></label>
                             <input type="text" class="form-input" id="hotWorkArea" name="hotWorkArea" required placeholder="Specific area or room">
+                            <div class="form-error">Required</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="hotWorkType">Type of Hot Work Being Performed <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="hotWorkType" name="hotWorkType" required placeholder="e.g. welding, cutting, brazing">
                             <div class="form-error">Required</div>
                         </div>
                         <div class="form-group">
@@ -5457,6 +5532,484 @@ ${photoUrls}`;
          PDF is generated here and stored via the private-bucket edge function.
          All identity (inspector + job) is derived server-side from the ticket;
          URL-provided inspector/job values are never trusted. -->
+    <script>
+/* JHA-MODEL:BEGIN ===========================================================
+   Shared JHA model — ONE definition of the JHA fields, the ladder lookup and
+   the revision rules. The phone (greiner-QR index.html) embeds this block;
+   the office dashboard carries a byte-identical copy in jha-model.js, and a
+   test fails if the two drift. Pure functions only: no DOM, no network, no
+   storage. Callers pass in the records and the clock.
+   ========================================================================== */
+(function (root) {
+  'use strict';
+
+  var TZ = 'America/Indiana/Indianapolis';
+
+  /* Revision window. Tony (Oct 2): up to three revisions to one JHA within a
+     Monday-to-Friday week; the original never changes. Tony has NOT confirmed
+     weekend behavior — this demo treats Saturday and Sunday as outside the
+     window. Change `workdays` (ISO weekday numbers, Mon=1 ... Sun=7) once he
+     decides; nothing else needs to move. */
+  var JHA_REVISION_RULES = {
+    maxRevisions: 3,
+    timeZone: TZ,
+    workdays: [1, 2, 3, 4, 5]
+  };
+
+  /* Ladder inspection cadence. Tony mentioned weekly ladder inspections but
+     has not confirmed the rule, so the last inspection date is shown for
+     information only: nothing expires and nothing is blocked because of age.
+     To enforce later, change this one object:
+       { mode: 'calendar-days', maxAgeDays: 7 }  — within the last 7 days
+       { mode: 'workweek' }                       — inside the current workweek */
+  var LADDER_INSPECTION_CADENCE = { mode: 'informational', maxAgeDays: null };
+
+  var REVISION_CHANGE_TYPES = [
+    'Work scope', 'Hazard or site condition', 'Crew assignment',
+    'Equipment or material', 'Control or procedure', 'Correction or other'
+  ];
+
+  /* ---------------- time (Indianapolis) ---------------- */
+  var _fmt = null;
+  function indyParts(instant) {
+    var d = instant instanceof Date ? instant : new Date(instant);
+    if (!_fmt) {
+      _fmt = new Intl.DateTimeFormat('en-US', { timeZone: TZ, year: 'numeric',
+        month: '2-digit', day: '2-digit', weekday: 'short' });
+    }
+    var p = {};
+    _fmt.formatToParts(d).forEach(function (x) { p[x.type] = x.value; });
+    var dow = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 }[p.weekday];
+    return { iso: p.year + '-' + p.month + '-' + p.day, dow: dow };
+  }
+  function isoAddDays(iso, n) {
+    var t = Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) + n * 86400000;
+    return new Date(t).toISOString().slice(0, 10);
+  }
+  /* Which workweek an instant falls in, and whether that day is a workday. */
+  function workweekOf(instant) {
+    var p = indyParts(instant);
+    return { date: p.iso, dow: p.dow, weekStart: isoAddDays(p.iso, 1 - p.dow),
+             isWorkday: JHA_REVISION_RULES.workdays.indexOf(p.dow) !== -1 };
+  }
+  function fmtIndy(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d)) return String(iso);
+    return d.toLocaleString('en-US', { timeZone: TZ, month: 'short', day: 'numeric',
+      year: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+
+  /* ---------------- JHA families and revisions ---------------- */
+  // A family is one original JHA plus every revision of it. revision_number is
+  // the version: 1 = original, 2 = Revision 1, 3 = Revision 2, 4 = Revision 3.
+  function familyVersions(store, rootId) {
+    return (store || []).filter(function (r) { return r.root_jha_id === rootId; })
+      .sort(function (a, b) { return a.revision_number - b.revision_number; });
+  }
+  function familyHead(store, rootId) {
+    var v = familyVersions(store, rootId);
+    return v.length ? v[v.length - 1] : null;
+  }
+  function revisionsUsed(store, rootId) {
+    return Math.max(0, familyVersions(store, rootId).length - 1);
+  }
+  function revisionLabel(n) { return n <= 1 ? 'Original' : 'Revision ' + (n - 1); }
+
+  /* Can this family take another revision right now?
+     code: ok | not-found | other-job | other-company | cap | weekend-now |
+           weekend-original | outside-week */
+  function reviseEligibility(store, rootId, ctx) {
+    var versions = familyVersions(store, rootId);
+    if (!versions.length) return { ok: false, code: 'not-found', message: 'This JHA was not found.' };
+    var orig = versions[0], head = versions[versions.length - 1];
+    var used = versions.length - 1, max = JHA_REVISION_RULES.maxRevisions;
+    var base = { used: used, remaining: Math.max(0, max - used),
+                 nextNumber: used + 1, head: head, original: orig };
+    function no(code, message) { return Object.assign({ ok: false, code: code, message: message }, base); }
+    if (ctx.companyId && orig.company_id && orig.company_id !== ctx.companyId) {
+      return no('other-company', 'This JHA belongs to another company.');
+    }
+    if (ctx.jobId && orig.job_id !== ctx.jobId) {
+      return no('other-job', 'Only JHAs from this job can be revised here.');
+    }
+    var now = workweekOf(ctx.now), was = workweekOf(orig.original_submitted_at);
+    if (!now.isWorkday) {
+      return no('weekend-now', 'JHAs can be revised Monday through Friday. Start a new JHA to document today’s work.');
+    }
+    if (!was.isWorkday) {
+      return no('weekend-original', 'This JHA was submitted on a weekend and can’t be revised. Start a new JHA instead.');
+    }
+    if (was.weekStart !== now.weekStart) {
+      return no('outside-week', 'This JHA is from an earlier workweek and can no longer be revised. You can view its history or start a new JHA.');
+    }
+    if (used >= max) {
+      return no('cap', 'This JHA already has ' + max + ' revisions. Start a new JHA to document additional changes.');
+    }
+    return Object.assign({ ok: true, code: 'ok', message: '' }, base);
+  }
+
+  /* The picker: this job's families from the current workweek, grouped into
+     Today and Earlier this workweek, newest activity first. Capped families
+     stay listed so the foreman sees why, with a Complete New JHA action. */
+  function revisionCandidates(store, ctx) {
+    var roots = {};
+    (store || []).forEach(function (r) { roots[r.root_jha_id] = 1; });
+    var now = workweekOf(ctx.now), today = [], earlier = [], hidden = 0;
+    Object.keys(roots).forEach(function (rootId) {
+      var e = reviseEligibility(store, rootId, ctx);
+      if (e.code === 'not-found' || e.code === 'other-job' || e.code === 'other-company') return;
+      if (e.code === 'outside-week' || e.code === 'weekend-original' || e.code === 'weekend-now') { hidden++; return; }
+      var card = { rootId: rootId, eligibility: e, original: e.original, head: e.head,
+        lastActivity: e.head.revised_at || e.original.original_submitted_at };
+      (workweekOf(e.original.original_submitted_at).date === now.date ? today : earlier).push(card);
+    });
+    var newest = function (a, b) { return String(b.lastActivity).localeCompare(String(a.lastActivity)); };
+    return { today: today.sort(newest), earlier: earlier.sort(newest), hiddenCount: hidden,
+             windowOpen: now.isWorkday };
+  }
+
+  function freezeDeep(o) {
+    if (o && typeof o === 'object' && !Object.isFrozen(o)) {
+      Object.freeze(o);
+      Object.keys(o).forEach(function (k) { freezeDeep(o[k]); });
+    }
+    return o;
+  }
+
+  /* Submitted records are frozen: no later code can edit an earlier version.
+     `serverNow` is the server's clock (the demo stands it in locally); no
+     timestamp is ever taken from a form field or a typed value. */
+  function createOriginal(store, req, serverNow) {
+    var at = new Date(serverNow).toISOString();
+    var rootId = req.rootId || ('jha-' + Date.parse(at).toString(36) + '-' + (store.length + 1));
+    var rec = freezeDeep({
+      id: rootId + '-v1', root_jha_id: rootId, previous_revision_id: null, revision_number: 1,
+      company_id: req.companyId || null, job_id: req.jobId || null,
+      work_date: workweekOf(at).date, original_submitted_at: at, revised_at: null,
+      submitted_by: req.by || '', revised_by: req.by || '', status: 'submitted',
+      revision_change_type: null, revision_note: null,
+      data: normalizeJhaData(req.data || {}), crew: req.crew || { employees: [], groups: [] },
+      photos: req.photos || []
+    });
+    store.push(rec);
+    return { ok: true, record: rec };
+  }
+
+  /* Append the next revision. Refuses (never overwrites) when the JHA moved on
+     since the form opened (stale), when the cap is reached, when the window is
+     closed, or when no change type was chosen. */
+  function submitRevision(store, req, serverNow) {
+    var e = reviseEligibility(store, req.rootId, { now: serverNow, jobId: req.jobId, companyId: req.companyId });
+    if (!e.ok) return { ok: false, code: e.code, message: e.message };
+    if (req.baseVersionId !== e.head.id) {
+      return { ok: false, code: 'stale',
+        message: 'This JHA was revised after you opened it. Refresh to load the latest version, then make your changes again.' };
+    }
+    if (REVISION_CHANGE_TYPES.indexOf(req.changeType) === -1) {
+      return { ok: false, code: 'reason', message: 'Choose what changed.' };
+    }
+    var at = new Date(serverNow).toISOString();
+    var rec = freezeDeep({
+      id: req.rootId + '-v' + (e.head.revision_number + 1), root_jha_id: req.rootId,
+      previous_revision_id: e.head.id, revision_number: e.head.revision_number + 1,
+      company_id: e.original.company_id || null, job_id: e.original.job_id,
+      work_date: e.original.work_date, original_submitted_at: e.original.original_submitted_at,
+      revised_at: at, submitted_by: e.original.submitted_by, revised_by: req.by || '',
+      status: 'submitted', revision_change_type: req.changeType,
+      revision_note: String(req.note || '').trim() || null,
+      data: normalizeJhaData(req.data || {}), crew: req.crew || { employees: [], groups: [] },
+      photos: req.photos || []
+    });
+    store.push(rec);
+    return { ok: true, record: rec };
+  }
+
+  /* Compliance counts JHA families (one original = one daily JHA however many
+     revisions follow); analytics counts revision events separately. */
+  function dailyJhaCount(store, jobId, isoDate) {
+    var roots = {};
+    (store || []).forEach(function (r) {
+      if (r.revision_number === 1 && r.job_id === jobId && r.work_date === isoDate) roots[r.root_jha_id] = 1;
+    });
+    return Object.keys(roots).length;
+  }
+  function revisionEventCount(store, jobId) {
+    return (store || []).filter(function (r) {
+      return r.revision_number > 1 && (!jobId || r.job_id === jobId);
+    }).length;
+  }
+
+  /* ---------------- ladders ---------------- */
+  // One equipment category: Ladder. IDs match exactly (ignoring surrounding
+  // spaces and letter case). There is no fuzzy or partial matching.
+  function normalizeLadderId(v) { return String(v == null ? '' : v).trim().toUpperCase(); }
+
+  function ladderLookup(registry, inspections, rawId) {
+    var id = normalizeLadderId(rawId);
+    if (!id) return { state: 'empty', id: '' };
+    var matches = (registry || []).filter(function (l) { return normalizeLadderId(l.ladder_id) === id; });
+    if (matches.length > 1) {
+      return { state: 'duplicate', id: id, count: matches.length,
+        message: 'More than one ladder is registered as ' + id + '. Ask the office to correct the ladder list before relying on this ID.' };
+    }
+    if (!matches.length) {
+      return { state: 'unknown', id: id,
+        message: 'No inspection history was found for Ladder ' + id + '. Check the ID on the ladder, or record its first inspection.' };
+    }
+    var hist = (inspections || []).filter(function (i) { return normalizeLadderId(i.ladder_id) === id; })
+      .sort(function (a, b) { return String(b.inspected_at).localeCompare(String(a.inspected_at)); });
+    var open = hist.filter(function (i) { return i.defect && !i.defect.resolved_at; })[0] || null;
+    var last = hist[0] || null;
+    var status = open ? 'do-not-use' : (last ? 'no-open-defects' : 'no-inspection');
+    return { state: 'found', id: id, ladder: matches[0], last: last, history: hist,
+             openDefect: open ? open.defect : null, status: status,
+             statusLabel: ladderStatusLabel(status), cadence: ladderCadence(last) };
+  }
+  function ladderStatusLabel(status) {
+    // Deliberately never "approved", "ready" or any OSHA claim.
+    return status === 'do-not-use' ? 'Do Not Use — open defect reported'
+      : status === 'no-open-defects' ? 'No open defects reported'
+      : 'No inspection recorded';
+  }
+  // Informational unless LADDER_INSPECTION_CADENCE is changed.
+  function ladderCadence(last, now) {
+    var c = LADDER_INSPECTION_CADENCE;
+    if (c.mode === 'informational' || !last) return { enforced: false, due: false };
+    var at = new Date(last.inspected_at), t = now ? new Date(now) : new Date();
+    if (c.mode === 'calendar-days') return { enforced: true, due: (t - at) > c.maxAgeDays * 86400000 };
+    if (c.mode === 'workweek') return { enforced: true, due: workweekOf(at).weekStart !== workweekOf(t).weekStart };
+    return { enforced: false, due: false };
+  }
+
+  /* Record an inspection. The inspection time comes from serverNow only; any
+     inspected_at in the request is ignored, so a field user cannot backdate.
+     A defect is optional; when given it needs a description and whether the
+     ladder was removed from service. */
+  function recordLadderInspection(registry, inspections, req, serverNow) {
+    var id = normalizeLadderId(req.ladderId);
+    if (!id) return { ok: false, code: 'id', message: 'Enter the Ladder ID.' };
+    var look = ladderLookup(registry, inspections, id);
+    if (look.state === 'duplicate') return { ok: false, code: 'duplicate', message: look.message };
+    var who = String(req.inspector || '').trim();
+    if (!who) return { ok: false, code: 'inspector', message: 'Enter who inspected the ladder.' };
+    if (req.acknowledged !== true) return { ok: false, code: 'ack', message: 'Confirm that you inspected this ladder before use.' };
+    var at = new Date(serverNow).toISOString(), defect = null;
+    if (req.defect) {
+      var desc = String(req.defect.description || '').trim();
+      if (!desc) return { ok: false, code: 'defect-description', message: 'Describe the defect or unsafe condition.' };
+      if (req.defect.removedFromService !== 'yes' && req.defect.removedFromService !== 'no') {
+        return { ok: false, code: 'defect-removed', message: 'Say whether the ladder was removed from service.' };
+      }
+      defect = { description: desc, removed_from_service: req.defect.removedFromService,
+                 photo: req.defect.photo || null, reported_at: at, resolved_at: null };
+    }
+    if (look.state === 'unknown') registry.push(freezeDeep({ ladder_id: id, category: 'Ladder', added_at: at }));
+    var rec = freezeDeep({ id: 'ladinsp-' + Date.parse(at).toString(36) + '-' + (inspections.length + 1),
+      ladder_id: id, inspected_at: at, inspected_by: who, acknowledged: true, defect: defect });
+    inspections.push(rec);
+    return { ok: true, record: rec, lookup: ladderLookup(registry, inspections, id) };
+  }
+
+  /* What a JHA stores about the ladder it planned to use — the information
+     that was visible when it was submitted. */
+  function ladderSnapshot(look) {
+    if (!look || look.state !== 'found') {
+      return look && look.state === 'unknown' ? { ladder_id: look.id, status: 'no-history',
+        status_label: 'No inspection history found' } : null;
+    }
+    return { ladder_id: look.id,
+      last_inspected_at: look.last ? look.last.inspected_at : null,
+      last_inspected_by: look.last ? look.last.inspected_by : null,
+      status: look.status, status_label: look.statusLabel,
+      open_defect: look.openDefect ? { description: look.openDefect.description,
+        removed_from_service: look.openDefect.removed_from_service } : null };
+  }
+
+  /* ---------------- the JHA field model ---------------- */
+  var HEADER_FIELDS = [
+    ['jhaProjectName', 'Project Name'], ['jhaDescriptionOfWork', 'Description of Work'],
+    ['jhaDate', 'Date'], ['jhaStartTime', 'Start Time'],
+    ['jhaCompleteTime', 'Estimated Time of Completion'], ['jhaLocation', 'Location'],
+    ['jhaAnalysisBy', 'Analysis By'], ['jhaPmSupervisor', 'PM / Supervisor'],
+    ['jhaSubcontractors', 'Subcontractor(s)'],
+    ['jhaJobsiteSafety', 'Jobsite Safety Requirements — PPE, housekeeping, dust walls, spark-proof tools, etc.']
+  ];
+  var LADDER_USE_LABEL = 'Is any ladder use planned or expected today?';
+  var AERIAL_USE_LABEL = 'Will any aerial lift devices be used today?';
+  var AERIAL_WHO_LABEL = 'What competent person or persons will conduct the lift inspections?';
+  /* Questions retired on Tony's Oct 1 instruction. New JHAs never collect or
+     store them; JHAs submitted before the change still show what was asked
+     and answered at the time. */
+  var LEGACY_FIELDS = [
+    ['jhaNewRevised', 'New or Revised'],
+    ['jhaLadderSafe', 'Can this work be done safely from a ladder?'],
+    ['jhaLadderWhyNotLift', 'Explain why a one-man scissor lift, or being tied off while using a ladder, will not work in this instance'],
+    ['jhaLadderObstacle1', 'Above-ceiling hindrances / obstacles 1'],
+    ['jhaLadderObstacle2', 'Above-ceiling hindrances / obstacles 2'],
+    ['jhaLadderObstacle3', 'Above-ceiling hindrances / obstacles 3'],
+    ['jhaLadderObstacle4', 'Above-ceiling hindrances / obstacles 4'],
+    ['jhaLadderObstacle5', 'Above-ceiling hindrances / obstacles 5'],
+    ['jhaLadderGreaterRisk', 'Explain how the use of fall protection poses a greater risk than not using it']
+  ];
+  var MAX_ROWS = 6;
+
+  function parseMaybe(v, fallback) {
+    if (v == null || v === '') return fallback;
+    if (typeof v !== 'string') return v;
+    try { return JSON.parse(v); } catch (e) { return fallback; }
+  }
+
+  /* The data a NEW or REVISED JHA may store: retired questions dropped, and
+     every child of a "No" (or unanswered) parent cleared. */
+  function normalizeJhaData(raw) {
+    var d = {};
+    Object.keys(raw || {}).forEach(function (k) { d[k] = raw[k]; });
+    LEGACY_FIELDS.forEach(function (f) { delete d[f[0]]; });
+    if (d.jhaLadderUse === 'yes') {
+      d.jhaLadderId = normalizeLadderId(d.jhaLadderId);
+      d.jhaLadderInspection = parseMaybe(d.jhaLadderInspection, null);
+    } else {
+      delete d.jhaLadderId; delete d.jhaLadderInspection;
+    }
+    if (d.jhaAerialUse === 'yes') {
+      var who = parseMaybe(d.jhaAerialInspectors, []);
+      d.jhaAerialInspectors = (Array.isArray(who) ? who : []).filter(function (n, i, a) {
+        return n && a.indexOf(n) === i; });
+    } else {
+      delete d.jhaAerialInspectors;
+    }
+    for (var n = 1; n <= MAX_ROWS; n++) {
+      ['jhaTask', 'jhaHazard', 'jhaAction'].forEach(function (p) {
+        if (String(d[p + n] || '').trim().toLowerCase() !== 'other') delete d[p + n + 'Other'];
+      });
+    }
+    return d;
+  }
+
+  function yesNo(v) { return v === 'yes' ? 'Yes' : v === 'no' ? 'No' : (v || ''); }
+  function filled(v) { return v != null && String(v).trim() !== ''; }
+
+  /* Every populated answer, in display order. Phone review, office detail and
+     the PDF all render from this one list. Historical (pre-change) answers are
+     included only when the stored record actually has them. */
+  function jhaSections(data, opts) {
+    opts = opts || {};
+    var d = data || {}, out = [];
+    function item(key, label, value, extra) {
+      return Object.assign({ key: key, label: label, value: String(value) }, extra || {});
+    }
+    var head = [];
+    HEADER_FIELDS.forEach(function (f) { if (filled(d[f[0]])) head.push(item(f[0], f[1], d[f[0]])); });
+    if (filled(d.jhaNewRevised)) head.push(item('jhaNewRevised', 'New or Revised', d.jhaNewRevised, { legacy: true }));
+    if (head.length) out.push({ title: 'Job Information', items: head });
+
+    var rows = [];
+    for (var n = 1; n <= MAX_ROWS; n++) {
+      var t = d['jhaTask' + n], h = d['jhaHazard' + n], a = d['jhaAction' + n];
+      if (!filled(t) && !filled(h) && !filled(a)) continue;
+      var spec = function (p) {
+        var v = d[p + n];
+        return String(v || '').trim().toLowerCase() === 'other' && filled(d[p + n + 'Other']) ? 'Other: ' + d[p + n + 'Other'] : (v || '');
+      };
+      rows.push(item('jhaTask' + n, 'Row ' + n + ' — Task', spec('jhaTask')));
+      rows.push(item('jhaHazard' + n, 'Row ' + n + ' — Potential Hazards', spec('jhaHazard'), { photoKey: 'jhaHazard' + n + '_photos' }));
+      rows.push(item('jhaAction' + n, 'Row ' + n + ' — Actions to Reduce Hazards', spec('jhaAction')));
+    }
+    if (rows.length) out.push({ title: 'Tasks, Hazards & Actions', items: rows });
+
+    var crew = opts.crew || parseMaybe(d.jhaCrewData, null);
+    if (crew && ((crew.employees || []).length || (crew.groups || []).length)) {
+      var ci = [item('crew', 'Employees (' + (crew.employees || []).length + ')', (crew.employees || []).join(', ') || '—')];
+      (crew.groups || []).forEach(function (g, i) {
+        ci.push(item('crewGroup' + (i + 1), 'Assignment ' + (i + 1) + ' — ' + (g.task || '—'),
+          (g.activity || '—') + ' · ' + (((g.members || []).join(', ')) || 'no one assigned')));
+      });
+      out.push({ title: 'Crew on this JHA', items: ci });
+    }
+
+    var lad = [];
+    if (filled(d.jhaLadderUse)) lad.push(item('jhaLadderUse', LADDER_USE_LABEL, yesNo(d.jhaLadderUse)));
+    if (d.jhaLadderUse === 'yes') {
+      if (filled(d.jhaLadderId)) lad.push(item('jhaLadderId', 'Ladder ID', d.jhaLadderId));
+      var s = parseMaybe(d.jhaLadderInspection, null);
+      if (s) {
+        lad.push(item('jhaLadderLastInspected', 'Last inspection date', s.last_inspected_at ? fmtIndy(s.last_inspected_at) : 'None recorded'));
+        if (s.last_inspected_by) lad.push(item('jhaLadderInspectedBy', 'Last inspected by', s.last_inspected_by));
+        lad.push(item('jhaLadderStatus', 'Inspection status', s.status_label || '',
+          { flagged: s.status === 'do-not-use' }));
+        if (s.open_defect) {
+          lad.push(item('jhaLadderDefect', 'Open defect', s.open_defect.description +
+            ' (removed from service: ' + yesNo(s.open_defect.removed_from_service) + ')', { flagged: true }));
+        }
+      }
+    }
+    if (lad.length) out.push({ title: 'Ladder Use', items: lad });
+
+    var legacy = [];
+    LEGACY_FIELDS.forEach(function (f) {
+      if (f[0] === 'jhaNewRevised') return;
+      if (filled(d[f[0]])) legacy.push(item(f[0], f[1], f[0] === 'jhaLadderSafe' ? yesNo(d[f[0]]) : d[f[0]], { legacy: true }));
+    });
+    if (legacy.length) {
+      out.push({ title: 'Ladder / Fall Protection Variance (questions as asked when this JHA was submitted)',
+                 items: legacy, legacy: true });
+    }
+
+    var aer = [];
+    if (filled(d.jhaAerialUse)) aer.push(item('jhaAerialUse', AERIAL_USE_LABEL, yesNo(d.jhaAerialUse)));
+    if (d.jhaAerialUse === 'yes') {
+      var who = parseMaybe(d.jhaAerialInspectors, []);
+      aer.push(item('jhaAerialInspectors', AERIAL_WHO_LABEL,
+        (Array.isArray(who) && who.length) ? who.join(', ') : 'None selected'));
+    }
+    if (aer.length) out.push({ title: 'Aerial Lifts', items: aer });
+
+    if (filled(d.jhaAdditionalNotes)) {
+      out.push({ title: 'Additional Photos & Notes',
+                 items: [item('jhaAdditionalNotes', 'Notes', d.jhaAdditionalNotes, { photoKey: 'jhaAdditionalNotes_photos' })] });
+    }
+    return out;
+  }
+
+  /* Submit-time checks the HTML required attributes can't express. */
+  function jhaSubmitProblems(data, ladderLook) {
+    var d = data || {}, p = [];
+    if (d.jhaLadderUse === 'yes') {
+      if (!normalizeLadderId(d.jhaLadderId)) p.push('Enter the Ladder ID.');
+      else if (ladderLook && ladderLook.state === 'duplicate') p.push(ladderLook.message);
+      else if (ladderLook && ladderLook.status === 'do-not-use') {
+        p.push('Ladder ' + ladderLook.id + ' is marked Do Not Use. Use a different ladder and enter its ID, or change the ladder answer.');
+      }
+    }
+    if (d.jhaAerialUse === 'yes') {
+      var who = parseMaybe(d.jhaAerialInspectors, []);
+      if (!Array.isArray(who) || !who.length) p.push('Select at least one person who will conduct the lift inspections.');
+    }
+    return p;
+  }
+
+  var api = {
+    TZ: TZ, JHA_REVISION_RULES: JHA_REVISION_RULES, LADDER_INSPECTION_CADENCE: LADDER_INSPECTION_CADENCE,
+    REVISION_CHANGE_TYPES: REVISION_CHANGE_TYPES, LEGACY_FIELDS: LEGACY_FIELDS, HEADER_FIELDS: HEADER_FIELDS,
+    LADDER_USE_LABEL: LADDER_USE_LABEL, AERIAL_USE_LABEL: AERIAL_USE_LABEL, AERIAL_WHO_LABEL: AERIAL_WHO_LABEL,
+    indyParts: indyParts, workweekOf: workweekOf, fmtIndy: fmtIndy, isoAddDays: isoAddDays,
+    familyVersions: familyVersions, familyHead: familyHead, revisionsUsed: revisionsUsed,
+    revisionLabel: revisionLabel, reviseEligibility: reviseEligibility,
+    revisionCandidates: revisionCandidates, createOriginal: createOriginal,
+    submitRevision: submitRevision, dailyJhaCount: dailyJhaCount,
+    revisionEventCount: revisionEventCount, freezeDeep: freezeDeep,
+    normalizeLadderId: normalizeLadderId, ladderLookup: ladderLookup,
+    ladderStatusLabel: ladderStatusLabel, ladderCadence: ladderCadence,
+    recordLadderInspection: recordLadderInspection, ladderSnapshot: ladderSnapshot,
+    normalizeJhaData: normalizeJhaData, jhaSections: jhaSections,
+    jhaSubmitProblems: jhaSubmitProblems
+  };
+  root.JhaModel = api;
+  if (typeof module === 'object' && module && module.exports) module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+/* JHA-MODEL:END */
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
     (function () {
@@ -5681,6 +6234,17 @@ ${photoUrls}`;
       // route inspection submissions to NextGen; everything else unchanged
       var _handleSaveData = window.handleSaveData;
       window.handleSaveData = function (url, payload, submitBtn, label) {
+        // JHA: the checks HTML required can't express, then drop retired
+        // questions and inactive conditional answers before anything leaves.
+        if (payload && payload.inspection_subtype === 'jha' && window.JhaModel) {
+          var problem = jhaSubmitGuard();
+          if (problem) {
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = jhaSubmitLabel(); }
+            toast('error', 'Check the JHA', problem);
+            return Promise.reject(new Error(problem));
+          }
+          payload.fields = window.JhaModel.normalizeJhaData(payload.fields || {});
+        }
         // DEMO short-circuit, first and unconditional: every submit in demo
         // mode — inspection or legacy — ends here. Nothing is sent anywhere.
         if (DEMO) return ngDemoSubmit(payload, submitBtn, label);
@@ -5820,7 +6384,66 @@ ${photoUrls}`;
       function isFlag(v) { var l = String(v).toLowerCase(); return l === 'defect' || l === 'fail' || l === 'unsafe' || l === 'incomplete'; }
 
       // Build the portable document model from the live form.
+      /* Every named value in a form, as submitted (radios: the checked one). */
+      function jhaFormValues(form) {
+        var out = {};
+        if (!form) return out;
+        Array.prototype.forEach.call(form.querySelectorAll('[name]'), function (el) {
+          if (el.type === 'file') return;
+          if (el.type === 'radio') { if (el.checked) out[el.name] = el.value; }
+          else if (el.type === 'checkbox') { if (el.checked) out[el.name] = el.value || 'on'; }
+          else out[el.name] = el.value;
+        });
+        return out;
+      }
+      function docPhotoUrls(v) {
+        var out = [];
+        (Array.isArray(v) ? v : (v ? [v] : [])).forEach(function (u) {
+          if (typeof u === 'string' && u.indexOf('data:image') === 0) out.push(u);
+          else if (u && typeof u === 'object' && typeof u.data_url === 'string' && u.data_url.indexOf('data:image') === 0) out.push(u.data_url);
+        });
+        return out;
+      }
+      /* JHA document from the shared JHA model: the same populated answers the
+         phone review and the office detail show. Inactive conditional answers
+         are cleared before anything is rendered or stored. */
+      function jhaDocFromModel(form, payload, data, crew, submittedAt) {
+        var M = window.JhaModel;
+        var raw = data || jhaFormValues(form);
+        if (!crew) { try { crew = JSON.parse(raw.jhaCrewData || 'null'); } catch (e) { crew = null; } }
+        var clean = M.normalizeJhaData(raw);
+        var f = (payload && payload.fields) || {}, used = [], flaggedList = [];
+        var sections = M.jhaSections(clean, { crew: crew }).map(function (sec) {
+          return { title: sec.title, aux: !!sec.legacy, items: sec.items.map(function (it) {
+            var photos = it.photoKey ? docPhotoUrls(f[it.photoKey]) : [];
+            used = used.concat(photos);
+            if (it.flagged) flaggedList.push(it.label);
+            return { label: it.label, response: it.value, type: 'text', notes: '', flagged: !!it.flagged, photos: photos };
+          }) };
+        });
+        var extra = [];
+        Object.keys(f).forEach(function (k) {
+          if (!/_photos$/.test(k)) return;
+          docPhotoUrls(f[k]).forEach(function (u) { if (used.indexOf(u) === -1 && extra.indexOf(u) === -1) extra.push(u); });
+        });
+        if (extra.length) sections.push({ title: 'Photos', aux: true, items: [{ label: 'Attached photos', response: '', type: 'photos', notes: '', flagged: false, photos: extra }] });
+        var counted = sections.filter(function (x) { return !x.aux; });
+        return {
+          title: TITLES.jha, subtype: 'jha',
+          meta: {
+            inspector: NG.user || clean.jhaAnalysisBy || '', job: (NG.job || {}).name || '',
+            job_number: (NG.job || {}).job_number || '', location: (NG.job || {}).address || '', asset: '',
+            date: clean.jhaDate ? calDate(clean.jhaDate) : tzDate(submittedAt || new Date()),
+            // The record's own (server) time when known, so the PDF matches it.
+            time: tzTime(submittedAt || new Date()), submitted_at: submittedAt || new Date().toISOString()
+          },
+          sections: sections, flagged: flaggedList,
+          counts: { items: counted.reduce(function (n, x) { return n + x.items.length; }, 0), flagged: flaggedList.length }
+        };
+      }
+
       function extractDoc(form, subtype, payload) {
+        if (subtype === 'jha' && window.JhaModel) return jhaDocFromModel(form, payload);
         var sections = [], flaggedList = [], seenNames = {}, signoffItems = [];
         var isEquip = subtype === 'aerial_platform' || subtype === 'forklift';
         // Equipment identity/asset fields already print in the document header —
@@ -5879,6 +6502,7 @@ ${photoUrls}`;
             if (radios.length) {
               var ck = grp.querySelector('input[type=radio]:checked');
               response = ck ? ck.value : ''; rtype = 'choice'; flagged = isFlag(response);
+              if (ck && ck.getAttribute('data-display')) response = ck.getAttribute('data-display');
               name = radios[0].name || '';
             } else if (main) {
               name = main.name || '';
@@ -6317,6 +6941,7 @@ ${photoUrls}`;
         if (key === 'jha') {
           // A brand-new daily JHA — never a revision.
           JHA_CTX = null;
+          JHA_CREW = { employees: [], groups: [] };
           if (typeof window.openJhaForm === 'function') { window.openJhaForm(); applyLocks(); }
           return;
         }
@@ -6391,30 +7016,93 @@ ${photoUrls}`;
       // page and runs client-side), never uploads, never writes, never calls out.
       function ngDemoSubmit(payload, submitBtn, label) {
         var subtype = (payload && payload.inspection_subtype) || '';
+        if (subtype === 'jha' && window.JhaModel) return jhaDemoSubmit(payload, submitBtn, label);
         var title = TITLES[subtype] || 'Demo Form';
-        var blob = null, filename = '', jhaRec = null;
+        var blob = null, filename = '';
         try {
           var form = document.getElementById(FORM_IDS[subtype]);
           if (form) {
             var dmodel = (subtype === 'job_site_analysis')
               ? extractJsaDoc(form, payload)
               : extractDoc(form, subtype, payload);
-            if (subtype === 'jha') {
-              // Build the record FIRST so the doc can show its revision meta,
-              // then store it. The previous revision is never mutated.
-              jhaRec = buildJhaRecord(payload);
-              decorateJhaDoc(dmodel, jhaRec);
-              DEMO_JHA_STORE.push(jhaRec);
-              title = 'Job Hazard Analysis';
-            }
             var pdf = renderDetailedPdf(dmodel);
             blob = pdf.blob; filename = pdf.filename;
+            NG.demoLastDoc = dmodel; NG.demoLastPdf = blob;   // local review checks only
           }
         } catch (e) { blob = null; }
         if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = label || 'Submit'; }
-        if (jhaRec) { renderJhaDemoCompletion(jhaRec, blob, filename); JHA_CTX = null; }
-        else renderDemoCompletion(title, blob, filename);
+        renderDemoCompletion(title, blob, filename);
         return Promise.resolve({ demo: true, saved: false });
+      }
+
+      /* JHA demo submit. A revision first shows the review-and-confirm sheet;
+         the record is then appended through the shared model, which refuses a
+         stale or over-cap revision instead of overwriting anything. The time on
+         the record comes from the demo's stand-in server clock, never a form. */
+      function jhaDemoSubmit(payload, submitBtn, label) {
+        var M = window.JhaModel;
+        var raw = collectJhaFormData();
+        var crew = JSON.parse(JSON.stringify(JHA_CREW));
+        var photos = collectJhaPhotos(payload);
+        function restore() {
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = jhaSubmitLabel(); }
+        }
+        if (JHA_CTX) {
+          if (!JHA_CTX.changeType) {
+            restore();
+            toast('error', 'What changed?', 'Choose what changed in this revision before submitting.');
+            var ban = document.getElementById('jhaRevisionBanner');
+            if (ban) { ban.classList.add('jha-rev-need'); try { ban.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }
+            return Promise.reject(new Error('change type required'));
+          }
+          var n = JHA_CTX.nextNumber;
+          return jhaSheet('Submit Revision ' + n,
+            '<p class="jha-sheet-lede">This creates a new record with the current time. It does not replace or backdate the original JHA.</p>' +
+            '<div class="jha-sheet-meta">What changed: <b>' + esc(JHA_CTX.changeType) + '</b>' +
+              (JHA_CTX.note ? '<br>Note: ' + esc(JHA_CTX.note) : '') + '</div>' +
+            jhaReviewHtml(M.normalizeJhaData(raw), crew),
+            [{ id: 'confirm', label: 'Submit Revision ' + n, primary: true }, { id: 'cancel', label: 'Keep editing' }]
+          ).then(function (choice) {
+            if (choice !== 'confirm') { restore(); return Promise.reject(new Error('cancelled')); }
+            var res = M.submitRevision(DEMO_JHA_STORE, {
+              rootId: JHA_CTX.rootId, baseVersionId: JHA_CTX.baseVersionId,
+              jobId: (NG.job && NG.job.id) || null, companyId: DEMO_COMPANY_ID,
+              by: NG.user || '', changeType: JHA_CTX.changeType, note: JHA_CTX.note,
+              data: raw, crew: crew, photos: photos }, jhaClock());
+            if (!res.ok) { restore(); jhaRefused(res); return Promise.reject(new Error(res.code)); }
+            return jhaFinish(res.record, payload, submitBtn);
+          });
+        }
+        var made = M.createOriginal(DEMO_JHA_STORE, {
+          jobId: (NG.job && NG.job.id) || null, companyId: DEMO_COMPANY_ID,
+          by: NG.user || '', data: raw, crew: crew, photos: photos }, jhaClock());
+        return jhaFinish(made.record, payload, submitBtn);
+      }
+      function jhaFinish(rec, payload, submitBtn) {
+        var blob = null, filename = '';
+        try {
+          var dmodel = jhaDocFromModel(document.getElementById('jhaForm'), payload, rec.data, rec.crew,
+            rec.revised_at || rec.original_submitted_at);
+          decorateJhaDoc(dmodel, rec);
+          var pdf = renderDetailedPdf(dmodel);
+          blob = pdf.blob; filename = pdf.filename;
+          NG.demoJhaLastDoc = dmodel; NG.demoLastDoc = dmodel; NG.demoLastPdf = blob;   // local review checks only
+        } catch (e) { blob = null; }
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = 'Submit JHA'; }
+        JHA_CTX = null;
+        renderJhaDemoCompletion(rec, blob, filename);
+        return Promise.resolve({ demo: true, saved: false });
+      }
+      // A refused revision (stale, cap, closed window) — nothing was written.
+      function jhaRefused(res) {
+        var actions = res.code === 'stale'
+          ? [{ id: 'refresh', label: 'Refresh to the latest version', primary: true }, { id: 'close', label: 'Close' }]
+          : [{ id: 'new', label: 'Complete New JHA', primary: true }, { id: 'close', label: 'Close' }];
+        jhaSheet(res.code === 'stale' ? 'This JHA changed' : 'Revision not submitted',
+          '<p class="jha-sheet-lede">' + esc(res.message) + '</p>', actions).then(function (c) {
+          if (c === 'refresh' && JHA_CTX) startRevision(JHA_CTX.rootId);
+          if (c === 'new') openDemoForm('jha');
+        });
       }
 
       // Completion screen for a JHA / JHA revision.
@@ -6428,20 +7116,26 @@ ${photoUrls}`;
           box.style.cssText = 'margin-top:18px;display:flex;flex-direction:column;gap:10px';
           view.appendChild(box);
         }
-        var revised = rec.revision_number > 1;
+        var M = window.JhaModel, revised = rec.revision_number > 1;
+        var label = M.revisionLabel(rec.revision_number);
+        var today = M.workweekOf(jhaClock()).date;
         box.innerHTML =
           '<div id="demoSubmitNotice" style="background:#fff7ed;border:1px solid #fdba74;color:#7c2d12;' +
             'border-radius:10px;padding:14px;text-align:center">' +
             '<div style="font-weight:800;font-size:16px" id="jhaDemoHeadline">' +
               (revised ? 'Revised JHA submitted' : 'JHA submitted') + '</div>' +
-            '<div style="font-size:13.5px;margin-top:6px">Revision ' + rec.revision_number + '</div>' +
-            '<div style="font-size:13.5px">Original submission time: ' + esc(jhaTime(rec.original_submitted_at)) + '</div>' +
-            (rec.revised_at ? '<div style="font-size:13.5px">Latest revision time: ' + esc(jhaTime(rec.revised_at)) + '</div>' : '') +
+            (revised
+              ? '<div style="font-size:13.5px;margin-top:6px">' + label + ' submitted. The new version is active as of ' +
+                  esc(M.fmtIndy(rec.revised_at)) + '. Earlier versions remain available in JHA history.</div>'
+              : '<div style="font-size:13.5px;margin-top:6px">Original</div>') +
+            '<div style="font-size:13.5px">Original submission time: ' + esc(M.fmtIndy(rec.original_submitted_at)) + '</div>' +
             '<div style="font-weight:700;margin-top:8px">No production data was saved.</div>' +
           '</div>' +
           '<div style="text-align:center;color:#6b7280;font-size:13px">' +
             esc(rec.data.jhaDescriptionOfWork || 'Job Hazard Analysis') +
-            ' · daily JHAs counted today: ' + demoDailyJhaCompliance() + '</div>' +
+            ' · daily JHAs counted today: ' + M.dailyJhaCount(DEMO_JHA_STORE, rec.job_id, today) + '</div>' +
+          '<details class="jha-review" id="jhaSubmittedReview" open><summary>Review submitted answers</summary>' +
+            jhaReviewHtml(rec.data, rec.crew) + '</details>' +
           (blob ? '<button class="submit-button" id="demoView">View PDF (local preview)</button>' : '') +
           '<button class="submit-button" id="demoReviseAgain" ' +
             'style="background:#fff;color:#0f172a;border:1px solid #d1d5db">Revise a submitted JHA</button>' +
@@ -6459,108 +7153,220 @@ ${photoUrls}`;
 
       /* ================= REVISED JHA — demo (local only) =================
          Two mobile actions:
-           Complete New JHA   -> the existing detailed JHA form, unchanged
-           Revise Submitted JHA -> pick a JHA already submitted for THIS job
-                                   TODAY, load its latest version, edit, and
-                                   submit a new linked revision.
-         There are deliberately NO drafts, no autosave, no "resume", no
-         "copy previous" and no reason-for-revision field. Every revision is
-         submitted or it does not exist. Nothing survives a reload.
+           Complete New JHA     -> the guided JHA form, fresh
+           Revise Submitted JHA -> choose a JHA from THIS job in the current
+                                   Indianapolis workweek, load its LATEST
+                                   version, edit, and submit a new linked
+                                   revision.
+         The rules live in the shared JHA model (JHA_REVISION_RULES): up to three
+         revisions per original, Monday 12:00 AM to Friday 11:59 PM, the original
+         and every earlier version immutable. There are deliberately no drafts,
+         no autosave and no resume; nothing survives a reload.
          =================================================================== */
       var JHA_MAX_EMPLOYEES = 30;
       var DEMO_JHA_STORE = [];        // in-memory only, seeded per demo session
       var JHA_CTX = null;             // set while editing a revision, else null
+      var DEMO_COMPANY_ID = 'demo-greiner';
+      var DEMO_LADDERS = [];          // ladder registry (demo fixtures)
+      var DEMO_LADDER_INSPECTIONS = [];
 
-      function jhaTodayISO() {
-        try {
-          return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Indiana/Indianapolis',
-            year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
-        } catch (e) {
-          var d = new Date();
-          return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      /* The demo stands in for the server clock. ?demonow=2026-10-01T15:00:00-04:00
+         pins it so a reviewer can see weekday behavior on a weekend. Field values
+         are never used as a record time. */
+      var JHA_NOW_OVERRIDE = (function () {
+        if (!DEMO) return null;
+        var v = params.get('demonow');
+        if (!v) return null;
+        var d = new Date(v);
+        return isNaN(d) ? null : d.toISOString();
+      })();
+      function jhaClock() { return JHA_NOW_OVERRIDE ? new Date(JHA_NOW_OVERRIDE) : new Date(); }
+
+      function jhaTodayISO() { return window.JhaModel.workweekOf(jhaClock()).date; }
+      function jhaTime(iso) { return iso ? window.JhaModel.fmtIndy(iso) : ''; }
+      // An Indianapolis wall-clock time on a given date, as a UTC instant.
+      function indyAt(isoDate, h, m) {
+        var hh = String(h).padStart(2, '0'), mm = String(m || 0).padStart(2, '0');
+        var offs = ['-04:00', '-05:00'];
+        for (var i = 0; i < offs.length; i++) {
+          var d = new Date(isoDate + 'T' + hh + ':' + mm + ':00' + offs[i]);
+          var hour = +new Intl.DateTimeFormat('en-US', { timeZone: 'America/Indiana/Indianapolis',
+            hour: 'numeric', hourCycle: 'h23' }).format(d);
+          if (window.JhaModel.workweekOf(d).date === isoDate && hour === h) return d.toISOString();
         }
-      }
-      function jhaTime(iso) {
-        if (!iso) return '';
-        try {
-          return new Date(iso).toLocaleTimeString('en-US', { timeZone: 'America/Indiana/Indianapolis',
-            hour: 'numeric', minute: '2-digit' });
-        } catch (e) { return new Date(iso).toLocaleTimeString(); }
+        return new Date(isoDate + 'T' + hh + ':' + mm + ':00-05:00').toISOString();
       }
 
+      /* Demo ladders: one category, "Ladder". One recently inspected, one with
+         older history, one with an open defect, one registered but never
+         inspected. Names are the existing demo identities only. */
+      function seedDemoLadders() {
+        var M = window.JhaModel, now = jhaClock().getTime(), H = 3600000;
+        function ago(hours) { return new Date(now - hours * H).toISOString(); }
+        DEMO_LADDERS = [
+          { ladder_id: 'LAD-101', category: 'Ladder', description: '8 ft fiberglass step ladder' },
+          { ladder_id: 'LAD-204', category: 'Ladder', description: '24 ft fiberglass extension ladder' },
+          { ladder_id: 'LAD-317', category: 'Ladder', description: '10 ft fiberglass step ladder' },
+          { ladder_id: 'LAD-120', category: 'Ladder', description: '6 ft platform ladder' }
+        ].map(M.freezeDeep);
+        DEMO_LADDER_INSPECTIONS = [
+          { id: 'li-1', ladder_id: 'LAD-101', inspected_at: ago(26), inspected_by: 'Alex Rivera (Demo)', acknowledged: true, defect: null },
+          { id: 'li-2', ladder_id: 'LAD-204', inspected_at: ago(41 * 24), inspected_by: 'Jordan Blake (Demo)', acknowledged: true, defect: null },
+          { id: 'li-3', ladder_id: 'LAD-204', inspected_at: ago(75 * 24), inspected_by: 'Sam Whitfield (Demo)', acknowledged: true, defect: null },
+          { id: 'li-4', ladder_id: 'LAD-317', inspected_at: ago(3 * 24 + 2), inspected_by: 'Casey Nolan (Demo)', acknowledged: true,
+            defect: { description: 'Cracked right side rail below the third step', removed_from_service: 'yes',
+                      photo: null, reported_at: ago(3 * 24 + 2), resolved_at: null } }
+        ].map(M.freezeDeep);
+      }
+      function ladderData() {
+        if (DEMO) return { registry: DEMO_LADDERS, inspections: DEMO_LADDER_INSPECTIONS };
+        if (NG.ladders && NG.ladderInspections) return { registry: NG.ladders, inspections: NG.ladderInspections };
+        return null;   // no ladder records connected for this session
+      }
+
+      /* Demo JHAs placed in the current Indianapolis workweek (relative to the
+         demo clock) plus one from the prior week. The prior-week JHA predates
+         Tony's Oct 1 change, so it keeps the retired ladder-variance answers —
+         that is how historical records must keep rendering. */
       function seedDemoJhas() {
-        var today = jhaTodayISO(), job = 'demo-job-001';
-        function at(h, m) { var d = new Date(); d.setHours(h, m, 0, 0); return d.toISOString(); }
-        DEMO_JHA_STORE = [
-          { id: 'demo-jha-a-r1', root_jha_id: 'demo-jha-a', previous_revision_id: null, revision_number: 1,
-            original_submitted_at: at(6, 45), revised_at: null, revised_by: 'Demo Foreman',
-            job_id: job, work_date: today, status: 'submitted',
-            data: {
-              jhaDescriptionOfWork: 'Set overhead pipe hangers, Level 2 east corridor',
-              jhaJobsiteSafety: 'Hard hat, safety glasses, gloves. Keep corridor clear.',
-              jhaTask1: 'Ladders / Stairways Use', jhaHazard1: 'Falls / Loss of footing', jhaAction1: 'Maintain three points of contact',
-              jhaTask2: 'Material Handling', jhaHazard2: 'Back or shoulder strain / awkward lifting', jhaAction2: 'Team lift anything over 50 lb',
-              jhaLadderUse: 'yes', jhaLadderSafe: 'yes',
-              jhaLadderWhyNotLift: 'Corridor too narrow for a scissor lift at this location.',
-              jhaAdditionalNotes: 'Corridor shared with drywall crew until 10am.'
-            },
-            crew: { employees: ['Demo Foreman', 'Alex Rivera (Demo)', 'Jordan Blake (Demo)', 'Sam Whitfield (Demo)'],
-                    groups: [{ task: 'Ladders / Stairways Use', activity: 'Hanging rod and strut', members: ['Alex Rivera (Demo)', 'Jordan Blake (Demo)'] }] },
-            photos: [] },
-          { id: 'demo-jha-b-r1', root_jha_id: 'demo-jha-b', previous_revision_id: null, revision_number: 1,
-            original_submitted_at: at(7, 10), revised_at: null, revised_by: 'Demo Foreman',
-            job_id: job, work_date: today, status: 'superseded',
-            data: {
-              jhaDescriptionOfWork: 'Install condenser water piping, Mechanical Room 302',
-              jhaJobsiteSafety: 'Hard hat, glasses, gloves, hearing protection near pumps.',
-              jhaTask1: 'Welding, Cutting or Brazing', jhaHazard1: 'Fire Hazard', jhaAction1: 'Hot work permit and fire watch in place',
-              jhaLadderUse: 'no', jhaAdditionalNotes: 'Original scope before the afternoon addition.'
-            },
-            crew: { employees: ['Demo Foreman', 'Casey Nolan (Demo)', 'Taylor Reed (Demo)'], groups: [] },
-            photos: [] },
-          { id: 'demo-jha-b-r2', root_jha_id: 'demo-jha-b', previous_revision_id: 'demo-jha-b-r1', revision_number: 2,
-            original_submitted_at: at(7, 10), revised_at: at(11, 25), revised_by: 'Demo Foreman',
-            job_id: job, work_date: today, status: 'submitted',
-            data: {
-              jhaDescriptionOfWork: 'Install condenser water piping, Mechanical Room 302 (added pump pad work)',
-              jhaJobsiteSafety: 'Hard hat, glasses, gloves, hearing protection near pumps.',
-              jhaTask1: 'Welding, Cutting or Brazing', jhaHazard1: 'Fire Hazard', jhaAction1: 'Hot work permit and fire watch in place',
-              jhaTask2: 'Hoisting & Rigging', jhaHazard2: 'Equipment or Rigging Failure', jhaAction2: 'Inspect slings before every lift',
-              jhaLadderUse: 'no', jhaAdditionalNotes: 'Added pump pad rigging after the morning walk.'
-            },
-            crew: { employees: ['Demo Foreman', 'Casey Nolan (Demo)', 'Taylor Reed (Demo)', 'Morgan Ellis (Demo)'],
-                    groups: [{ task: 'Hoisting & Rigging', activity: 'Setting pumps on the pad', members: ['Casey Nolan (Demo)', 'Morgan Ellis (Demo)'] }] },
-            photos: [] },
-          { id: 'demo-jha-c-r1', root_jha_id: 'demo-jha-c', previous_revision_id: null, revision_number: 1,
-            original_submitted_at: at(6, 55), revised_at: null, revised_by: 'Demo Foreman',
-            job_id: job, work_date: today, status: 'submitted',
-            data: {
-              jhaDescriptionOfWork: 'Demo existing ductwork, Level 1 north',
-              jhaJobsiteSafety: 'Dust walls up, respirators available, housekeeping each break.',
-              jhaTask1: 'Material Handling', jhaHazard1: 'Cuts, abrasions, and lacerations', jhaAction1: 'Cut-resistant gloves',
-              jhaLadderUse: 'no', jhaAdditionalNotes: ''
-            },
-            crew: { employees: ['Demo Foreman', 'Alex Rivera (Demo)'], groups: [] },
-            photos: [] }
-        ];
+        var M = window.JhaModel, now = jhaClock(), wk = M.workweekOf(now), job = 'demo-job-001';
+        seedDemoLadders();
+        DEMO_JHA_STORE = [];
+        var lastWorkday = wk.isWorkday ? wk.date : M.isoAddDays(wk.weekStart, 4);
+        var earlier = (wk.isWorkday ? wk.dow > 1 : true) ? M.isoAddDays(lastWorkday, -1) : null;
+        var nowMs = now.getTime(), H = 3600000;
+        // Today's records sit a few hours before "now" so their times are real.
+        function todayAt(hoursAgo) {
+          if (wk.isWorkday) return new Date(nowMs - hoursAgo * H).toISOString();
+          // Weekend: place "today's" records on Friday morning instead.
+          var mins = Math.round((10 - hoursAgo) * 60);
+          return indyAt(lastWorkday, Math.floor(mins / 60), mins % 60);
+        }
+        var look101 = M.ladderLookup(DEMO_LADDERS, DEMO_LADDER_INSPECTIONS, 'LAD-101');
+        function orig(rootId, at, data, crew) {
+          return M.createOriginal(DEMO_JHA_STORE, { rootId: rootId, jobId: job, companyId: DEMO_COMPANY_ID,
+            by: 'Demo Foreman', data: data, crew: crew, photos: [] }, at).record;
+        }
+        function revise(rootId, at, change, note, patch, crew) {
+          var head = M.familyHead(DEMO_JHA_STORE, rootId);
+          var data = Object.assign({}, head.data, patch);
+          return M.submitRevision(DEMO_JHA_STORE, { rootId: rootId, baseVersionId: head.id, jobId: job,
+            companyId: DEMO_COMPANY_ID, by: 'Demo Foreman', changeType: change, note: note,
+            data: data, crew: crew || head.crew, photos: [] }, at);
+        }
+        var base = { jhaProjectName: 'Demo Greiner Job', jhaLocation: 'Demo Greiner Job (DEMO-001)',
+          jhaAnalysisBy: 'Demo Foreman', jhaPmSupervisor: 'Demo Project Manager', jhaSubcontractors: 'N/A',
+          jhaStartTime: '07:00', jhaCompleteTime: '15:30' };
+
+        orig('demo-jha-a', todayAt(3), Object.assign({}, base, {
+          jhaDate: lastWorkday, jhaDescriptionOfWork: 'Set overhead pipe hangers, Level 2 east corridor',
+          jhaJobsiteSafety: 'Hard hat, safety glasses, gloves. Keep corridor clear.',
+          jhaTask1: 'Ladders / Stairways Use', jhaHazard1: 'Falls / Loss of footing', jhaAction1: 'Maintain three points of contact',
+          jhaTask2: 'Material Handling', jhaHazard2: 'Back or shoulder strain / awkward lifting', jhaAction2: 'Team lift anything over 50 lb',
+          jhaLadderUse: 'yes', jhaLadderId: 'LAD-101', jhaLadderInspection: M.ladderSnapshot(look101),
+          jhaAerialUse: 'no', jhaAdditionalNotes: 'Corridor shared with drywall crew until 10am.' }),
+          { employees: ['Demo Foreman', 'Alex Rivera (Demo)', 'Jordan Blake (Demo)', 'Sam Whitfield (Demo)'],
+            groups: [{ task: 'Ladders / Stairways Use', activity: 'Hanging rod and strut', members: ['Alex Rivera (Demo)', 'Jordan Blake (Demo)'] }] });
+
+        orig('demo-jha-b', todayAt(2.6), Object.assign({}, base, {
+          jhaDate: lastWorkday, jhaDescriptionOfWork: 'Install condenser water piping, Mechanical Room 302',
+          jhaJobsiteSafety: 'Hard hat, glasses, gloves, hearing protection near pumps.',
+          jhaTask1: 'Welding, Cutting or Brazing', jhaHazard1: 'Fire Hazard', jhaAction1: 'Hot work permit and fire watch in place',
+          jhaLadderUse: 'no', jhaAerialUse: 'yes', jhaAerialInspectors: ['Casey Nolan (Demo)', 'Taylor Reed (Demo)'],
+          jhaAdditionalNotes: 'Original scope before the afternoon addition.' }),
+          { employees: ['Demo Foreman', 'Casey Nolan (Demo)', 'Taylor Reed (Demo)'], groups: [] });
+        revise('demo-jha-b', todayAt(0.8), 'Work scope', 'Added pump pad rigging after the morning walk.', {
+          jhaDescriptionOfWork: 'Install condenser water piping, Mechanical Room 302 (added pump pad work)',
+          jhaTask2: 'Hoisting & Rigging', jhaHazard2: 'Equipment or Rigging Failure', jhaAction2: 'Inspect slings before every lift' },
+          { employees: ['Demo Foreman', 'Casey Nolan (Demo)', 'Taylor Reed (Demo)', 'Morgan Ellis (Demo)'],
+            groups: [{ task: 'Hoisting & Rigging', activity: 'Setting pumps on the pad', members: ['Casey Nolan (Demo)', 'Morgan Ellis (Demo)'] }] });
+
+        // A JHA already at the three-revision cap (earlier this week, or today on a Monday).
+        var capDay = earlier || lastWorkday;
+        orig('demo-jha-c', indyAt(capDay, 6, 55), Object.assign({}, base, {
+          jhaDate: capDay, jhaDescriptionOfWork: 'Demo existing ductwork, Level 1 north',
+          jhaJobsiteSafety: 'Dust walls up, respirators available, housekeeping each break.',
+          jhaTask1: 'Material Handling', jhaHazard1: 'Cuts, abrasions, and lacerations', jhaAction1: 'Cut-resistant gloves',
+          jhaLadderUse: 'no', jhaAerialUse: 'no' }),
+          { employees: ['Demo Foreman', 'Alex Rivera (Demo)'], groups: [] });
+        var capTimes = earlier ? [[9, 5], [11, 40], [14, 10]] : null;
+        ['Crew assignment', 'Hazard or site condition', 'Control or procedure'].forEach(function (why, i) {
+          var at = capTimes ? indyAt(capDay, capTimes[i][0], capTimes[i][1])
+            : new Date(Math.min(nowMs - (30 - i * 10) * 60000, nowMs)).toISOString();
+          revise('demo-jha-c', at, why, '', { jhaAdditionalNotes: 'Update ' + (i + 1) + ' to the demolition plan.' });
+        });
+
+        if (earlier) {
+          orig('demo-jha-d', indyAt(earlier, 6, 40), Object.assign({}, base, {
+            jhaDate: earlier, jhaDescriptionOfWork: 'Rough-in domestic water, Level 1 restrooms',
+            jhaJobsiteSafety: 'Hard hat, glasses, gloves. Lift operator certified.',
+            jhaTask1: 'Lifts (Scissor, Aerial, Boom) Operation', jhaHazard1: 'Falls / Loss of footing',
+            jhaAction1: 'Ensure only trained and authorized workers operate equipment',
+            jhaLadderUse: 'no', jhaAerialUse: 'yes', jhaAerialInspectors: ['Morgan Ellis (Demo)'] }),
+            { employees: ['Demo Foreman', 'Morgan Ellis (Demo)', 'Casey Nolan (Demo)'], groups: [] });
+        }
+
+        // Prior week, stored before the variance questions were retired. Written
+        // directly (not through createOriginal) because new submissions drop
+        // those keys — this record shows that old ones keep them.
+        var prevFri = M.isoAddDays(wk.weekStart, -3);
+        var at = indyAt(prevFri, 7, 5);
+        DEMO_JHA_STORE.push(M.freezeDeep({ id: 'demo-jha-e-v1', root_jha_id: 'demo-jha-e', previous_revision_id: null,
+          revision_number: 1, company_id: DEMO_COMPANY_ID, job_id: job, work_date: prevFri,
+          original_submitted_at: at, revised_at: null, submitted_by: 'Demo Foreman', revised_by: 'Demo Foreman',
+          status: 'submitted', revision_change_type: null, revision_note: null,
+          data: Object.assign({}, base, { jhaDate: prevFri, jhaNewRevised: 'new',
+            jhaDescriptionOfWork: 'Hang ceiling grid supports, Level 2 west',
+            jhaJobsiteSafety: 'Hard hat, glasses, gloves.',
+            jhaTask1: 'Ladders / Stairways Use', jhaHazard1: 'Falls / Loss of footing', jhaAction1: 'Maintain three points of contact',
+            jhaLadderUse: 'yes', jhaLadderSafe: 'yes',
+            jhaLadderWhyNotLift: 'Corridor too narrow for a scissor lift at this location.',
+            jhaLadderObstacle1: 'Sprinkler main', jhaLadderObstacle2: 'Cable tray' }),
+          crew: { employees: ['Demo Foreman', 'Alex Rivera (Demo)'], groups: [] }, photos: [] }));
       }
 
-      // Current job + current date only.
-      function jhaRootsForToday() {
-        var today = jhaTodayISO(), jobId = (NG.job && NG.job.id) || null, roots = {};
-        DEMO_JHA_STORE.forEach(function (r) {
-          if (r.job_id !== jobId || r.work_date !== today) return;
-          if (!roots[r.root_jha_id] || r.revision_number > roots[r.root_jha_id].revision_number) roots[r.root_jha_id] = r;
-        });
-        return Object.keys(roots).map(function (k) { return roots[k]; })
-          .sort(function (a, b) { return String(a.original_submitted_at).localeCompare(b.original_submitted_at); });
-      }
-      function jhaHistory(rootId) {
-        return DEMO_JHA_STORE.filter(function (r) { return r.root_jha_id === rootId; })
-          .sort(function (a, b) { return a.revision_number - b.revision_number; });
+      function jhaHistory(rootId) { return window.JhaModel.familyVersions(DEMO_JHA_STORE, rootId); }
+      function jhaPickerCtx() {
+        return { now: jhaClock(), jobId: (NG.job && NG.job.id) || null, companyId: DEMO_COMPANY_ID };
       }
       // One original + N revisions still counts as ONE completed daily JHA.
-      function demoDailyJhaCompliance() { return jhaRootsForToday().length; }
+      function demoDailyJhaCompliance() {
+        return window.JhaModel.dailyJhaCount(DEMO_JHA_STORE, (NG.job && NG.job.id) || null, jhaTodayISO());
+      }
+
+      /* ---------------- review sheet (shared by confirm + history) ---------- */
+      function jhaReviewHtml(data, crew) {
+        var secs = window.JhaModel.jhaSections(data, { crew: crew });
+        if (!secs.length) return '<p class="jha-row-hint">No answers recorded.</p>';
+        return secs.map(function (sec) {
+          return '<div class="jha-review-sec' + (sec.legacy ? ' is-legacy' : '') + '">' +
+            '<div class="jha-review-title">' + esc(sec.title) + '</div>' +
+            sec.items.map(function (it) {
+              return '<div class="jha-review-row' + (it.flagged ? ' is-flag' : '') + '" data-review-key="' + esc(it.key) + '">' +
+                '<div class="jha-review-q">' + esc(it.label) + '</div>' +
+                '<div class="jha-review-a">' + esc(it.value) + '</div></div>';
+            }).join('') + '</div>';
+        }).join('');
+      }
+      // A bottom sheet with actions. Resolves with the chosen action id.
+      function jhaSheet(title, bodyHtml, actions) {
+        return new Promise(function (resolve) {
+          var old = document.getElementById('jhaSheet'); if (old) old.remove();
+          var w = document.createElement('div');
+          w.id = 'jhaSheet'; w.className = 'jha-sheet-wrap';
+          w.innerHTML = '<div class="jha-sheet" role="dialog" aria-modal="true" aria-labelledby="jhaSheetTitle">' +
+            '<div class="jha-sheet-title" id="jhaSheetTitle">' + esc(title) + '</div>' +
+            '<div class="jha-sheet-body">' + bodyHtml + '</div>' +
+            '<div class="jha-sheet-actions">' + actions.map(function (a) {
+              return '<button type="button" class="' + (a.primary ? 'submit-button' : 'jha-sheet-secondary') +
+                '" data-sheet="' + a.id + '">' + esc(a.label) + '</button>';
+            }).join('') + '</div></div>';
+          document.body.appendChild(w);
+          Array.prototype.forEach.call(w.querySelectorAll('[data-sheet]'), function (b) {
+            b.addEventListener('click', function () { w.remove(); resolve(b.getAttribute('data-sheet')); });
+          });
+        });
+      }
 
       /* ---------------- Revise Submitted JHA: the picker ---------------- */
       function ensureReviseView() {
@@ -6569,57 +7375,102 @@ ${photoUrls}`;
         v = document.createElement('div');
         v.id = 'reviseJhaView'; v.className = 'view';
         v.innerHTML = '<div class="form-container"><button type="button" class="back-button" id="reviseJhaBack">&larr; Back</button>' +
-          '<h2 class="form-title">Revise Submitted JHA</h2>' +
-          '<p class="jha-row-hint" id="reviseJhaSub"></p><div id="reviseJhaList"></div></div>';
+          '<h2 class="form-title">Choose a JHA to revise</h2>' +
+          '<p class="jha-row-hint" id="reviseJhaSub">Choose a JHA from this job. Your changes will create a new time-stamped version. The original will not change.</p>' +
+          '<div id="reviseJhaList"></div></div>';
         (document.querySelector('.app-container') || document.body).appendChild(v);
         v.querySelector('#reviseJhaBack').addEventListener('click', function () { window.showView('landing'); });
         return v;
       }
+      function reviseCardHtml(card) {
+        var M = window.JhaModel, e = card.eligibility, head = card.head, orig = card.original;
+        var crewN = (head.crew && head.crew.employees && head.crew.employees.length) || 0;
+        var capped = e.code === 'cap';
+        return '<div class="jha-rev-card' + (capped ? ' is-capped' : '') + '" data-revise-card="' + esc(card.rootId) + '">' +
+          '<div class="jha-rev-card-title">' + esc(head.data.jhaDescriptionOfWork || 'JHA') + '</div>' +
+          '<div class="jha-rev-grid">' +
+            '<span>Original submitted</span><b>' + esc(M.fmtIndy(orig.original_submitted_at)) + '</b>' +
+            '<span>Latest revision</span><b>' + esc(head.revised_at ? M.fmtIndy(head.revised_at) : 'Not revised yet') + '</b>' +
+            '<span>Foreman</span><b>' + esc(orig.submitted_by || '—') + '</b>' +
+            '<span>Crew</span><b>' + crewN + ' employee' + (crewN === 1 ? '' : 's') + '</b>' +
+            '<span>Current version</span><b>' + esc(M.revisionLabel(head.revision_number)) + '</b>' +
+            '<span>Remaining</span><b>' + (e.remaining ? e.remaining + ' revision' + (e.remaining === 1 ? '' : 's') + ' available' : 'No revisions left') + '</b>' +
+          '</div>' +
+          (capped
+            ? '<p class="jha-rev-capmsg">' + esc(e.message) + '</p>' +
+              '<button type="button" class="action-button action-button--primary" data-new-jha="1" style="width:100%">Complete New JHA</button>'
+            : '<button type="button" class="action-button action-button--primary" data-revise-root="' + esc(card.rootId) + '" style="width:100%">Create revision</button>') +
+          '</div>';
+      }
       function renderReviseList() {
+        var M = window.JhaModel;
         var v = ensureReviseView();
-        var rows = jhaRootsForToday();
-        var job = NG.job || {};
-        v.querySelector('#reviseJhaSub').textContent =
-          'Submitted today on ' + (job.name || '') + (job.job_number ? ' (' + job.job_number + ')' : '') +
-          ' · ' + jhaTodayISO();
-        var list = v.querySelector('#reviseJhaList');
-        if (!rows.length) {
-          list.innerHTML = '<div class="jha-row-hint">No JHAs have been submitted for this job today.</div>';
-        } else {
-          list.innerHTML = rows.map(function (r) {
-            var n = (r.crew && r.crew.employees && r.crew.employees.length) || 0;
-            return '<button type="button" class="action-button action-button--primary jha-revise-item" data-revise-root="' + esc(r.root_jha_id) + '" ' +
-              'style="width:100%;text-align:left;margin-bottom:10px;display:block">' +
-              '<div style="font-weight:800">' + esc(r.data.jhaDescriptionOfWork || 'JHA') + '</div>' +
-              '<div style="font-size:12.5px;opacity:.85;margin-top:4px">' +
-                'Submitted ' + esc(jhaTime(r.original_submitted_at)) +
-                (r.revised_at ? ' · Last revised ' + esc(jhaTime(r.revised_at)) : '') +
-                ' · Revision ' + r.revision_number +
-              '</div>' +
-              '<div style="font-size:12.5px;opacity:.85">By ' + esc(r.revised_by) + ' · ' + n + ' employee' + (n === 1 ? '' : 's') + '</div>' +
-              '</button>';
-          }).join('');
-          Array.prototype.forEach.call(list.querySelectorAll('[data-revise-root]'), function (b) {
-            b.addEventListener('click', function () { startRevision(b.getAttribute('data-revise-root')); });
-          });
+        var c = M.revisionCandidates(DEMO_JHA_STORE, jhaPickerCtx());
+        var list = v.querySelector('#reviseJhaList'), html = '';
+        if (!c.windowOpen) {
+          html += '<div class="jha-rev-notice">JHAs can be revised Monday through Friday. Start a new JHA to document today’s work.</div>' +
+            '<button type="button" class="action-button action-button--primary" data-new-jha="1" style="width:100%;margin-bottom:14px">Complete New JHA</button>';
+        } else if (!c.today.length && !c.earlier.length) {
+          html += '<div class="jha-rev-notice">No JHAs from this job can be revised this workweek.</div>' +
+            '<button type="button" class="action-button action-button--primary" data-new-jha="1" style="width:100%;margin-bottom:14px">Complete New JHA</button>';
         }
+        if (c.today.length) html += '<h3 class="jha-rev-group" data-group="today">Today</h3>' + c.today.map(reviseCardHtml).join('');
+        if (c.earlier.length) html += '<h3 class="jha-rev-group" data-group="earlier">Earlier this workweek</h3>' + c.earlier.map(reviseCardHtml).join('');
+        // Outside the window: viewable, never revisable.
+        var pastIds = [], seen = {}, ctx = jhaPickerCtx();
+        DEMO_JHA_STORE.forEach(function (r) {
+          if (r.job_id !== ctx.jobId || seen[r.root_jha_id]) return;
+          seen[r.root_jha_id] = 1;
+          var code = M.reviseEligibility(DEMO_JHA_STORE, r.root_jha_id, ctx).code;
+          if (code === 'outside-week' || code === 'weekend-original' || code === 'weekend-now') pastIds.push(r.root_jha_id);
+        });
+        if (pastIds.length) {
+          html += '<h3 class="jha-rev-group" data-group="past">View only</h3>' +
+            '<p class="jha-row-hint">These JHAs are outside the revision window. You can view them, or start a new JHA.</p>' +
+            pastIds.map(function (id) {
+              var h = M.familyHead(DEMO_JHA_STORE, id);
+              return '<button type="button" class="jha-rev-view" data-view-root="' + esc(id) + '">' +
+                '<b>' + esc(h.data.jhaDescriptionOfWork || 'JHA') + '</b>' +
+                '<span>' + esc(M.fmtIndy(h.original_submitted_at)) + ' \u00b7 ' + esc(M.revisionLabel(h.revision_number)) + '</span></button>';
+            }).join('');
+        }
+        list.innerHTML = html;
+        Array.prototype.forEach.call(list.querySelectorAll('[data-revise-root]'), function (b) {
+          b.addEventListener('click', function () { startRevision(b.getAttribute('data-revise-root')); });
+        });
+        Array.prototype.forEach.call(list.querySelectorAll('[data-new-jha]'), function (b) {
+          b.addEventListener('click', function () { openDemoForm('jha'); });
+        });
+        Array.prototype.forEach.call(list.querySelectorAll('[data-view-root]'), function (b) {
+          b.addEventListener('click', function () { viewJhaHistory(b.getAttribute('data-view-root')); });
+        });
         window.showView('reviseJha');
+      }
+      function viewJhaHistory(rootId) {
+        var M = window.JhaModel, versions = jhaHistory(rootId), head = versions[versions.length - 1];
+        jhaSheet(head.data.jhaDescriptionOfWork || 'JHA',
+          '<p class="jha-sheet-lede">Viewing ' + esc(M.revisionLabel(head.revision_number)) + ' · submitted ' +
+            esc(M.fmtIndy(head.revised_at || head.original_submitted_at)) + '. This JHA can’t be revised.</p>' +
+          jhaReviewHtml(head.data, head.crew),
+          [{ id: 'new', label: 'Complete New JHA', primary: true }, { id: 'close', label: 'Close' }]
+        ).then(function (c) { if (c === 'new') openDemoForm('jha'); });
       }
 
       /* ---------------- load latest revision into the form -------------- */
       function startRevision(rootId) {
-        var hist = jhaHistory(rootId);
-        var latest = hist[hist.length - 1];
-        if (!latest) return;
+        var M = window.JhaModel;
+        var e = M.reviseEligibility(DEMO_JHA_STORE, rootId, jhaPickerCtx());
+        if (!e.ok) { jhaRefused(e); return; }
+        var latest = e.head;   // always the latest submitted version — never an older one
         JHA_CTX = {
-          root_jha_id: latest.root_jha_id,
-          previous_revision_id: latest.id,
-          revision_number: latest.revision_number + 1,
+          rootId: latest.root_jha_id,
+          baseVersionId: latest.id,
+          nextNumber: e.nextNumber,
+          remaining: e.remaining,
           original_submitted_at: latest.original_submitted_at,
           job_id: latest.job_id,
-          work_date: latest.work_date,
           carriedPhotos: (latest.photos || []).slice(),   // existing photos stay part of the revision
-          source: latest
+          changeType: '', note: ''
         };
         if (typeof window.openJhaForm === 'function') window.openJhaForm();
         applyLocks();
@@ -6628,14 +7479,17 @@ ${photoUrls}`;
       }
       function fillJhaForm(rec) {
         var form = document.getElementById('jhaForm'); if (!form || !rec) return;
-        Object.keys(rec.data || {}).forEach(function (k) {
+        var data = window.JhaModel.normalizeJhaData(rec.data || {});
+        Object.keys(data).forEach(function (k) {
           var els = form.querySelectorAll('[name="' + k + '"]');
           if (!els.length) return;
+          var val = data[k];
+          if (val && typeof val === 'object') val = JSON.stringify(val);
           if (els[0].type === 'radio') {
-            Array.prototype.forEach.call(els, function (r) { r.checked = (r.value === rec.data[k]); });
+            Array.prototype.forEach.call(els, function (r) { r.checked = (r.value === val); });
             els[0].dispatchEvent(new Event('change', { bubbles: true }));
           } else {
-            els[0].value = rec.data[k];
+            els[0].value = val;
             els[0].dispatchEvent(new Event('input', { bubbles: true }));
             els[0].dispatchEvent(new Event('change', { bubbles: true }));
           }
@@ -6644,19 +7498,42 @@ ${photoUrls}`;
                      groups: JSON.parse(JSON.stringify((rec.crew && rec.crew.groups) || [])) };
         renderCrew();
         syncLadderPanel();
+        syncAerialPanel();
       }
+      function jhaSubmitLabel() { return JHA_CTX ? 'Submit Revision ' + JHA_CTX.nextNumber : 'Submit JHA'; }
       function renderJhaBanner() {
         var view = document.getElementById('inspectionJhaView'); if (!view) return;
         var old = document.getElementById('jhaRevisionBanner'); if (old) old.remove();
+        var btn = document.getElementById('jhaSubmitBtn');
+        if (btn) btn.innerHTML = jhaSubmitLabel();
         if (!JHA_CTX) return;
         var b = document.createElement('div');
         b.id = 'jhaRevisionBanner';
-        b.style.cssText = 'background:#1e3a8a;color:#fff;border-radius:10px;padding:12px 14px;margin-bottom:14px;text-align:center';
-        b.innerHTML = '<div style="font-weight:900;letter-spacing:.06em;font-size:13px">REVISED JHA</div>' +
-          '<div style="font-weight:800;font-size:18px;margin-top:2px">Revision ' + JHA_CTX.revision_number + '</div>' +
-          '<div style="font-size:12.5px;opacity:.9;margin-top:4px">Original submitted ' + esc(jhaTime(JHA_CTX.original_submitted_at)) + '</div>';
+        b.className = 'jha-rev-banner';
+        b.innerHTML = '<div class="jha-rev-banner-head">Creating Revision ' + JHA_CTX.nextNumber + '</div>' +
+          '<div class="jha-rev-banner-sub">Changes apply when this revision is submitted. Earlier versions stay in the history.</div>' +
+          '<div class="jha-rev-banner-sub">Original submitted ' + esc(jhaTime(JHA_CTX.original_submitted_at)) + '</div>' +
+          '<div class="jha-rev-why"><div class="jha-rev-why-label">What changed? <span class="required">*</span></div>' +
+            '<div class="jha-rev-why-opts" role="radiogroup" aria-label="What changed">' +
+            window.JhaModel.REVISION_CHANGE_TYPES.map(function (t) {
+              return '<button type="button" role="radio" aria-checked="' + (JHA_CTX.changeType === t) + '" class="jha-rev-why-opt' +
+                (JHA_CTX.changeType === t ? ' is-on' : '') + '" data-change-type="' + esc(t) + '">' + esc(t) + '</button>';
+            }).join('') + '</div>' +
+            '<label class="jha-rev-why-label" for="jhaRevNote" style="margin-top:10px">Note <span class="opt">optional</span></label>' +
+            '<textarea id="jhaRevNote" class="form-textarea" rows="2" placeholder="What changed, in a few words">' + esc(JHA_CTX.note || '') + '</textarea>' +
+          '</div>';
         var host = view.querySelector('.form-container') || view;
         host.insertBefore(b, host.firstChild);
+        Array.prototype.forEach.call(b.querySelectorAll('[data-change-type]'), function (o) {
+          o.addEventListener('click', function () {
+            JHA_CTX.changeType = o.getAttribute('data-change-type');
+            b.classList.remove('jha-rev-need');
+            Array.prototype.forEach.call(b.querySelectorAll('[data-change-type]'), function (x) {
+              var on = x === o; x.classList.toggle('is-on', on); x.setAttribute('aria-checked', String(on));
+            });
+          });
+        });
+        b.querySelector('#jhaRevNote').addEventListener('input', function (ev) { JHA_CTX.note = ev.target.value; });
       }
 
       /* ---------------- crew picker (searchable, up to 30) -------------- */
@@ -6820,36 +7697,223 @@ ${photoUrls}`;
         });
       }
 
-      /* ---------------- ladder conditional ------------------------------ */
+      /* ---------------- ladder: ID + inspection card --------------------- */
+      /* One equipment category, "Ladder". The ID is typed for now; a QR or
+         barcode reader only has to call setLadderId(id) — the stored ID and
+         everything after it stay the same. */
+      var LADDER_UI = { open: false, defectOpen: false, removed: '', photo: null, error: '' };
+      function setLadderId(id) {
+        var el = document.getElementById('jhaLadderId'); if (!el) return;
+        el.value = window.JhaModel.normalizeLadderId(id);
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      function currentLadderLook() {
+        var src = ladderData(), el = document.getElementById('jhaLadderId');
+        var id = el ? el.value : '';
+        if (!src) {
+          var n = window.JhaModel.normalizeLadderId(id);
+          return n ? { state: 'unavailable', id: n } : { state: 'empty', id: '' };
+        }
+        return window.JhaModel.ladderLookup(src.registry, src.inspections, id);
+      }
       function syncLadderPanel() {
         var form = document.getElementById('jhaForm'); if (!form) return;
         var use = form.querySelector('input[name="jhaLadderUse"]:checked');
         var panel = document.getElementById('jhaLadderPanel'); if (!panel) return;
         var on = !!use && use.value === 'yes';
         panel.style.display = on ? '' : 'none';
-        var why = document.getElementById('jhaLadderWhyNotLift');
-        if (why) { if (on) why.setAttribute('required', 'required'); else { why.removeAttribute('required'); } }
-        Array.prototype.forEach.call(form.querySelectorAll('input[name="jhaLadderSafe"]'), function (r) {
-          if (on) r.setAttribute('required', 'required'); else r.removeAttribute('required');
+        var idEl = document.getElementById('jhaLadderId');
+        var snap = document.getElementById('jhaLadderInspection');
+        if (idEl) { if (on) idEl.setAttribute('required', 'required'); else idEl.removeAttribute('required'); }
+        if (!on) {
+          // A "No" answer clears every ladder child value.
+          if (idEl) idEl.value = '';
+          if (snap) snap.value = '';
+          LADDER_UI = { open: false, defectOpen: false, removed: '', photo: null, error: '' };
+          var card = document.getElementById('jhaLadderCard'); if (card) card.innerHTML = '';
+          return;
+        }
+        renderLadderCard();
+      }
+      function ladderRow(k, v, extra) {
+        return '<div class="jha-ladder-row' + (extra || '') + '"><span>' + esc(k) + '</span><b>' + esc(v) + '</b></div>';
+      }
+      function renderLadderCard() {
+        var M = window.JhaModel, card = document.getElementById('jhaLadderCard'); if (!card) return;
+        var look = currentLadderLook();
+        var snap = document.getElementById('jhaLadderInspection');
+        var s = (look.state === 'found' || look.state === 'unknown') ? M.ladderSnapshot(look) : null;
+        if (snap) snap.value = s ? JSON.stringify(s) : '';
+        if (look.state === 'empty') { card.innerHTML = ''; return; }
+        if (look.state === 'unavailable') {
+          card.innerHTML = '<div class="jha-ladder-card"><div class="jha-ladder-head">Ladder inspection</div>' +
+            ladderRow('Ladder ID', look.id) +
+            '<p class="jha-row-hint" style="margin:8px 0 0">Ladder inspection records are not connected yet. The Ladder ID is saved with this JHA.</p></div>';
+          return;
+        }
+        if (look.state === 'duplicate') {
+          card.innerHTML = '<div class="jha-ladder-card is-error" role="alert"><div class="jha-ladder-head">Ladder inspection</div>' +
+            '<p class="jha-ladder-msg">' + esc(look.message) + '</p></div>';
+          return;
+        }
+        var h = '<div class="jha-ladder-card' + (look.status === 'do-not-use' ? ' is-dnu' : '') + '">' +
+          '<div class="jha-ladder-head">Ladder inspection</div>';
+        if (look.state === 'unknown') {
+          h += ladderRow('Ladder ID', look.id) + '<p class="jha-ladder-msg">' + esc(look.message) + '</p>';
+        } else {
+          h += ladderRow('Ladder ID', look.id) +
+            ladderRow('Last inspection date', look.last ? M.fmtIndy(look.last.inspected_at) : 'None recorded') +
+            ladderRow('Last inspected by', look.last ? look.last.inspected_by : '—') +
+            ladderRow('Inspection status', look.statusLabel, look.status === 'do-not-use' ? ' is-dnu' : '');
+          if (look.status === 'do-not-use') {
+            h += '<div class="jha-ladder-dnu" role="alert">DO NOT USE — ' + esc(look.openDefect.description) +
+              (look.openDefect.removed_from_service === 'yes' ? ' (removed from service)' : '') +
+              '. Use a different ladder and enter its ID.</div>';
+          }
+        }
+        h += LADDER_UI.open ? ladderRecordForm() :
+          '<button type="button" class="inspection-add-row-btn" id="jhaLadRecOpen" style="margin-top:10px">Record inspection</button>';
+        card.innerHTML = h + '</div>';
+        wireLadderCard();
+      }
+      function ladderRecordForm() {
+        // No name attributes here: these controls are not JHA answers.
+        var who = NG.user
+          ? '<div class="jha-ladder-row"><span>Inspected by</span><b id="jhaLadRecWho">' + esc(NG.user) + '</b></div>'
+          : '<label class="form-label" for="jhaLadRecWhoInput">Inspected by</label>' +
+            '<input type="text" class="form-input" id="jhaLadRecWhoInput" autocomplete="name" placeholder="Your name">';
+        var d = LADDER_UI.defectOpen;
+        return '<div class="jha-ladder-rec" id="jhaLadRec">' + who +
+          '<p class="jha-row-hint" style="margin:6px 0 10px">The inspection date and time are recorded automatically when you save.</p>' +
+          '<label class="jha-ladder-ack"><input type="checkbox" id="jhaLadRecAck"> I inspected this ladder before use.</label>' +
+          (d
+            ? '<div class="jha-ladder-defect" id="jhaLadRecDefect">' +
+                '<label class="form-label" for="jhaLadRecDefDesc">Describe the defect or unsafe condition <span class="required">*</span></label>' +
+                '<textarea class="form-textarea" id="jhaLadRecDefDesc" rows="2"></textarea>' +
+                '<label class="form-label" for="jhaLadRecDefPhoto" style="margin-top:8px">Photo <span class="opt">optional</span></label>' +
+                '<input type="file" id="jhaLadRecDefPhoto" accept="image/*">' +
+                '<div class="form-label" style="margin-top:8px">Was the ladder removed from service? <span class="required">*</span></div>' +
+                '<div class="jha-rev-why-opts" role="radiogroup" aria-label="Was the ladder removed from service">' +
+                  ['yes', 'no'].map(function (v) {
+                    return '<button type="button" role="radio" aria-checked="' + (LADDER_UI.removed === v) + '" class="jha-rev-why-opt' +
+                      (LADDER_UI.removed === v ? ' is-on' : '') + '" data-lad-removed="' + v + '">' + (v === 'yes' ? 'Yes' : 'No') + '</button>';
+                  }).join('') + '</div>' +
+                '<button type="button" class="jha-sheet-secondary" id="jhaLadRecDefCancel" style="margin-top:8px">Remove defect</button>' +
+              '</div>'
+            : '<button type="button" class="jha-sheet-secondary" id="jhaLadRecDefOpen">Add defect or unsafe condition</button>') +
+          (LADDER_UI.error ? '<p class="err small" role="alert" id="jhaLadRecErr">' + esc(LADDER_UI.error) + '</p>' : '') +
+          '<div style="display:flex;gap:8px;margin-top:10px">' +
+            '<button type="button" class="submit-button" id="jhaLadRecSave" style="margin:0;flex:1">Save inspection</button>' +
+            '<button type="button" class="jha-sheet-secondary" id="jhaLadRecCancel" style="flex:0 0 auto">Cancel</button>' +
+          '</div></div>';
+      }
+      function wireLadderCard() {
+        function on(id, fn) { var e = document.getElementById(id); if (e) e.addEventListener('click', fn); }
+        on('jhaLadRecOpen', function () { LADDER_UI.open = true; LADDER_UI.error = ''; renderLadderCard(); });
+        on('jhaLadRecCancel', function () { LADDER_UI = { open: false, defectOpen: false, removed: '', photo: null, error: '' }; renderLadderCard(); });
+        on('jhaLadRecDefOpen', function () { keepLadderInputs(); LADDER_UI.defectOpen = true; renderLadderCard(); });
+        on('jhaLadRecDefCancel', function () { keepLadderInputs(); LADDER_UI.defectOpen = false; LADDER_UI.removed = ''; LADDER_UI.photo = null; renderLadderCard(); });
+        Array.prototype.forEach.call(document.querySelectorAll('[data-lad-removed]'), function (b) {
+          b.addEventListener('click', function () { keepLadderInputs(); LADDER_UI.removed = b.getAttribute('data-lad-removed'); renderLadderCard(); });
         });
-        var safe = form.querySelector('input[name="jhaLadderSafe"]:checked');
-        var riskGroup = document.getElementById('jhaLadderRiskGroup');
-        var risk = document.getElementById('jhaLadderGreaterRisk');
-        var showRisk = on && safe && safe.value === 'no';
-        if (riskGroup) riskGroup.style.display = showRisk ? '' : 'none';
-        if (risk) { if (showRisk) risk.setAttribute('required', 'required'); else risk.removeAttribute('required'); }
+        var ph = document.getElementById('jhaLadRecDefPhoto');
+        if (ph) ph.addEventListener('change', function () {
+          var f = ph.files && ph.files[0]; if (!f) { LADDER_UI.photo = null; return; }
+          var rd = new FileReader();
+          rd.onload = function () { LADDER_UI.photo = { filename: f.name, data_url: rd.result }; };
+          rd.readAsDataURL(f);
+        });
+        var ack = document.getElementById('jhaLadRecAck');
+        if (ack && LADDER_UI.ack) ack.checked = true;
+        var desc = document.getElementById('jhaLadRecDefDesc');
+        if (desc && LADDER_UI.desc) desc.value = LADDER_UI.desc;
+        var whoIn = document.getElementById('jhaLadRecWhoInput');
+        if (whoIn && LADDER_UI.who) whoIn.value = LADDER_UI.who;
+        on('jhaLadRecSave', saveLadderInspection);
+      }
+      // Keep what was typed when the card re-renders.
+      function keepLadderInputs() {
+        var ack = document.getElementById('jhaLadRecAck'); if (ack) LADDER_UI.ack = ack.checked;
+        var desc = document.getElementById('jhaLadRecDefDesc'); if (desc) LADDER_UI.desc = desc.value;
+        var who = document.getElementById('jhaLadRecWhoInput'); if (who) LADDER_UI.who = who.value;
+      }
+      function saveLadderInspection() {
+        keepLadderInputs();
+        var src = ladderData(); if (!src) return;
+        var res = window.JhaModel.recordLadderInspection(src.registry, src.inspections, {
+          ladderId: (document.getElementById('jhaLadderId') || {}).value,
+          inspector: NG.user || LADDER_UI.who || '',
+          acknowledged: LADDER_UI.ack === true,
+          defect: LADDER_UI.defectOpen
+            ? { description: LADDER_UI.desc || '', removedFromService: LADDER_UI.removed, photo: LADDER_UI.photo }
+            : null
+        }, jhaClock());
+        if (!res.ok) { LADDER_UI.error = res.message; renderLadderCard(); return; }
+        LADDER_UI = { open: false, defectOpen: false, removed: '', photo: null, error: '' };
+        toast('success', 'Inspection recorded', 'Ladder ' + res.record.ladder_id + ' · ' + window.JhaModel.fmtIndy(res.record.inspected_at));
+        renderLadderCard();
+      }
+
+      /* ---------------- aerial lifts: who will inspect ------------------- */
+      // Records planned responsibility only: no text, no task, no
+      // qualification check, and the lift-inspection form is unchanged.
+      function aerialSelected() {
+        var h = document.getElementById('jhaAerialInspectors');
+        try { var v = JSON.parse((h && h.value) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+      }
+      function syncAerialPanel() {
+        var form = document.getElementById('jhaForm'); if (!form) return;
+        var use = form.querySelector('input[name="jhaAerialUse"]:checked');
+        var panel = document.getElementById('jhaAerialPanel'); if (!panel) return;
+        var on = !!use && use.value === 'yes';
+        panel.style.display = on ? '' : 'none';
+        var h = document.getElementById('jhaAerialInspectors');
+        if (!on) { if (h) h.value = ''; var r = document.getElementById('jhaAerialRoster'); if (r) r.innerHTML = ''; return; }
+        renderAerialRoster();
+      }
+      function renderAerialRoster() {
+        var box = document.getElementById('jhaAerialRoster'); if (!box) return;
+        var sel = aerialSelected();
+        var names = crewRoster();
+        sel.forEach(function (n) { if (names.indexOf(n) === -1) names.push(n); });
+        box.innerHTML = names.map(function (n) {
+          var on = sel.indexOf(n) !== -1;
+          return '<button type="button" class="jha-crew-chip' + (on ? ' is-on' : '') + '" aria-pressed="' + on +
+            '" data-aerial-person="' + esc(n) + '">' + (on ? '&#10003; ' : '+ ') + esc(n) + '</button>';
+        }).join('') || '<div class="jha-row-hint">No crew roster is available for this job.</div>';
+        Array.prototype.forEach.call(box.querySelectorAll('[data-aerial-person]'), function (b) {
+          b.addEventListener('click', function () {
+            var n = b.getAttribute('data-aerial-person'), cur = aerialSelected(), i = cur.indexOf(n);
+            if (i === -1) cur.push(n); else cur.splice(i, 1);
+            document.getElementById('jhaAerialInspectors').value = cur.length ? JSON.stringify(cur) : '';
+            var g = box.closest('.form-group'); if (g) g.classList.remove('error');
+            renderAerialRoster();
+          });
+        });
+      }
+
+      /* Checks the HTML required attributes can't express (Ladder ID state,
+         at least one lift inspector). Returns a message, or '' when clear. */
+      function jhaSubmitGuard() {
+        var M = window.JhaModel; if (!M) return '';
+        var form = document.getElementById('jhaForm'); if (!form) return '';
+        var data = jhaFormValues(form);
+        var look = data.jhaLadderUse === 'yes' ? currentLadderLook() : null;
+        var problems = M.jhaSubmitProblems(data, look && look.state !== 'unavailable' ? look : null);
+        if (!problems.length) return '';
+        if (data.jhaAerialUse === 'yes' && !aerialSelected().length) {
+          var g = document.getElementById('jhaAerialRoster'); g = g && g.closest('.form-group'); if (g) g.classList.add('error');
+        }
+        if (look && (look.state === 'duplicate' || look.status === 'do-not-use')) {
+          var c = document.getElementById('jhaLadderCard'); if (c) try { c.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+        }
+        return problems[0];
       }
 
       /* ---------------- build + submit a revision ----------------------- */
       function collectJhaFormData() {
-        var form = document.getElementById('jhaForm'), out = {};
-        if (!form) return out;
-        Array.prototype.forEach.call(form.querySelectorAll('[name]'), function (el) {
-          if (el.name === 'jhaCrewData') return;
-          if (el.type === 'radio') { if (el.checked) out[el.name] = el.value; }
-          else if (el.type === 'checkbox') { if (el.checked) out[el.name] = el.value || 'on'; }
-          else out[el.name] = el.value;
-        });
+        var out = jhaFormValues(document.getElementById('jhaForm'));
+        delete out.jhaCrewData;   // crew is stored as its own structure
         return out;
       }
       // Existing photos on the selected JHA are carried forward; new ones are
@@ -6862,64 +7926,33 @@ ${photoUrls}`;
         });
         return carried.concat(added);
       }
-      function buildJhaRecord(payload) {
-        var now = new Date().toISOString();
-        var data = collectJhaFormData();
-        var crew = JSON.parse(JSON.stringify(JHA_CREW));
-        var photos = collectJhaPhotos(payload);
-        if (JHA_CTX) {
-          return { id: 'demo-jha-' + Date.now(), root_jha_id: JHA_CTX.root_jha_id,
-            previous_revision_id: JHA_CTX.previous_revision_id, revision_number: JHA_CTX.revision_number,
-            original_submitted_at: JHA_CTX.original_submitted_at, revised_at: now,
-            revised_by: NG.user || 'Demo Foreman', job_id: JHA_CTX.job_id, work_date: JHA_CTX.work_date,
-            status: 'submitted', data: data, crew: crew, photos: photos };
-        }
-        var root = 'demo-jha-' + Date.now();
-        return { id: root + '-r1', root_jha_id: root, previous_revision_id: null, revision_number: 1,
-          original_submitted_at: now, revised_at: null, revised_by: NG.user || 'Demo Foreman',
-          job_id: (NG.job && NG.job.id) || null, work_date: jhaTodayISO(), status: 'submitted',
-          data: data, crew: crew, photos: photos };
-      }
+      // Revision metadata and history on top of the model-built document.
       function decorateJhaDoc(dmodel, rec) {
+        var M = window.JhaModel;
         dmodel.title = 'Job Hazard Analysis';
         dmodel.meta = dmodel.meta || {};
         dmodel.meta['Status'] = rec.revision_number > 1 ? 'REVISED' : 'Original';
-        dmodel.meta['Revision'] = String(rec.revision_number);
-        dmodel.meta['Original submitted'] = jhaTime(rec.original_submitted_at);
-        if (rec.revised_at) dmodel.meta['Latest revision'] = jhaTime(rec.revised_at);
+        dmodel.meta['Revision'] = M.revisionLabel(rec.revision_number);
+        dmodel.meta['Original submitted'] = M.fmtIndy(rec.original_submitted_at);
+        if (rec.revised_at) dmodel.meta['Latest revision'] = M.fmtIndy(rec.revised_at);
         dmodel.meta['Description of Work'] = rec.data.jhaDescriptionOfWork || '';
         var it = function (label, response, photos) {
           return { label: label, response: response == null || response === '' ? '—' : String(response),
                    type: 'text', notes: '', flagged: false, photos: photos || [] };
         };
-        var crewItems = [it('Employees (' + rec.crew.employees.length + ')', rec.crew.employees.join(', '))];
-        rec.crew.groups.forEach(function (g, i) {
-          crewItems.push(it('Assignment ' + (i + 1) + ' — ' + (g.task || '—'),
-            (g.activity || '—') + '  ·  ' + (g.members.join(', ') || 'no one assigned')));
-        });
-        dmodel.sections.push({ title: 'Employees and Assignments', items: crewItems });
-
-        var ladder = [it('Planned or expected use of any ladder?', rec.data.jhaLadderUse || '—')];
-        if (rec.data.jhaLadderUse === 'yes') {
-          ladder.push(it('Can this work be done safely from a ladder?', rec.data.jhaLadderSafe || '—'));
-          ladder.push(it('Why a one-man scissor lift / tying off will not work', rec.data.jhaLadderWhyNotLift));
-          var obs = [1, 2, 3, 4, 5].map(function (n) { return rec.data['jhaLadderObstacle' + n]; })
-            .filter(function (v) { return v && String(v).trim(); });
-          if (obs.length) ladder.push(it('Above-ceiling hindrances / obstacles', obs.join('; ')));
-          if (rec.data.jhaLadderSafe === 'no') {
-            ladder.push(it('How fall protection poses a greater risk than not using it', rec.data.jhaLadderGreaterRisk));
-          }
-        }
-        dmodel.sections.push({ title: 'Ladder Use', items: ladder });
-
-        if (rec.photos && rec.photos.length) {
-          dmodel.sections.push({ title: 'Photos', items: [it('Attached photos (' + rec.photos.length + ')', '', rec.photos)] });
+        var shown = [];
+        dmodel.sections.forEach(function (s) { s.items.forEach(function (i) { shown = shown.concat(i.photos || []); }); });
+        var carried = (rec.photos || []).map(function (p) { return typeof p === 'string' ? p : (p && p.data_url); })
+          .filter(function (u) { return u && shown.indexOf(u) === -1; });
+        if (carried.length) {
+          dmodel.sections.push({ title: 'Photos', aux: true, items: [it('Attached photos (' + carried.length + ')', '', carried)] });
         }
         var hist = jhaHistory(rec.root_jha_id);
-        dmodel.sections.push({ title: 'Revision History', items: hist.map(function (h) {
-          return it('Revision ' + h.revision_number, (h.revision_number === 1
-            ? 'Original submitted ' + jhaTime(h.original_submitted_at)
-            : 'Revised ' + jhaTime(h.revised_at)) + '  ·  ' + h.revised_by);
+        dmodel.sections.push({ title: 'Revision History', aux: true, items: hist.map(function (h) {
+          return it(M.revisionLabel(h.revision_number), (h.revision_number === 1
+            ? 'Original submitted ' + M.fmtIndy(h.original_submitted_at)
+            : 'Revised ' + M.fmtIndy(h.revised_at) + ' · ' + (h.revision_change_type || '') +
+              (h.revision_note ? ' — ' + h.revision_note : '')) + ' · ' + h.revised_by);
         }) });
         return dmodel;
       }
@@ -6938,15 +7971,22 @@ ${photoUrls}`;
             JHA_CREW.groups.push({ task: '', activity: '', members: [] }); renderAssignments(); syncCrewData();
           });
           form.addEventListener('change', function (e) {
-            if (e.target && (e.target.name === 'jhaLadderUse' || e.target.name === 'jhaLadderSafe')) syncLadderPanel();
+            if (e.target && e.target.name === 'jhaLadderUse') syncLadderPanel();
+            if (e.target && e.target.name === 'jhaAerialUse') syncAerialPanel();
             if (e.target && /^jhaTask\d+$/.test(e.target.name || '')) renderAssignments();
           });
           form.addEventListener('input', function (e) {
             if (e.target && /^jhaTask\d+$/.test(e.target.name || '')) renderAssignments();
+            if (e.target && e.target.id === 'jhaLadderId') {
+              LADDER_UI = { open: false, defectOpen: false, removed: '', photo: null, error: '' };
+              renderLadderCard();
+            }
           });
         }
+        if (!JHA_CTX) { var bn = document.getElementById('jhaSubmitBtn'); if (bn) bn.innerHTML = 'Submit JHA'; }
         renderCrew();
         syncLadderPanel();
+        syncAerialPanel();
         renderJhaBanner();
       }
 
@@ -7038,7 +8078,10 @@ ${photoUrls}`;
         var m = (params.get('tbtmode') || '').toLowerCase();
         return (m === 'group' || m === 'individual') ? m : null;
       })();
-      var TBT_MODE = TBT_URL_MODE;             // null until the reviewer chooses
+      // Start from the company's approved workflow. The demo chooser remains so
+      // reviewers can inspect a future alternative, but Greiner opens with the
+      // current foreman-led group model instead of an unselected state.
+      var TBT_MODE = TBT_URL_MODE || TBT_CO[TBT_COMPANY].mode;
       var TBT_STEP = TBT_URL_MODE ? 'review' : 'method';
       var TBT_PAGE = 0;                        // page index inside the talk
       var TBT_READ = false;                    // reached the final page?
@@ -7092,7 +8135,21 @@ ${photoUrls}`;
         var p = tbtMondayISO().split('-');
         return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
       }
-      function tbtCurrentTalk() { return TBT_TALKS[0]; }
+      /* Greiner's foreman picks the week's talk (Tony, Oct 2: foreman-led). The
+         default is the talk the office scheduled; other companies keep theirs. */
+      var TBT_TALK_IDX = 0;
+      function tbtCurrentTalk() { return TBT_TALKS[TBT_TALK_IDX] || TBT_TALKS[0]; }
+      function tbtTalkPickerHtml() {
+        if (TBT_COMPANY !== 'greiner' || TBT_TALKS.length < 2) return '';
+        return '<label for="tbtTalkPick" style="display:block;font-weight:700;font-size:13px;margin:10px 0 4px">This week\u2019s talk</label>' +
+          '<select id="tbtTalkPick" class="form-input" style="width:100%">' +
+          TBT_TALKS.map(function (x, i) {
+            return '<option value="' + i + '"' + (i === TBT_TALK_IDX ? ' selected' : '') + '>' + esc(x.t) +
+              (i === 0 ? ' (scheduled)' : '') + '</option>';
+          }).join('') + '</select>' +
+          '<div style="color:var(--color-text-secondary);font-size:12px;margin-top:4px">' +
+            'The foreman chooses the talk the crew covers this week.</div>';
+      }
       function tbtState() {
         try { return JSON.parse(localStorage.getItem(TBT_KEY) || '{"records":[]}'); }
         catch (e) { return { records: [] }; }
@@ -7178,7 +8235,7 @@ ${photoUrls}`;
           '<div class="tbt-doc" style="padding:12px 14px">' +
             '<div class="tbt-doc-title" style="font-size:16px">' + esc(t.t) + '</div>' +
             '<div class="tbt-doc-sub" style="margin-bottom:0">' + esc(co.name) +
-              ' · due ' + esc(tbtDueLabel()) + '</div></div>' +
+              ' · due ' + esc(tbtDueLabel()) + '</div>' + tbtTalkPickerHtml() + '</div>' +
           '<p style="color:var(--color-text-secondary);font-size:13.5px;line-height:1.5;margin:0 0 12px">' +
             'Choose which completion workflow to demonstrate.</p>' +
           '<button type="button" class="tbt-optcard' + (TBT_MODE === 'group' ? ' is-on' : '') +
@@ -7198,7 +8255,18 @@ ${photoUrls}`;
           '<p style="color:var(--color-text-secondary);font-size:12.5px;line-height:1.5;margin:14px 0 0">' +
             'This selector is for the demo only. In production the office configuration ' +
             'decides which option an employee receives — employees do not choose the ' +
-            'company workflow themselves.</p>';
+            'company workflow themselves.</p>' +
+          (TBT_COMPANY === 'greiner'
+            ? '<p style="color:var(--color-text-secondary);font-size:12.5px;line-height:1.5;margin:8px 0 0">' +
+                'Greiner currently uses the foreman-led group workflow. Individual completion ' +
+                'is shown here only for review of a possible future option.</p>'
+            : '');
+        var pick = document.getElementById('tbtTalkPick');
+        if (pick) pick.onchange = function () {
+          TBT_TALK_IDX = +pick.value;
+          TBT_PAGE = 0; TBT_READ = false; TBT_SECTION = 0; TBT_SECTION_DONE = [];
+          renderTbtMethod();
+        };
         Array.prototype.forEach.call(body.querySelectorAll('[data-tbt-method]'), function (b) {
           b.onclick = function () {
             TBT_MODE = b.getAttribute('data-tbt-method');
@@ -7515,6 +8583,7 @@ ${photoUrls}`;
           TBT_PAGE = 0; TBT_READ = false;
           TBT_SECTION = 0; TBT_SECTION_DONE = [];
           TBT_SEL = { group: null, attendees: [], manual: [], presenter: '', presented: false };
+          TBT_MODE = TBT_URL_MODE || TBT_CO[TBT_COMPANY].mode;
           tbtGo('method');
         };
         document.getElementById('tbtDoneHome').onclick = function () { window.showView('landing'); };
@@ -7524,7 +8593,7 @@ ${photoUrls}`;
         ensureTbtView();
         window.showView('toolboxTalk');
         TBT_STEP = TBT_URL_MODE ? 'review' : 'method';
-        TBT_MODE = TBT_URL_MODE;
+        TBT_MODE = TBT_URL_MODE || TBT_CO[TBT_COMPANY].mode;
         TBT_PAGE = 0; TBT_READ = false;
         TBT_FORMAT = TBT_URL_FORMAT || 'doc';
         TBT_SECTION = 0; TBT_SECTION_DONE = [];
@@ -7540,14 +8609,17 @@ ${photoUrls}`;
         NG.equipment = DEMO_HOME.equipment;
         NG.people = DEMO_HOME.people;
         NG.hotworkLocations = DEMO_HOME.hotwork_locations;
-        seedDemoJhas();   // fake submitted JHAs for DEMO-001, today
+        seedDemoJhas();   // fake submitted JHAs for DEMO-001 across this workweek + one prior-week record
         // Demo-only introspection handle (used by the local review checks).
         NG.demoJha = {
           store: function () { return DEMO_JHA_STORE; },
-          roots: jhaRootsForToday,
+          ladders: function () { return { registry: DEMO_LADDERS, inspections: DEMO_LADDER_INSPECTIONS }; },
+          candidates: function () { return window.JhaModel.revisionCandidates(DEMO_JHA_STORE, jhaPickerCtx()); },
           history: jhaHistory,
           compliance: demoDailyJhaCompliance,
           ctx: function () { return JHA_CTX; },
+          clock: function () { return jhaClock().toISOString(); },
+          lastDoc: function () { return NG.demoJhaLastDoc || null; },
           maxEmployees: JHA_MAX_EMPLOYEES
         };
         setTimeout(function () {

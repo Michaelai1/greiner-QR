@@ -395,7 +395,7 @@ includes('class="tbt-steps"', 'the progress indicator must be rendered');
 includes('data-tbt-step=', 'each step must be identifiable');
 // Without ?tbtmode the walkthrough opens on step 1.
 assert.equal(mod.TBT_STEP, 'method', 'the walkthrough must open on Choose Method');
-assert.equal(mod.TBT_MODE, null, 'no completion method may be preselected');
+assert.equal(mod.TBT_MODE, 'group', 'Greiner must default to the foreman-led group method');
 // ?tbtmode stays available for direct testing and skips to the talk.
 const direct = makeModule('?demo=1&company=peine&tbtmode=individual');
 assert.equal(direct.TBT_URL_MODE, 'individual', '?tbtmode must still be honoured');

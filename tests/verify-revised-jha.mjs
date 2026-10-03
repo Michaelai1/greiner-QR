@@ -14,23 +14,32 @@ includes('>Complete New JHA<', 'Landing must offer "Complete New JHA"');
 includes('>Revise Submitted JHA<', 'Landing must offer "Revise Submitted JHA"');
 excludes('JHA — Coming next', 'JHA must no longer be marked "Coming next"');
 
-/* ---------------- current job + current date filtering ---------------- */
-includes('if (r.job_id !== jobId || r.work_date !== today) return;',
-  'Revision list must filter to the current job AND the current date');
+/* ---------------- current job + current WORKWEEK (Tony, Oct 2) --------
+   Superseded the same-day rule: up to three revisions per JHA within the
+   Monday-Friday Indianapolis workweek. The rule lives in the shared model;
+   tests/verify-jha-model.mjs proves the behavior. */
+includes('workdays: [1, 2, 3, 4, 5]', 'The revision window must be Monday to Friday');
+includes("timeZone: TZ,", 'The revision window must use the Indianapolis time zone');
+includes('maxRevisions: 3', 'Three revisions per JHA family');
+includes("return no('other-job', 'Only JHAs from this job can be revised here.');",
+  'Revision list must filter to the current job');
 includes('function jhaTodayISO()', 'A single source for "today" is required');
 
 /* ---------------- picker shows the required columns ------------------- */
-for (const bit of ['Submitted ', 'Last revised ', 'Revision ', 'employee']) {
-  includes(bit, `Revision picker must show "${bit.trim()}"`);
+for (const bit of ['Original submitted', 'Latest revision', 'Foreman', 'Crew', 'Current version',
+  'Remaining', 'Create revision', 'Choose a JHA to revise', '>Today<', '>Earlier this workweek<']) {
+  includes(bit, `Revision picker must show "${bit}"`);
 }
-includes('r.data.jhaDescriptionOfWork', 'Picker must show the description of work');
-includes('r.revised_by', 'Picker must show who submitted it');
+includes('Choose a JHA from this job. Your changes will create a new time-stamped version. The original will not change.',
+  'Picker helper text must match the approved copy');
+includes('head.data.jhaDescriptionOfWork', 'Picker must show the description of work');
+includes('orig.submitted_by', 'Picker must show the foreman');
 
 /* ---------------- selecting loads the LATEST revision ----------------- */
-includes('var latest = hist[hist.length - 1];', 'Selecting a JHA must load its latest revision');
-includes('revision_number: latest.revision_number + 1', 'The revision number must increase');
-includes('previous_revision_id: latest.id', 'A revision must link to the revision it came from');
-includes('original_submitted_at: latest.original_submitted_at',
+includes('var latest = e.head;   // always the latest submitted version', 'Selecting a JHA must load its latest revision');
+includes("revision_number: e.head.revision_number + 1", 'The revision number must increase');
+includes('previous_revision_id: e.head.id', 'A revision must link to the revision it came from');
+includes('original_submitted_at: e.original.original_submitted_at',
   'A revision must carry the ORIGINAL submission time forward');
 
 /* ---------------- the demo revision model ---------------- */
@@ -40,13 +49,14 @@ for (const field of ['root_jha_id', 'previous_revision_id', 'revision_number',
 }
 
 /* ---------------- original is never overwritten or removed ------------ */
-includes('DEMO_JHA_STORE.push(jhaRec);', 'A revision must be appended, never replace a record');
+includes('M.submitRevision(DEMO_JHA_STORE,', 'Revisions must go through the shared model');
+includes('    store.push(rec);\n    return { ok: true, record: rec };', 'A revision must be appended, never replace a record');
 excludes('DEMO_JHA_STORE.splice', 'Nothing may be removed from the demo store');
 excludes('DEMO_JHA_STORE = DEMO_JHA_STORE.filter', 'Records must never be filtered out');
+includes('Submitted records are frozen', 'Submitted versions must be immutable');
 // The submit path must not mutate the record it came from.
-const submitSrc = html.slice(html.indexOf('function buildJhaRecord('), html.indexOf('function decorateJhaDoc('));
-excludes('JHA_CTX.source.status =', 'The previous revision must not be mutated');
-assert.ok(!/source\.\w+\s*=/.test(submitSrc), 'buildJhaRecord must not write back to the source record');
+const submitSrc = html.slice(html.indexOf('function submitRevision('), html.indexOf('function dailyJhaCount('));
+assert.ok(!/(head|original)\.\w+\s*=[^=]/.test(submitSrc), 'submitRevision must not write back to earlier versions');
 
 /* ---------------- no drafts / autosave / recovery --------------------- */
 for (const banned of ['Resume Draft', 'resumeDraft', 'autoSave(', 'saveDraft',
@@ -56,9 +66,18 @@ for (const banned of ['Resume Draft', 'resumeDraft', 'autoSave(', 'saveDraft',
 assert.ok(!/localStorage\.setItem\(\s*['"]jha/i.test(html), 'JHA state must not be persisted to localStorage');
 includes('no autosave', 'The no-drafts intent should be recorded in a comment');
 
-/* ---------------- no reason-for-revision field ------------------------ */
-for (const banned of ['revision_reason', 'revisionReason', 'Reason for Revision', 'reasonForRevision']) {
-  excludes(banned, `A reason-for-revision field must not exist: "${banned}"`);
+/* ---------------- "What changed?" (final prompt, Oct 3) ---------------
+   Superseded the earlier no-reason rule: a revision now records what changed
+   from a fixed list, with an optional note. */
+includes('What changed? <span class="required">*</span>', 'Revisions must ask what changed');
+for (const t of ['Work scope', 'Hazard or site condition', 'Crew assignment',
+  'Equipment or material', 'Control or procedure', 'Correction or other']) {
+  includes(`'${t}'`, `"What changed?" must offer "${t}"`);
+}
+includes("return { ok: false, code: 'reason', message: 'Choose what changed.' };",
+  'A revision without a change type must be refused');
+for (const banned of ['Reason for Revision', 'reasonForRevision']) {
+  excludes(banned, `Use the approved "What changed?" wording, not "${banned}"`);
 }
 
 /* ---------------- Description of Work (required) ---------------------- */
@@ -118,19 +137,18 @@ includes('data-assign-addtask', 'The warning must offer a fast way to add the ta
 includes('function addTaskToJha(task)', 'Quick-add must place the task into a JHA row');
 includes("if (!/^jhaTask\\d+$/.test(i.name)) return;", 'Task scan must ignore the Other specify inputs');
 
-/* ---------------- ladder ---------------------------------------------- */
-includes('Planned or expected use of any ladder?', 'The required ladder question must exist');
+/* ---------------- ladder (Tony, Oct 1: variance section removed) ------- */
+includes('Is any ladder use planned or expected today?', 'The required ladder question must exist');
 includes('name="jhaLadderUse" value="yes" required', 'The ladder question must be required');
 includes('function syncLadderPanel()', 'Ladder answers must drive the conditional panel');
-// Only questions the supplied variance form actually contains.
-includes('Can this work be done safely from a ladder?', 'Ladder question from the variance form is missing');
-includes('Explain why a one-man scissor lift, or being tied off while using a ladder, will not work in this instance',
-  'Ladder variance explanation question is missing');
-includes('Above-ceiling hindrances / obstacles', 'Above-ceiling obstacle list is missing');
-includes('Explain how the use of fall protection poses a greater risk than not using it',
-  'Greater-risk explanation is missing');
-includes('id="jhaLadderObstacle5"', 'The variance form lists five obstacle lines');
-includes('Nothing\n                             here is invented', 'Provenance note for ladder questions is missing');
+includes('>Ladder ID <span class="required">*</span>', 'Ladder Yes must ask for the Ladder ID');
+includes('Enter or scan the ID displayed on the ladder.', 'Ladder ID helper text must match');
+// The retired questions survive ONLY in the model's legacy list (for old records).
+const formHtml = html.slice(html.indexOf('<form id="jhaForm">'), html.indexOf('</form>', html.indexOf('<form id="jhaForm">')));
+for (const gone of ['Can this work be done safely from a ladder?', 'one-man scissor lift',
+  'Above-ceiling hindrances', 'greater risk than not using it', 'Variance Form', 'jhaLadderObstacle', 'jhaLadderSafe']) {
+  assert.ok(!formHtml.includes(gone), `Retired ladder variance content must not be in the JHA form: "${gone}"`);
+}
 
 /* ---------------- photos ---------------------------------------------- */
 includes('carriedPhotos: (latest.photos || []).slice()', 'Existing photos must carry into the revision');
@@ -145,13 +163,16 @@ includes("dmodel.meta['Revision']", 'PDF must show the revision number');
 includes("dmodel.meta['Original submitted']", 'PDF must show the original submission time');
 includes("dmodel.meta['Latest revision']", 'PDF must show the latest revision time');
 includes("dmodel.meta['Description of Work']", 'PDF must show the description of work');
-includes("title: 'Employees and Assignments'", 'PDF must show employees and assignments');
-includes("title: 'Ladder Use'", 'PDF must show the ladder response');
+includes("out.push({ title: 'Crew on this JHA', items: ci });", 'PDF must show employees and assignments');
+includes("out.push({ title: 'Ladder Use', items: lad });", 'PDF must show the ladder response');
+includes("out.push({ title: 'Aerial Lifts', items: aer });", 'PDF must show the aerial lift response');
+includes("if (subtype === 'jha' && window.JhaModel) return jhaDocFromModel(form, payload);",
+  'The JHA PDF must come from the shared model');
 includes("title: 'Revision History'", 'PDF must show a revision history summary');
 includes("title: 'Photos'", 'PDF must show photos');
 
 /* ---------------- compliance counting --------------------------------- */
-includes('function demoDailyJhaCompliance() { return jhaRootsForToday().length; }',
+includes("return window.JhaModel.dailyJhaCount(DEMO_JHA_STORE, (NG.job && NG.job.id) || null, jhaTodayISO());",
   'Compliance must count distinct JHAs, not revisions');
 includes('One original + N revisions still counts as ONE completed daily JHA.',
   'The compliance rule must be documented');
