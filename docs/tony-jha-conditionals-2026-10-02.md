@@ -31,10 +31,20 @@ This is an internal build note for the isolated Greiner review branch. It is not
   attendance ("Leading this talk"); each participant follows along (original document or Guided Talk) and submits their
   own acknowledgment. The office sees the lead's presentation and each acknowledgment separately, with engagement time.
 
-### Ladder IDs in production
+### Ladder IDs in production (updated 2026-10-05)
 
-**Greiner must confirm how physical Ladder IDs will be labeled and maintained before this can become the production source
-of truth.** The demo uses fixture ladders assigned to the demo job; nothing is connected to real ladder records.
+Ladders are ordinary equipment units (`cs_equipment` rows whose type contains "ladder"), managed on the office Equipment
+tab and assigned to jobs through the same single write path as lifts and forklifts. Safe-use checks and defects are
+append-only rows in `cs_equipment_events`. The phone reads them with `cs_portal_field_equipment` and writes them with
+`cs_portal_field_ladder_safe` / `cs_portal_field_ladder_defect`, which take the employee from the session and the time from
+the server clock. All of this is in the dashboard repo's `sql/2026-10-05-equipment-management.sql`, which is **proposed
+and not applied**. Until it is applied, the phone shows "Ladder records are not connected for this job yet."
+
+There are no ladders in production today. **Greiner must still confirm how physical Ladder IDs will be labeled before the
+office enters them.** The demo uses fixture ladders on the demo job only.
+
+Production JHAs do not yet carry a root JHA id (see "loading a JHA to revise" below), so a production ladder event is
+not linked back to its JHA by id; the JHA stores the server's event id in its ladder snapshot instead.
 
 ### Not enforced yet (future Greiner decisions)
 
@@ -73,8 +83,20 @@ fixtures; the production source is deliberately not connected on this branch. Th
   "Explain why using any fall restraint system is not needed in this instance" / Yes: who inspects the fall-protection
   equipment). The final prompt replaced the ladder section with the Ladder ID card and does not include this branch, so
   it is **not built**. Needs a product decision.
-- Where real ladder records and inspections live in production. Without a connected source the phone says ladder
-  records are not connected and the JHA cannot claim ladder use until the office provides them.
+- Office resolution of a Do Not Use defect (who may clear it, and what they must record). Not built; field users can
+  never clear one.
+
+## RFI-dependent fields — pending Tony's RFIs (added 2026-10-05)
+
+Tony is waiting on RFIs before confirming, for each form field:
+
+- which fields use dropdowns,
+- which fields stay free entry,
+- what auto-populates,
+- what stays editable after submission.
+
+**None of these is decided, and no form was changed for them.** Fields keep their current behavior until Tony answers.
+When the answers arrive, change one field at a time with a test for each, and record the decision here.
 
 ## Backlog — after the Peine launch
 

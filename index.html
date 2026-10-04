@@ -5831,6 +5831,51 @@ ${photoUrls}`;
     return { enforced: false, due: false };
   }
 
+  /* ---------------- equipment (one source: cs_equipment) ---------------- */
+  // Category from the unit's type text. Order matters: "Forklift" contains
+  // "lift", so forklifts are recognized before aerial lifts.
+  function equipmentCategory(type) {
+    var t = String(type == null ? '' : type).toLowerCase();
+    if (/\bladder/.test(t)) return 'ladder';
+    if (/fork ?lift|telehandler|reach truck/.test(t)) return 'forklift';
+    if (/scissor|mast|boom|aerial|man ?lift|\blift\b/.test(t)) return 'aerial';
+    return 'other';
+  }
+  function ladderRegistryFromEquipment(units) {
+    return (units || []).filter(function (e) {
+      return e && equipmentCategory(e.equipment_type) === 'ladder' && e.active !== false && !e.archived_at;
+    }).map(function (e) {
+      return { ladder_id: normalizeLadderId(e.unit_number), equipment_id: e.id || null, job_id: e.job_id || null,
+               category: 'Ladder', description: e.description || '' };
+    });
+  }
+  // One server event (cs_equipment_events, as the phone receives it) in the
+  // inspection-record shape the ladder functions above read.
+  function ladderInspectionFromEvent(unit, ev) {
+    var d = ev.data || {}, base = { id: ev.id, ladder_id: normalizeLadderId(unit.unit_number), job_id: unit.job_id || null,
+      inspected_at: ev.at, inspected_by: ev.by, inspected_by_user_id: ev.by_user_id || null,
+      jha_root_id: d.jha_root_id || null, jha_revision_number: d.jha_revision_number == null ? null : d.jha_revision_number };
+    if (ev.kind === 'inspection_safe') {
+      return Object.assign(base, { kind: 'inspection', result: 'safe', attestation_text: d.attestation_text || '',
+        attestation_version: d.attestation_version || null, defect: null });
+    }
+    if (ev.kind === 'defect_reported') {
+      return Object.assign(base, { kind: 'defect', result: 'defect', defect: { description: d.description || '',
+        photo: d.has_photo ? { stored: true } : null, tagged_do_not_use: d.tagged_do_not_use !== false,
+        acknowledgment_text: d.acknowledgment_text || '', acknowledgment_version: d.acknowledgment_version || null,
+        reported_at: d.reported_at || ev.at, reported_by: ev.by, resolved_at: d.resolved_at || null } });
+    }
+    return null;
+  }
+  function ladderInspectionsFromEquipment(units) {
+    var out = [];
+    (units || []).forEach(function (e) {
+      if (!e || equipmentCategory(e.equipment_type) !== 'ladder') return;
+      (e.events || []).forEach(function (ev) { var r = ladderInspectionFromEvent(e, ev); if (r) out.push(r); });
+    });
+    return out;
+  }
+
   /* Ladders assigned to a job, for the picker. Users select; nobody types an
      ID. A duplicated ID is listed once, flagged, and cannot be selected. */
   function laddersForJob(registry, inspections, jobId) {
@@ -6163,6 +6208,8 @@ ${photoUrls}`;
     normalizeLadderId: normalizeLadderId, ladderLookup: ladderLookup,
     ladderStatusLabel: ladderStatusLabel, ladderCadence: ladderCadence,
     laddersForJob: laddersForJob, confirmLadderSafe: confirmLadderSafe,
+    equipmentCategory: equipmentCategory, ladderRegistryFromEquipment: ladderRegistryFromEquipment,
+    ladderInspectionFromEvent: ladderInspectionFromEvent, ladderInspectionsFromEquipment: ladderInspectionsFromEquipment,
     reportLadderDefect: reportLadderDefect, ladderSnapshot: ladderSnapshot, defectSnapshot: defectSnapshot,
     normalizeJhaData: normalizeJhaData, jhaSections: jhaSections,
     jhaSubmitProblems: jhaSubmitProblems, diffJhaData: diffJhaData
@@ -6314,6 +6361,33 @@ ${photoUrls}`;
       // job-specific autocomplete suggestions. Not built — no location memory.
       function setupHotWorkLocation() { /* intentionally disabled — see note above */ }
 
+      /* Ladder records — the only network path the JHA ladder card uses.
+         Ladders and their history come from cs_portal_field_equipment (job-scoped
+         on the server); safe-use checks and defects are written through the two
+         field RPCs, which take the employee from the session and the time from
+         the server clock. Never used in ?demo=1. If the RPCs are not deployed,
+         the JHA keeps showing that ladder records are not connected. */
+      var LADDER_TRANSPORT = {
+        load: function () {
+          if (DEMO || !ticket) return Promise.resolve(null);
+          return rpc('cs_portal_field_equipment', { p_token: ticket }).then(function (res) {
+            var M = window.JhaModel;
+            if (!res || !Array.isArray(res.equipment)) return null;
+            if (res.user && res.user.id) { NG.userId = res.user.id; if (res.user.name) NG.user = res.user.name; }
+            NG.fieldEquipment = res.equipment;
+            NG.ladders = M.ladderRegistryFromEquipment(res.equipment);
+            NG.ladderInspections = M.ladderInspectionsFromEquipment(res.equipment);
+            if (typeof NG.onLaddersLoaded === 'function') NG.onLaddersLoaded();
+            return res;
+          }).catch(function () { return null; });
+        },
+        save: function (fn, body) {
+          if (DEMO || !ticket) return Promise.reject(new Error('no session'));
+          if (fn !== 'cs_portal_field_ladder_safe' && fn !== 'cs_portal_field_ladder_defect') return Promise.reject(new Error('not a ladder write'));
+          return rpc(fn, Object.assign({ p_token: ticket }, body));
+        }
+      };
+
       // Aerial unit picker: a dropdown of the job's active lifts (from
       // cs_portal_field_home 'equipment' — server-scoped to the session's job,
       // so a Taylorsville login can only ever see Taylorsville units). The
@@ -6325,11 +6399,16 @@ ${photoUrls}`;
         var input = document.querySelector('[name="aerialVehicleId"]');
         if (!input) return;
         var grp = input.closest('.form-group');
+        var M = window.JhaModel;
         var units = (NG.equipment || []).filter(function (e) {
-          return /scissor|mast|aerial|boom|lift/i.test(e.equipment_type || '');
+          return M.equipmentCategory(e.equipment_type) === 'aerial';
         });
-        // type data unreliable/absent -> show all the job's active units
-        if (!units.length) units = NG.equipment || [];
+        // type data unreliable/absent -> show the job's units, but never a
+        // ladder or a forklift
+        if (!units.length) units = (NG.equipment || []).filter(function (e) {
+          var c = M.equipmentCategory(e.equipment_type);
+          return c !== 'ladder' && c !== 'forklift';
+        });
         var old = document.getElementById('aerialAssetSelect');
         if (!units.length) {
           if (old) { old.remove(); input.style.display = ''; input.required = true; }
@@ -7069,10 +7148,12 @@ ${photoUrls}`;
           { name: 'Taylor Reed (Demo)', phone: '' },
           { name: 'Morgan Ellis (Demo)', phone: '' }
         ],
+        // Same shape as cs_portal_field_equipment: ladders are equipment rows
+        // too (added by seedDemoLadders), so one list feeds every picker.
         equipment: [
-          { unit_number: 'DEMO-LIFT-01', equipment_type: "Scissor lift — 13' electric" },
-          { unit_number: 'DEMO-LIFT-02', equipment_type: "Mast lift — 20' driveable" },
-          { unit_number: 'DEMO-FORK-01', equipment_type: 'Forklift — 6,000# telescopic' }
+          { id: 'demo-eq-lift-01', unit_number: 'DEMO-LIFT-01', equipment_type: "Scissor lift — 13' electric", job_id: 'demo-job-001', events: [] },
+          { id: 'demo-eq-lift-02', unit_number: 'DEMO-LIFT-02', equipment_type: "Mast lift — 20' driveable", job_id: 'demo-job-001', events: [] },
+          { id: 'demo-eq-fork-01', unit_number: 'DEMO-FORK-01', equipment_type: 'Forklift — 6,000# telescopic', job_id: 'demo-job-001', events: [] }
         ]
       };
       DEMO_HOME.hotwork_locations = DEMO_HOME.jobs[0].hotwork_locations;
@@ -7363,42 +7444,48 @@ ${photoUrls}`;
         return new Date(isoDate + 'T' + hh + ':' + mm + ':00-05:00').toISOString();
       }
 
-      /* Demo ladders: one category, "Ladder". One recently inspected, one with
+      /* Demo ladders: equipment rows whose type is a ladder, with the same
+         event history the server returns. One recently inspected, one with
          older history, one with an open defect, one registered but never
-         inspected. Names are the existing demo identities only. */
+         inspected, and one on another job. Names are demo identities only. */
       function seedDemoLadders() {
         var M = window.JhaModel, now = jhaClock().getTime(), H = 3600000;
         function ago(hours) { return new Date(now - hours * H).toISOString(); }
         var job = 'demo-job-001';
-        DEMO_LADDERS = [
-          { ladder_id: 'LAD-101', job_id: job, category: 'Ladder', description: '8 ft fiberglass step ladder' },
-          { ladder_id: 'LAD-204', job_id: job, category: 'Ladder', description: '24 ft fiberglass extension ladder' },
-          { ladder_id: 'LAD-317', job_id: job, category: 'Ladder', description: '10 ft fiberglass step ladder' },
-          { ladder_id: 'LAD-120', job_id: job, category: 'Ladder', description: '6 ft platform ladder' },
-          { ladder_id: 'LAD-550', job_id: 'demo-job-002', category: 'Ladder', description: '12 ft step ladder (another job)' }
-        ].map(M.freezeDeep);
-        function done(id, ladder, hours, by, uid) {
-          return { id: id, kind: 'inspection', result: 'safe', ladder_id: ladder, job_id: job, company_id: DEMO_COMPANY_ID,
-            inspected_at: ago(hours), inspected_by: by, inspected_by_user_id: uid,
-            attestation_text: M.LADDER_SAFE_ATTESTATION.text, attestation_version: M.LADDER_SAFE_ATTESTATION.version, defect: null };
+        function safe(id, hours, by, uid) {
+          return { id: id, kind: 'inspection_safe', at: ago(hours), by: by, by_user_id: uid,
+            data: { attestation_text: M.LADDER_SAFE_ATTESTATION.text, attestation_version: M.LADDER_SAFE_ATTESTATION.version } };
         }
-        DEMO_LADDER_INSPECTIONS = [
-          done('li-1', 'LAD-101', 26, 'Alex Rivera (Demo)', 'demo-user-alex'),
-          done('li-2', 'LAD-204', 41 * 24, 'Jordan Blake (Demo)', 'demo-user-jordan'),
-          done('li-3', 'LAD-204', 75 * 24, 'Sam Whitfield (Demo)', 'demo-user-sam'),
-          { id: 'li-4', kind: 'defect', result: 'defect', ladder_id: 'LAD-317', job_id: job, company_id: DEMO_COMPANY_ID,
-            inspected_at: ago(3 * 24 + 2), inspected_by: 'Casey Nolan (Demo)', inspected_by_user_id: 'demo-user-casey',
-            defect: { description: 'Cracked right side rail below the third step', photo: null, tagged_do_not_use: true,
-              acknowledgment_text: M.LADDER_DEFECT_ACK.text, acknowledgment_version: M.LADDER_DEFECT_ACK.version,
-              reported_at: ago(3 * 24 + 2), reported_by: 'Casey Nolan (Demo)', resolved_at: null } }
-        ].map(M.freezeDeep);
+        function unit(id, ladder, jobId, desc, events) {
+          return { id: id, unit_number: ladder, equipment_type: 'Ladder', description: desc, job_id: jobId, events: events };
+        }
+        var ladders = [
+          unit('demo-eq-lad-101', 'LAD-101', job, '8 ft fiberglass step ladder', [safe('li-1', 26, 'Alex Rivera (Demo)', 'demo-user-alex')]),
+          unit('demo-eq-lad-204', 'LAD-204', job, '24 ft fiberglass extension ladder', [
+            safe('li-2', 41 * 24, 'Jordan Blake (Demo)', 'demo-user-jordan'), safe('li-3', 75 * 24, 'Sam Whitfield (Demo)', 'demo-user-sam')]),
+          unit('demo-eq-lad-317', 'LAD-317', job, '10 ft fiberglass step ladder', [
+            { id: 'li-4', kind: 'defect_reported', at: ago(3 * 24 + 2), by: 'Casey Nolan (Demo)', by_user_id: 'demo-user-casey',
+              data: { description: 'Cracked right side rail below the third step', has_photo: false, tagged_do_not_use: true,
+                acknowledgment_text: M.LADDER_DEFECT_ACK.text, acknowledgment_version: M.LADDER_DEFECT_ACK.version,
+                reported_at: ago(3 * 24 + 2), resolved_at: null } }]),
+          unit('demo-eq-lad-120', 'LAD-120', job, '6 ft platform ladder', []),
+          unit('demo-eq-lad-550', 'LAD-550', 'demo-job-002', '12 ft step ladder (another job)', [])
+        ];
+        DEMO_HOME.equipment = DEMO_HOME.equipment.filter(function (e) {
+          return M.equipmentCategory(e.equipment_type) !== 'ladder';
+        }).concat(ladders);
+        if (NG.demo) NG.equipment = DEMO_HOME.equipment;
+        DEMO_LADDERS = M.ladderRegistryFromEquipment(DEMO_HOME.equipment).map(M.freezeDeep);
+        DEMO_LADDER_INSPECTIONS = M.ladderInspectionsFromEquipment(DEMO_HOME.equipment).map(M.freezeDeep);
       }
       function ladderData() {
         if (DEMO) return { registry: DEMO_LADDERS, inspections: DEMO_LADDER_INSPECTIONS };
         if (NG.ladders && NG.ladderInspections) return { registry: NG.ladders, inspections: NG.ladderInspections };
         return null;   // no ladder records connected for this session
       }
-
+      NG.onLaddersLoaded = function () {
+        if (document.getElementById('jhaLadderOptions')) { renderLadderPicker(); renderLadderCards(); }
+      };
       /* Demo JHAs placed in the current Indianapolis workweek (relative to the
          demo clock) plus one from the prior week. The prior-week JHA predates
          Tony's Oct 1 change, so it keeps the retired ladder-variance answers —
@@ -8031,7 +8118,8 @@ ${photoUrls}`;
             esc(M.LADDER_SAFE_ATTESTATION.text) + '</label>' +
           (u.error ? '<p class="err" role="alert">' + esc(u.error) + '</p>' : '') +
           '<div class="jha-lad-actions">' +
-            '<button type="button" class="submit-button" data-lad-confirm="' + esc(id) + '"' + (u.ack ? '' : ' disabled') + '>Confirm safe for use</button>' +
+            '<button type="button" class="submit-button" data-lad-confirm="' + esc(id) + '"' + (u.ack && !u.saving ? '' : ' disabled') + '>' +
+              (u.saving ? 'Saving…' : 'Confirm safe for use') + '</button>' +
             '<button type="button" class="jha-sheet-secondary" data-lad-cancel="' + esc(id) + '">Cancel</button></div></div>';
       }
       function ladderDefectPanel(id, u) {
@@ -8053,7 +8141,8 @@ ${photoUrls}`;
             esc(M.LADDER_DEFECT_ACK.text) + '</label>' +
           (u.error ? '<p class="err" role="alert">' + esc(u.error) + '</p>' : '') +
           '<div class="jha-lad-actions">' +
-            '<button type="button" class="submit-button jha-lad-danger" data-lad-savedef="' + esc(id) + '">Save defect report</button>' +
+            '<button type="button" class="submit-button jha-lad-danger" data-lad-savedef="' + esc(id) + '"' + (u.saving ? ' disabled' : '') + '>' +
+              (u.saving ? 'Saving…' : 'Save defect report') + '</button>' +
             '<button type="button" class="jha-sheet-secondary" data-lad-cancel="' + esc(id) + '">Cancel defect report</button></div></div>';
       }
       function wireLadderCards(host) {
@@ -8099,28 +8188,80 @@ ${photoUrls}`;
         return { ladderId: id, jobId: NG.job && NG.job.id, companyId: DEMO ? DEMO_COMPANY_ID : (NG.companyId || null),
                  user: jhaUser() || {}, jhaRootId: link.root, jhaRevisionNumber: link.rev };
       }
+      /* Server refusals, in the words the card already uses. */
+      var LADDER_SERVER_ERRORS = {
+        sign_in_required: function () { return window.JhaModel.SIGN_IN_REQUIRED; },
+        invalid_token: function () { return 'Your session has expired. Open this form again from your Greiner link to sign in.'; },
+        not_assigned_to_your_job: function (id) { return 'Ladder ' + id + ' is not assigned to this job.'; },
+        not_found: function (id) { return 'Ladder ' + id + ' is no longer in service. Contact the office.'; },
+        do_not_use: function (id) { return 'Ladder ' + id + ' is marked Do Not Use and cannot be confirmed safe. Select a different assigned ladder.'; },
+        attestation_required: function () { return 'Confirm the statement before recording the inspection.'; },
+        description_required: function () { return 'Describe the defect or unsafe condition.'; },
+        acknowledgment_required: function () { return 'Confirm that you marked or tagged the ladder Do Not Use and removed it from service.'; },
+        photo_too_large: function () { return 'That photo is too large to send. Retake it or remove it.'; }
+      };
+      function ladderServerMessage(code, id) {
+        var f = LADDER_SERVER_ERRORS[code];
+        return f ? f(id) : 'The inspection was not saved. Check your connection and try again.';
+      }
+      /* Production writes go to the server, which takes the employee from the
+         session and the time from its own clock. The local model runs first on
+         a copy only to refuse early; the stored record is what the server
+         returned. Nothing is recorded locally if the server refuses. */
+      function saveLadderOnServer(id, kind, localRes, rpcName, body) {
+        var u = ladderUi(id), M = window.JhaModel;
+        var unit = (NG.ladders || []).filter(function (l) { return l.ladder_id === M.normalizeLadderId(id); })[0];
+        if (!unit || !unit.equipment_id) { u.error = ladderServerMessage('not_found', id); renderLadderCards(); return Promise.resolve(null); }
+        u.saving = true; u.error = ''; renderLadderCards();
+        var link = jhaDraftLink();
+        return LADDER_TRANSPORT.save(rpcName, Object.assign({ p_equipment_id: unit.equipment_id,
+          p_jha_root_id: link.root || null, p_jha_revision_number: link.rev || null }, body)).then(function (r) {
+          if (!r || r.ok !== true) { u.saving = false; u.error = ladderServerMessage(r && r.error, id); renderLadderCards(); return null; }
+          var rec = M.freezeDeep(Object.assign({}, localRes.record, { id: r.id, inspected_at: r.at,
+            inspected_by: r.by, inspected_by_user_id: r.by_user_id },
+            kind === 'defect' ? { defect: Object.assign({}, localRes.record.defect, { reported_at: r.at, reported_by: r.by }) } : {}));
+          NG.ladderInspections.push(rec);
+          return rec;
+        }).catch(function () {
+          u.saving = false; u.error = ladderServerMessage(null, id); renderLadderCards(); return null;
+        });
+      }
       function saveLadderSafe(id) {
         var src = ladderData(); if (!src) return;
         var u = ladderUi(id), M = window.JhaModel;
-        var res = M.confirmLadderSafe(src.registry, src.inspections, Object.assign(ladderReq(id), {
-          attested: u.ack === true, attestationVersion: M.LADDER_SAFE_ATTESTATION.version }), jhaClock());
+        if (u.saving) return;
+        var req = Object.assign(ladderReq(id), { attested: u.ack === true, attestationVersion: M.LADDER_SAFE_ATTESTATION.version });
+        var res = M.confirmLadderSafe(src.registry, DEMO ? src.inspections : src.inspections.slice(), req, jhaClock());
         if (!res.ok) { u.error = res.message; renderLadderCards(); return; }
-        (LADDER_TODAY[id] = LADDER_TODAY[id] || []).push(res.record);
-        LADDER_UI[id] = { panel: null };
-        toast('success', 'Ladder ' + id + ' confirmed safe', M.fmtIndy(res.record.inspected_at));
-        renderLadderPicker(); renderLadderCards();
+        var done = function (rec) {
+          (LADDER_TODAY[id] = LADDER_TODAY[id] || []).push(rec);
+          LADDER_UI[id] = { panel: null };
+          toast('success', 'Ladder ' + id + ' confirmed safe', M.fmtIndy(rec.inspected_at));
+          renderLadderPicker(); renderLadderCards();
+        };
+        if (DEMO) return done(res.record);
+        saveLadderOnServer(id, 'safe', res, 'cs_portal_field_ladder_safe', {
+          p_attested: true, p_attestation_version: M.LADDER_SAFE_ATTESTATION.version
+        }).then(function (rec) { if (rec) done(rec); });
       }
       function saveLadderDefect(id) {
         var src = ladderData(); if (!src) return;
         var u = ladderUi(id), M = window.JhaModel;
-        var res = M.reportLadderDefect(src.registry, src.inspections, Object.assign(ladderReq(id), {
-          description: u.desc || '', photo: u.photo || null, acknowledged: u.defectAck === true }), jhaClock());
+        if (u.saving) return;
+        var req = Object.assign(ladderReq(id), { description: u.desc || '', photo: u.photo || null, acknowledged: u.defectAck === true });
+        var res = M.reportLadderDefect(src.registry, DEMO ? src.inspections : src.inspections.slice(), req, jhaClock());
         if (!res.ok) { u.error = res.message; renderLadderCards(); return; }
-        (LADDER_TODAY[id] = LADDER_TODAY[id] || []).push(res.record);
-        LADDER_DEFECTS.push(M.defectSnapshot(res.record));
-        LADDER_UI[id] = { panel: null };
-        toast('error', 'Ladder ' + id + ' marked Do Not Use', 'Select a different assigned ladder for today.');
-        renderLadderPicker(); renderLadderCards();
+        var done = function (rec) {
+          (LADDER_TODAY[id] = LADDER_TODAY[id] || []).push(rec);
+          LADDER_DEFECTS.push(M.defectSnapshot(rec));
+          LADDER_UI[id] = { panel: null };
+          toast('error', 'Ladder ' + id + ' marked Do Not Use', 'Select a different assigned ladder for today.');
+          renderLadderPicker(); renderLadderCards();
+        };
+        if (DEMO) return done(res.record);
+        saveLadderOnServer(id, 'defect', res, 'cs_portal_field_ladder_defect', {
+          p_description: String(u.desc || '').trim(), p_acknowledged: true, p_photo: u.photo || null
+        }).then(function (rec) { if (rec) done(rec); });
       }
       // Revision prefill: restore the selection, today's checks and defects.
       function ladderRestore(data) {
@@ -9055,6 +9196,7 @@ ${photoUrls}`;
           NG.user = home.user || '';
           NG.job = (home.jobs && home.jobs[0]) || null;
           NG.equipment = home.equipment || [];   // job-scoped units (server-filtered)
+          LADDER_TRANSPORT.load();
           NG.people = home.people || [];          // job roster for person autocomplete (#1)
           NG.hotworkLocations = home.hotwork_locations || (NG.job && NG.job.hotwork_locations) || [];  // per-job hot-work locations (#3)
           applyLocks();

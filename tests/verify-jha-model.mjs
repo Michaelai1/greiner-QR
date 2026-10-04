@@ -369,4 +369,46 @@ t('Other companies and jobs can never revise', () => {
   assert.equal(M.reviseEligibility(store, 'f', { now: WED_3PM, jobId: 'j1', companyId: 'c2' }).code, 'other-company');
 });
 
+/* ---------------- equipment: ladders come from the one equipment list ---------------- */
+t('Equipment category is read from the unit type, forklifts before lifts', () => {
+  const c = M.equipmentCategory;
+  assert.equal(c('Step ladder'), 'ladder');
+  assert.equal(c('24 ft Extension Ladder'), 'ladder');
+  assert.equal(c('Forklift — 6,000# telescopic'), 'forklift');
+  assert.equal(c('Telehandler'), 'forklift');
+  assert.equal(c("Scissor lift — 13' electric"), 'aerial');
+  assert.equal(c('Mast lift'), 'aerial');
+  assert.equal(c('Boom Lift 45ft'), 'aerial');
+  assert.equal(c('Lift'), 'aerial');
+  assert.equal(c('Generator'), 'other');
+  assert.equal(c(null), 'other');
+});
+
+t('Ladder registry and history are derived from cs_equipment rows and events', () => {
+  const units = [
+    { id: 'e1', unit_number: ' lad-101 ', equipment_type: 'Step ladder', description: '8 ft', job_id: 'j1', active: true,
+      events: [
+        { id: 'v2', kind: 'defect_reported', at: at('2026-09-30T08:00:00-04:00'), by: 'Casey', by_user_id: 'u2',
+          data: { description: 'Cracked rail', has_photo: true, acknowledgment_version: 'ladder-do-not-use-v1', resolved_at: null } },
+        { id: 'v1', kind: 'inspection_safe', at: at('2026-09-29T07:00:00-04:00'), by: 'Alex', by_user_id: 'u1',
+          data: { attestation_version: 'ladder-safe-use-v1' } }] },
+    { id: 'e2', unit_number: 'SL-1', equipment_type: 'Scissor lift', job_id: 'j1', active: true, events: [] },
+    { id: 'e3', unit_number: 'LAD-9', equipment_type: 'Ladder', job_id: 'j1', active: false, archived_at: '2026-09-01', events: [] },
+  ];
+  const reg = M.ladderRegistryFromEquipment(units);
+  assert.deepEqual(json(reg), [{ ladder_id: 'LAD-101', equipment_id: 'e1', job_id: 'j1', category: 'Ladder', description: '8 ft' }],
+    'only active, unarchived ladders; lifts never appear');
+  const ins = M.ladderInspectionsFromEquipment(units);
+  assert.equal(ins.length, 2);
+  const look = M.ladderLookup(reg, ins, 'LAD-101');
+  assert.equal(look.status, 'do-not-use', 'an open defect from the server makes the ladder Do Not Use');
+  assert.equal(look.openDefect.description, 'Cracked rail');
+  assert.ok(look.openDefect.photo, 'the phone knows a photo exists without receiving it');
+  const picker = M.laddersForJob(reg, ins, 'j1');
+  assert.equal(picker.length, 1);
+  assert.equal(picker[0].do_not_use, true);
+  assert.equal(M.confirmLadderSafe(reg, ins, { ladderId: 'LAD-101', jobId: 'j1', user: USER, attested: true,
+    attestationVersion: M.LADDER_SAFE_ATTESTATION.version }, WED_3PM).code, 'do-not-use');
+});
+
 console.log(`JHA model verification passed (${checks} checks).`);

@@ -187,6 +187,13 @@ for (const forbidden of ['rpc(', 'edge(', 'fetch(', 'XMLHttpRequest', 'sendBeaco
   assert.ok(!jhaModule.includes(forbidden),
     `The JHA module must stay local — found "${forbidden}"`);
 }
+// Ladder records reach the server through ONE boundary outside the JHA module,
+// which is closed in demo mode and can only call the two ladder writes.
+const transport = html.slice(html.indexOf('var LADDER_TRANSPORT = {'), html.indexOf("// Aerial unit picker"));
+assert.ok(transport.includes("if (DEMO || !ticket) return Promise.resolve(null);"), 'ladder loading is off in demo');
+assert.ok(transport.includes("if (DEMO || !ticket) return Promise.reject(new Error('no session'));"), 'ladder writes are off in demo');
+assert.ok(transport.includes("fn !== 'cs_portal_field_ladder_safe' && fn !== 'cs_portal_field_ladder_defect'"), 'only the two ladder writes are allowed');
+assert.equal((transport.match(/rpc\(/g) || []).length, 2, 'one read and one write call');
 includes('Demo submission completed. No data was saved.', 'Generic demo notice must remain');
 includes('No production data was saved.', 'JHA completion must say no production data was saved');
 includes("(revised ? 'Revised JHA submitted' : 'JHA submitted')",
