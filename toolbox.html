@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Toolbox Talk</title>
+<link rel="stylesheet" href="toolbox-talk.css?v=1">
+</head>
+<body class="tbt-app">
+<div class="tbt-wrap" id="root">
+  <p class="tbt-week">Loading…</p>
+</div>
+<script src="talks/library.js?v=1"></script>
+<script src="toolbox-talk.js?v=1"></script>
+<script>
+(function () {
+  'use strict';
+  /* A Greiner employee's personal Toolbox Talk link: toolbox.html#<token>. The
+     same Toolbox Talk component Peine uses (toolbox-talk.js), with Greiner's
+     data. The token travels in the fragment, so it is never sent in a request
+     line, an access log or a Referer. The server resolves it; an unknown,
+     expired or revoked link gets the same "not available" page. No PIN: the
+     personal link is the credential. */
+  var URL_ = 'https://gvfolfzseqwhhimbxgjv.supabase.co';
+  var ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2Zm9sZnpzZXF3aGhpbWJ4Z2p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMzQzOTcsImV4cCI6MjA5OTcxMDM5N30.ZpJWG4a0evolcjxr36IDaA4o0pjRjw1cCGOWV9ofDE0';
+  var TALKS = { 'fall-protection': 'Fall Protection.pdf' };   // talk_key -> talk library entry
+  var root = document.getElementById('root');
+  var token = (location.hash || '').replace(/^#/, '').trim();
+  var tt = null, A = null;
+
+  function rpc(fn, body) {
+    return fetch(URL_ + '/rest/v1/rpc/' + fn, {
+      method: 'POST',
+      headers: { apikey: ANON, Authorization: 'Bearer ' + ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (r) {
+      return r.text().then(function (t) {
+        var j = null; try { j = t ? JSON.parse(t) : null; } catch (e) {}
+        if (!r.ok) throw new Error('request failed');
+        return j;
+      });
+    });
+  }
+  function refuse() {
+    if (tt) { tt.stop(); tt = null; }
+    root.innerHTML =
+      '<h1 class="form-title">This link is not available</h1>' +
+      '<p class="tbt-week">It may have expired, or it may have been replaced by a newer one.</p>' +
+      '<div class="tbt-card"><p style="margin:0">Ask your supervisor for a new link.</p></div>';
+  }
+  window.addEventListener('hashchange', function () {
+    var next = (location.hash || '').replace(/^#/, '').trim();
+    if (!next || next === token) return;
+    token = next; if (tt) { tt.stop(); tt = null; } A = null; load();
+  });
+
+  function load() {
+    if (!token) { refuse(); return; }
+    root.innerHTML = '<p class="tbt-week">Loading…</p>';
+    rpc('cs_tbt_link_open', { p_token: token }).then(function (rows) {
+      if (!Array.isArray(rows) || !rows.length) { refuse(); return; }
+      A = rows[0];
+      var lib = (window.TBT_LIBRARY || {})[TALKS[A.talk_key]] || null;
+      if (!lib) { refuse(); return; }
+      var talk = { title: A.talk_title, filename: lib.filename, weekStart: A.week_start,
+        pages: lib.pages.map(function (p) { return { src: 'talks/' + p.src, w: p.w, h: p.h }; }),
+        sections: lib.sections };
+      var company = A.company || 'Greiner Brothers';
+      if (A.already_done) {
+        window.ToolboxTalk.renderRecorded(root, { talk: talk, company: company, submittedAt: A.submitted_at });
+        return;
+      }
+      tt = window.ToolboxTalk.mount(root, {
+        talk: talk, company: company, employeeName: A.recipient_name, role: 'participant',
+        defaultFormat: 'doc', pinRequired: false,
+        submit: function (args) {
+          return rpc('cs_tbt_link_submit', { p_token: token, p_active_ms: Math.min(args.activeMs, 86400000),
+            p_format: args.format === 'doc' ? 'doc' : 'guided' }).then(function (rows) {
+            if (!Array.isArray(rows) || !rows.length) return null;
+            A.already_done = true;
+            return rows[0];
+          });
+        },
+        progress: function (args) {
+          if (!A || A.already_done) return;
+          rpc('cs_tbt_link_progress', { p_token: token, p_active_ms: Math.min(args.activeMs, 86400000),
+            p_sections_viewed: args.sectionsViewed, p_format: args.format === 'doc' ? 'doc' : 'guided' })
+            .catch(function () {});
+        }
+      });
+      window.__greinerToolbox = { activeMs: function () { return tt ? tt.activeMs() : 0; } };
+    }).catch(refuse);
+  }
+  load();
+})();
+</script>
+</body>
+</html>

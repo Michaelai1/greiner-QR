@@ -1,0 +1,202 @@
+/* Toolbox Talk — the phone experience shared by /phone/ (preview) and
+   /field/#token (a real recipient). Ported from the Greiner Toolbox Talk
+   (greiner-QR index.html, "Toolbox Talk demo" styles) so both companies look
+   and behave the same. The document panel is deliberately light ("paper")
+   because it frames scanned white PDF pages, so its text is set dark rather
+   than inheriting the dark theme. */
+.tbt-app {
+  --accent: #3dcf82;
+  --accentSoft: rgba(61, 207, 130, 0.14);
+  --accentBorder: rgba(61, 207, 130, 0.55);
+  --color-bg-primary: #050a20;
+  --color-bg-card: #0e1f42;
+  --color-bg-card-mid: #0c1a38;
+  --color-bg-input: #0a152e;
+  --color-text-primary: #f0f4fa;
+  --color-text-secondary: #9db0c4;
+  --color-border: rgba(148, 163, 184, 0.12);
+  --color-submit: #0F2B5B;
+  --color-submit-hover: #143a75;
+  --color-error: #f87171;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  margin: 0;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font: 16px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+.tbt-app *, .tbt-app *::before, .tbt-app *::after { box-sizing: border-box; }
+.tbt-wrap { max-width: 620px; margin: 0 auto; padding: 18px 16px 40px; }
+.tbt-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  color: var(--color-text-secondary); font-size: 13px; font-weight: 700; letter-spacing: .02em; }
+.form-title { color: var(--color-text-primary); font-size: 1.25rem; font-weight: 700; margin: 0 0 4px; }
+.tbt-week { color: var(--color-text-secondary); font-size: 13.5px; margin: 0 0 14px; }
+.tbt-hello { color: var(--color-text-secondary); font-size: 14px; margin: 0 0 12px; }
+
+.tbt-steps { display: flex; gap: 6px; margin-bottom: 16px; }
+.tbt-step { flex: 1; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: .02em;
+  padding: 8px 4px; border-radius: 8px; background: var(--color-bg-card-mid);
+  border: 1px solid var(--color-border); color: var(--color-text-secondary); line-height: 1.25; }
+.tbt-step.is-done { color: var(--accent); border-color: var(--accentBorder); }
+.tbt-step.is-on { background: var(--accentSoft); border-color: var(--accentBorder); color: var(--accent); }
+
+.tbt-notice { display: flex; align-items: center; gap: 8px; background: rgba(234, 179, 8, 0.12);
+  border: 1px solid rgba(234, 179, 8, 0.45); color: #fbd24e; border-radius: 10px;
+  padding: 10px 12px; font-size: 12.5px; font-weight: 600; margin-bottom: 16px; }
+.tbt-notice.is-ok { background: rgba(61, 207, 130, .12); border-color: var(--accentBorder); color: var(--accent); }
+
+.tbt-doc { background: #ffffff; border: 1px solid #d5dbe3; border-radius: var(--radius-md);
+  padding: 14px; margin-bottom: 16px; }
+.tbt-doc-title { color: #111827; font-size: 19px; font-weight: 800; margin: 0 0 2px; }
+.tbt-doc-sub { color: #4b5563; font-size: 12px; margin-bottom: 12px; word-break: break-word; }
+.tbt-doc-empty { color: #374151; font-size: 14.5px; line-height: 1.55; margin: 6px 0 0; }
+.tbt-page-img { display: block; width: 100%; height: auto; border: 1px solid #e5e7eb;
+  border-radius: 8px; background: #fff; }
+.tbt-pager { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+.tbt-pager .count { flex: 1; text-align: center; font-size: 13px; font-weight: 700; color: #111827; }
+.tbt-pagebtn { min-height: 44px; min-width: 84px; padding: 10px 14px; border-radius: 10px;
+  border: 1px solid #9aa4b2; background: #f3f4f6; color: #111827; font-size: 14px;
+  font-weight: 700; cursor: pointer; }
+.tbt-pagebtn:disabled { opacity: .45; cursor: default; }
+
+.tbt-fmt { display: flex; gap: 6px; margin-bottom: 16px; }
+.tbt-fmtbtn { flex: 1; min-width: 0; min-height: 42px; padding: 8px 6px; border-radius: 10px;
+  border: 1px solid var(--color-border); background: var(--color-bg-card-mid);
+  color: var(--color-text-secondary); font-size: 12.5px; font-weight: 700; cursor: pointer;
+  line-height: 1.25; }
+.tbt-fmtbtn.is-on { background: var(--accentSoft); border-color: var(--accentBorder); color: var(--accent); }
+
+.tbt-sec { margin-bottom: 12px; }
+.tbt-sec-h { color: #111827; font-size: 17px; font-weight: 800; margin: 4px 0 8px; line-height: 1.3; }
+.tbt-sec-b { color: #1f2937; font-size: 15px; line-height: 1.6; margin: 0 0 10px; }
+.tbt-sec-bullet { position: relative; padding-left: 18px; margin-bottom: 6px; }
+.tbt-sec-bullet::before { content: "•"; position: absolute; left: 4px; color: #4b5563; font-weight: 700; }
+.tbt-sec-src { color: #6b7280; font-size: 11.5px; font-weight: 600; border-top: 1px solid #e5e7eb;
+  padding-top: 8px; margin-top: 12px; }
+.tbt-sec-check { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 10px 12px;
+  border: 1.5px solid #9aa4b2; border-radius: 10px; background: #f3f4f6; color: #111827;
+  font-size: 14.5px; font-weight: 700; cursor: pointer; }
+.tbt-sec-check.is-on { border-color: #15803d; background: #dcfce7; color: #14532d; }
+.tbt-sec-check input { width: 20px; height: 20px; flex: 0 0 auto; }
+.tbt-secprog { margin-bottom: 10px; }
+.tbt-secprog .bar { height: 6px; border-radius: 999px; background: var(--color-bg-card-mid);
+  border: 1px solid var(--color-border); overflow: hidden; }
+.tbt-secprog .bar span { display: block; height: 100%; background: var(--accent); transition: width 150ms ease; }
+.tbt-secprog .lbl { margin-top: 6px; font-size: 12.5px; font-weight: 700;
+  color: var(--color-text-secondary); text-align: center; }
+.tbt-hint { color: var(--color-text-secondary); font-size: 13px; margin: 0 0 10px; }
+
+.submit-button { background-color: var(--color-submit); color: #fff; box-shadow: 0 4px 18px rgba(15, 43, 91, .65);
+  font: inherit; font-weight: 800; border: none; width: 100%; border-radius: var(--radius-lg);
+  padding: 16px; font-size: 1.125rem; cursor: pointer; min-height: 56px; display: flex;
+  align-items: center; justify-content: center; gap: 10px; }
+.submit-button:not(:disabled):hover { background-color: var(--color-submit-hover); }
+.submit-button:disabled { opacity: .45; cursor: not-allowed; }
+.back-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  background: transparent; border: 1px solid var(--accentBorder); color: var(--accent);
+  font: inherit; font-size: .9375rem; font-weight: 600; min-height: 44px; padding: 10px 16px;
+  border-radius: var(--radius-md); cursor: pointer; width: 100%; margin: 12px 0 0; }
+.back-button:hover { background: var(--accentSoft); }
+
+.tbt-field { margin-bottom: 14px; }
+.tbt-field label { display: block; color: var(--color-text-secondary); font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.tbt-field .val { background: var(--color-bg-input); border: 1px solid var(--color-border); border-radius: 10px;
+  padding: 12px 14px; color: var(--color-text-secondary); font-size: 15px; overflow-wrap: anywhere; }
+.tbt-check { display: flex; gap: 10px; align-items: flex-start; margin: 14px 0; color: var(--color-text-primary);
+  font-size: 14.5px; line-height: 1.45; cursor: pointer; }
+.tbt-check input { width: 20px; height: 20px; flex: 0 0 auto; margin-top: 1px; accent-color: var(--accent); }
+.tbt-err { color: var(--color-error); font-size: 13.5px; min-height: 1.3em; margin: 0 0 8px; }
+
+.tbt-people { margin: 0 0 6px; padding: 0; list-style: none; border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); overflow: hidden; }
+.tbt-people li { padding: 10px 12px; border-bottom: 1px solid var(--color-border); font-size: 14.5px; }
+.tbt-people li:last-child { border-bottom: 0; }
+
+.tbt-done { display: block; text-align: center; }
+.tbt-done .big { font-weight: 800; font-size: 17px; }
+.tbt-rec { background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  padding: 4px 14px; margin-bottom: 14px; }
+.tbt-rec .kv { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0;
+  border-bottom: 1px solid var(--color-border); font-size: 14px; }
+.tbt-rec .kv:last-child { border-bottom: 0; }
+.tbt-rec .k { color: var(--color-text-secondary); flex: 0 0 auto; }
+.tbt-rec .v { text-align: right; overflow-wrap: anywhere; min-width: 0; }
+.tbt-note { color: var(--color-text-secondary); font-size: 13px; line-height: 1.5; margin: 12px 0 0; }
+
+/* PIN confirmation at the final acknowledgement only. */
+.pin { display: flex; gap: 9px; justify-content: center; margin: 18px 0 4px; }
+.pin input { width: 56px; height: 64px; text-align: center; font-size: 26px; font-weight: 600;
+  background: var(--color-bg-input); color: var(--color-text-primary); border: 2px solid var(--color-border);
+  border-radius: 12px; -moz-appearance: textfield; }
+.pin input::-webkit-outer-spin-button, .pin input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.pin input:focus { border-color: var(--accent); outline: none; }
+.pin input.bad { border-color: #f85149; }
+.perr { color: #ff7b72; font-size: 14px; text-align: center; min-height: 1.3em; margin: 8px 0 0; }
+.phint { color: var(--color-text-secondary); font-size: 13.5px; text-align: center; margin: 10px 0 0; line-height: 1.5; }
+.tbt-card { background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+  padding: 16px; margin-bottom: 14px; }
+.hide { display: none !important; }
+
+/* Choose Method (preview only) and the foreman-led group form, as in Greiner. */
+.tbt-optcard { display: block; width: 100%; text-align: left; background: var(--color-bg-card);
+  border: 1.5px solid var(--color-border); border-radius: var(--radius-md); padding: 16px;
+  margin-bottom: 12px; cursor: pointer; color: var(--color-text-primary); font: inherit; }
+.tbt-optcard:hover { border-color: var(--accentBorder); background: var(--color-bg-card-mid); }
+.tbt-optcard.is-on { border-color: var(--accent); background: var(--accentSoft); }
+.tbt-optcard .t { font-size: 16px; font-weight: 700; margin-bottom: 5px; }
+.tbt-optcard .d { font-size: 13px; line-height: 1.45; color: var(--color-text-secondary); }
+.tbt-input { width: 100%; min-height: 46px; padding: 10px 12px; border-radius: 10px; font: inherit;
+  font-size: 15px; background: var(--color-bg-input); color: var(--color-text-primary);
+  border: 1px solid var(--color-border); }
+.tbt-input:focus { outline: none; border-color: var(--accent); }
+.tbt-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.tbt-row > * { flex: 1; min-width: 0; }
+.tbt-btn2 { min-height: 44px; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--accentBorder);
+  background: transparent; color: var(--accent); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.tbt-rosterlist { border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; margin-bottom: 10px; }
+.tbt-rosterrow { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; min-height: 48px;
+  padding: 10px 12px; background: var(--color-bg-card); border: 0; border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-primary); font: inherit; font-size: 14.5px; cursor: pointer; }
+.tbt-rosterrow:last-child { border-bottom: 0; }
+.tbt-rosterrow.is-on { background: var(--accentSoft); }
+.tbt-rosterrow .box { flex: 0 0 auto; width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid var(--accentBorder);
+  display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: var(--accent); }
+.tbt-rosterrow.is-on .box { background: var(--accent); color: #05230f; }
+.tbt-manualpill { display: inline-flex; align-items: center; gap: 6px; background: rgba(234, 179, 8, 0.12);
+  border: 1px solid rgba(234, 179, 8, 0.5); color: #fbd24e; border-radius: 999px; padding: 5px 10px;
+  font-size: 12.5px; font-weight: 600; margin: 0 6px 6px 0; max-width: 100%; overflow-wrap: anywhere; }
+.tbt-manualpill .tag { font-size: 10px; font-weight: 800; letter-spacing: .05em; }
+.tbt-manualpill button { background: transparent; border: 0; color: #fbd24e; font-size: 15px; line-height: 1; cursor: pointer; padding: 0 0 0 2px; }
+
+/* Choose Method choices: a clear tappable row with an icon, summary and arrow. */
+.tbt-choice-lead { color: var(--color-text-primary); font-size: 16px; font-weight: 700; margin: 2px 0 12px; }
+.tbt-choices { display: grid; gap: 10px; margin-bottom: 4px; }
+.tbt-choice { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; font: inherit;
+  padding: 16px 14px 16px 16px; border-radius: 14px; cursor: pointer; color: var(--color-text-primary);
+  background: var(--color-bg-card); border: 1.5px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .25);
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease; }
+.tbt-choice:hover { border-color: var(--accentBorder); background: #11264f; }
+.tbt-choice:active { transform: scale(.985); }
+.tbt-choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tbt-choice.is-on { border-color: var(--accent); background: var(--accentSoft); }
+.tbt-choice .ic { flex: 0 0 auto; width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center;
+  background: var(--accentSoft); border: 1px solid var(--accentBorder); }
+.tbt-choice .ic svg { width: 26px; height: 26px; fill: none; stroke: var(--accent); stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round; }
+.tbt-choice .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.tbt-choice .t { font-size: 16px; font-weight: 800; line-height: 1.25; }
+.tbt-choice .d { font-size: 13.5px; line-height: 1.45; color: var(--color-text-secondary); }
+.tbt-choice .m { align-self: flex-start; margin-top: 5px; font-size: 11.5px; font-weight: 800; letter-spacing: .02em;
+  color: var(--accent); background: rgba(61, 207, 130, 0.08); border: 1px solid rgba(61, 207, 130, 0.3);
+  border-radius: 999px; padding: 2px 9px; }
+.tbt-choice .go { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 999px; display: grid; place-items: center;
+  background: rgba(148, 163, 184, 0.1); }
+.tbt-choice .go svg { width: 16px; height: 16px; fill: none; stroke: var(--color-text-secondary); stroke-width: 2.4;
+  stroke-linecap: round; stroke-linejoin: round; }
+.tbt-choice:hover .go svg, .tbt-choice.is-on .go svg { stroke: var(--accent); }
+@media (prefers-reduced-motion: reduce) { .tbt-choice { transition: none; } .tbt-choice:active { transform: none; } }
+.tbt-choice { align-items: flex-start; }
+.tbt-choice .go { align-self: center; }
+.tbt-choice-lead { font-size: 15px; }
