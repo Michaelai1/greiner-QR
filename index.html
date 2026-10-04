@@ -1848,6 +1848,49 @@
         .jha-review-q { color:var(--color-text-secondary); font-size:12.5px; }
         .jha-review-a { color:var(--color-text-primary); white-space:pre-wrap; overflow-wrap:anywhere; }
         .opt { color:var(--color-text-secondary); font-weight:500; font-size:.85em; }
+        .tbt-role { border:1px solid rgba(61,207,130,.45); background:rgba(61,207,130,.08); border-radius:12px;
+          padding:10px 12px; margin-bottom:12px; color:var(--color-text-primary); }
+        .tbt-role-tag { display:inline-block; background:var(--color-accent); color:#04121f; font-weight:800; font-size:12px;
+          letter-spacing:.03em; border-radius:999px; padding:3px 10px; margin-bottom:6px; }
+        .tbt-role-line { font-size:13.5px; line-height:1.45; overflow-wrap:anywhere; }
+        .demo-preview-link { display:block; text-align:center; font-size:12.5px; color:#2563eb; margin-top:8px; }
+        .jha-lad-opts { display:flex; flex-direction:column; gap:6px; }
+        .jha-lad-opt { display:flex; align-items:center; gap:10px; width:100%; text-align:left; min-height:52px;
+          background:var(--color-bg-card); color:var(--color-text-primary); border:1px solid rgba(148,163,184,.28);
+          border-radius:10px; padding:8px 12px; cursor:pointer; font-size:14px; }
+        .jha-lad-opt.is-on { border-color:var(--color-accent); box-shadow:inset 0 0 0 1px var(--color-accent); }
+        .jha-lad-opt.is-dnu { border-color:rgba(248,113,113,.55); }
+        .jha-lad-opt:disabled { opacity:.55; cursor:not-allowed; }
+        .jha-lad-box { flex:0 0 22px; height:22px; border-radius:6px; border:2px solid rgba(148,163,184,.6);
+          display:flex; align-items:center; justify-content:center; font-weight:900; color:#04121f; }
+        .jha-lad-opt.is-on .jha-lad-box { background:var(--color-accent); border-color:var(--color-accent); }
+        .jha-lad-txt { flex:1; min-width:0; overflow-wrap:anywhere; }
+        .jha-lad-txt small { display:block; color:var(--color-text-secondary); font-size:12.5px; margin-top:2px; }
+        .jha-lad-dnu { flex:0 0 auto; background:#b91c1c; color:#fff; font-weight:800; font-size:11px; border-radius:6px; padding:3px 6px; }
+        .jha-lad-empty { background:rgba(248,113,113,.10); border:1px solid rgba(248,113,113,.45); color:var(--color-text-primary);
+          border-radius:10px; padding:12px; font-size:14px; line-height:1.45; }
+        .jha-ladder-head small { display:block; font-weight:500; font-size:12.5px; color:var(--color-text-secondary); margin-top:2px; }
+        .jha-ladder-row b small { font-weight:500; color:var(--color-text-secondary); }
+        .jha-ladder-ok { margin-top:10px; background:rgba(61,207,130,.12); border:1px solid rgba(61,207,130,.45);
+          color:var(--color-accent); font-weight:700; font-size:13.5px; border-radius:8px; padding:9px 12px; }
+        .jha-lad-primary { margin:12px 0 0 !important; }
+        .jha-lad-link { display:block; width:100%; background:transparent; border:0; color:var(--color-text-secondary);
+          text-decoration:underline; font-size:13.5px; padding:12px 0 2px; min-height:44px; cursor:pointer; }
+        .jha-lad-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+        .jha-lad-actions > * { flex:1 1 140px; margin:0 !important; }
+        .jha-lad-danger { background:#b91c1c !important; }
+        .jha-lad-take { width:100%; }
+        .jha-lad-photo img { display:block; width:100%; max-height:260px; object-fit:contain; border-radius:8px;
+          background:#000; border:1px solid rgba(148,163,184,.28); }
+        .jha-rev-row { display:flex; flex-direction:column; gap:3px; width:100%; text-align:left; cursor:pointer;
+          background:var(--color-bg-card); color:var(--color-text-primary); border:1px solid rgba(148,163,184,.28);
+          border-left:4px solid var(--color-accent); border-radius:12px; padding:12px 14px; margin-bottom:10px; min-height:64px; }
+        .jha-rev-row.is-capped { border-left-color:#fbbf24; }
+        .jha-rev-row-title { font-weight:800; font-size:15px; overflow-wrap:anywhere; }
+        .jha-rev-row-meta { color:var(--color-text-secondary); font-size:12.5px; }
+        .jha-rev-row-cta { color:var(--color-accent); font-weight:700; font-size:13px; margin-top:4px; }
+        .jha-rev-row.is-capped .jha-rev-row-cta { color:#fcd34d; }
+        .jha-sheet-meta ul { margin:6px 0 0 18px; padding:0; }
         .jha-assign-remove { border:0; background:transparent; color:#b91c1c; font-size:13px; font-weight:600;
             cursor:pointer; padding:4px 0; }
         .jha-other-input { border-color:#b45309; }
@@ -2786,13 +2829,15 @@
                         </div>
                         <div id="jhaLadderPanel" style="display:none">
                             <div class="form-group">
-                                <label class="form-label" for="jhaLadderId">Ladder ID <span class="required">*</span></label>
-                                <input type="text" class="form-input" id="jhaLadderId" name="jhaLadderId" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="e.g. LAD-101">
-                                <p class="jha-row-hint" style="margin:6px 0 0">Enter or scan the ID displayed on the ladder.</p>
-                                <div class="form-error">Required</div>
+                                <span class="form-label">Which ladder or ladders will be used today? <span class="required">*</span></span>
+                                <input type="search" class="form-input" id="jhaLadderSearch" autocomplete="off" placeholder="Search this job&rsquo;s ladders" aria-label="Search this job&rsquo;s ladders" style="margin-bottom:8px">
+                                <div id="jhaLadderOptions" class="jha-lad-opts" role="group" aria-label="Ladders assigned to this job"></div>
+                                <div class="form-error">Select at least one ladder</div>
                             </div>
-                            <input type="hidden" id="jhaLadderInspection" name="jhaLadderInspection">
-                            <div id="jhaLadderCard" aria-live="polite"></div>
+                            <input type="hidden" id="jhaLadderIds" name="jhaLadderIds">
+                            <input type="hidden" id="jhaLadderChecks" name="jhaLadderChecks">
+                            <input type="hidden" id="jhaLadderDefects" name="jhaLadderDefects">
+                            <div id="jhaLadderCards" aria-live="polite"></div>
                         </div>
                     </div>
                     <div class="form-section" data-jha-model="aerial">
@@ -2807,7 +2852,7 @@
                         </div>
                         <div id="jhaAerialPanel" style="display:none">
                             <div class="form-group">
-                                <span class="form-label">What competent person or persons will conduct the lift inspections? <span class="required">*</span></span>
+                                <span class="form-label">Who will conduct the lift inspections? <span class="required">*</span></span>
                                 <p class="jha-row-hint" style="margin:0 0 8px">Select every person who may conduct an inspection today.</p>
                                 <div id="jhaAerialRoster" class="jha-crew-roster"></div>
                                 <div class="form-error">Select at least one person</div>
@@ -5564,10 +5609,13 @@ ${photoUrls}`;
        { mode: 'workweek' }                       — inside the current workweek */
   var LADDER_INSPECTION_CADENCE = { mode: 'informational', maxAgeDays: null };
 
-  var REVISION_CHANGE_TYPES = [
-    'Work scope', 'Hazard or site condition', 'Crew assignment',
-    'Equipment or material', 'Control or procedure', 'Correction or other'
-  ];
+  /* Exact attestation wording, versioned so a stored record always says what
+     the person agreed to. Change the text => bump the version. */
+  var LADDER_SAFE_ATTESTATION = { version: 'ladder-safe-use-v1',
+    text: 'I inspected this ladder before use today and found it safe to use.' };
+  var LADDER_DEFECT_ACK = { version: 'ladder-do-not-use-v1',
+    text: 'I marked or tagged this ladder \u2018Do Not Use\u2019 and removed it from service.' };
+  var SIGN_IN_REQUIRED = 'Sign in with your employee access before recording an inspection.';
 
   /* ---------------- time (Indianapolis) ---------------- */
   var _fmt = null;
@@ -5688,7 +5736,7 @@ ${photoUrls}`;
       company_id: req.companyId || null, job_id: req.jobId || null,
       work_date: workweekOf(at).date, original_submitted_at: at, revised_at: null,
       submitted_by: req.by || '', revised_by: req.by || '', status: 'submitted',
-      revision_change_type: null, revision_note: null,
+      revision_note: null, revision_diff: null,
       data: normalizeJhaData(req.data || {}), crew: req.crew || { employees: [], groups: [] },
       photos: req.photos || []
     });
@@ -5697,8 +5745,9 @@ ${photoUrls}`;
   }
 
   /* Append the next revision. Refuses (never overwrites) when the JHA moved on
-     since the form opened (stale), when the cap is reached, when the window is
-     closed, or when no change type was chosen. */
+     since the form opened (stale), when the cap is reached, or when the window
+     is closed. What changed is computed, field by field — the foreman is never
+     asked to explain each change; an optional note can add context. */
   function submitRevision(store, req, serverNow) {
     var e = reviseEligibility(store, req.rootId, { now: serverNow, jobId: req.jobId, companyId: req.companyId });
     if (!e.ok) return { ok: false, code: e.code, message: e.message };
@@ -5706,19 +5755,19 @@ ${photoUrls}`;
       return { ok: false, code: 'stale',
         message: 'This JHA was revised after you opened it. Refresh to load the latest version, then make your changes again.' };
     }
-    if (REVISION_CHANGE_TYPES.indexOf(req.changeType) === -1) {
-      return { ok: false, code: 'reason', message: 'Choose what changed.' };
-    }
     var at = new Date(serverNow).toISOString();
+    var nextData = normalizeJhaData(req.data || {});
+    var nextCrew = req.crew || { employees: [], groups: [] };
     var rec = freezeDeep({
       id: req.rootId + '-v' + (e.head.revision_number + 1), root_jha_id: req.rootId,
       previous_revision_id: e.head.id, revision_number: e.head.revision_number + 1,
       company_id: e.original.company_id || null, job_id: e.original.job_id,
       work_date: e.original.work_date, original_submitted_at: e.original.original_submitted_at,
       revised_at: at, submitted_by: e.original.submitted_by, revised_by: req.by || '',
-      status: 'submitted', revision_change_type: req.changeType,
+      status: 'submitted',
       revision_note: String(req.note || '').trim() || null,
-      data: normalizeJhaData(req.data || {}), crew: req.crew || { employees: [], groups: [] },
+      revision_diff: diffJhaData(e.head.data, nextData, e.head.crew, nextCrew),
+      data: nextData, crew: nextCrew,
       photos: req.photos || []
     });
     store.push(rec);
@@ -5782,48 +5831,101 @@ ${photoUrls}`;
     return { enforced: false, due: false };
   }
 
-  /* Record an inspection. The inspection time comes from serverNow only; any
-     inspected_at in the request is ignored, so a field user cannot backdate.
-     A defect is optional; when given it needs a description and whether the
-     ladder was removed from service. */
-  function recordLadderInspection(registry, inspections, req, serverNow) {
+  /* Ladders assigned to a job, for the picker. Users select; nobody types an
+     ID. A duplicated ID is listed once, flagged, and cannot be selected. */
+  function laddersForJob(registry, inspections, jobId) {
+    var seen = {};
+    (registry || []).forEach(function (l) {
+      if (l.job_id !== jobId) return;
+      var id = normalizeLadderId(l.ladder_id);
+      if (id) seen[id] = (seen[id] || 0) + 1;
+    });
+    return Object.keys(seen).sort().map(function (id) {
+      var look = ladderLookup(registry, inspections, id);
+      return { id: id, description: look.state === 'found' ? (look.ladder.description || '') : '',
+        duplicate: look.state === 'duplicate', last_inspected_at: look.last ? look.last.inspected_at : null,
+        last_inspected_by: look.last ? look.last.inspected_by : null,
+        do_not_use: look.status === 'do-not-use', look: look };
+    });
+  }
+  function ladderGuard(registry, inspections, req) {
+    var u = req.user || {};
+    if (!u.id || !String(u.name || '').trim()) return { ok: false, code: 'auth', message: SIGN_IN_REQUIRED };
     var id = normalizeLadderId(req.ladderId);
-    if (!id) return { ok: false, code: 'id', message: 'Enter the Ladder ID.' };
     var look = ladderLookup(registry, inspections, id);
     if (look.state === 'duplicate') return { ok: false, code: 'duplicate', message: look.message };
-    var who = String(req.inspector || '').trim();
-    if (!who) return { ok: false, code: 'inspector', message: 'Enter who inspected the ladder.' };
-    if (req.acknowledged !== true) return { ok: false, code: 'ack', message: 'Confirm that you inspected this ladder before use.' };
-    var at = new Date(serverNow).toISOString(), defect = null;
-    if (req.defect) {
-      var desc = String(req.defect.description || '').trim();
-      if (!desc) return { ok: false, code: 'defect-description', message: 'Describe the defect or unsafe condition.' };
-      if (req.defect.removedFromService !== 'yes' && req.defect.removedFromService !== 'no') {
-        return { ok: false, code: 'defect-removed', message: 'Say whether the ladder was removed from service.' };
-      }
-      defect = { description: desc, removed_from_service: req.defect.removedFromService,
-                 photo: req.defect.photo || null, reported_at: at, resolved_at: null };
+    if (look.state !== 'found' || look.ladder.job_id !== req.jobId) {
+      return { ok: false, code: 'not-assigned', message: 'Ladder ' + id + ' is not assigned to this job.' };
     }
-    if (look.state === 'unknown') registry.push(freezeDeep({ ladder_id: id, category: 'Ladder', added_at: at }));
-    var rec = freezeDeep({ id: 'ladinsp-' + Date.parse(at).toString(36) + '-' + (inspections.length + 1),
-      ladder_id: id, inspected_at: at, inspected_by: who, acknowledged: true, defect: defect });
+    return { ok: true, id: id, look: look, user: { id: u.id, name: String(u.name).trim() } };
+  }
+  function ladderEvent(kind, g, req, at, extra) {
+    return freezeDeep(Object.assign({
+      id: 'lad-' + kind + '-' + Date.parse(at).toString(36) + '-' + Math.random().toString(36).slice(2, 7),
+      kind: kind, ladder_id: g.id, job_id: req.jobId || null, company_id: req.companyId || null,
+      inspected_at: at, inspected_by: g.user.name, inspected_by_user_id: g.user.id,
+      jha_root_id: req.jhaRootId || null, jha_revision_number: req.jhaRevisionNumber || null
+    }, extra));
+  }
+  /* "Inspect for today's use". Identity is the signed-in employee — a typed
+     name is never accepted. Time is the server's; nothing in the request can
+     set it. A ladder with an open defect cannot be confirmed safe. */
+  function confirmLadderSafe(registry, inspections, req, serverNow) {
+    var g = ladderGuard(registry, inspections, req);
+    if (!g.ok) return g;
+    if (g.look.status === 'do-not-use') {
+      return { ok: false, code: 'do-not-use', message: 'Ladder ' + g.id + ' is marked Do Not Use and cannot be confirmed safe. Select a different assigned ladder.' };
+    }
+    if (req.attested !== true || req.attestationVersion !== LADDER_SAFE_ATTESTATION.version) {
+      return { ok: false, code: 'attest', message: 'Confirm the statement before recording the inspection.' };
+    }
+    var at = new Date(serverNow).toISOString();
+    var rec = ladderEvent('inspection', g, req, at, { result: 'safe',
+      attestation_text: LADDER_SAFE_ATTESTATION.text, attestation_version: LADDER_SAFE_ATTESTATION.version,
+      defect: null });
     inspections.push(rec);
-    return { ok: true, record: rec, lookup: ladderLookup(registry, inspections, id) };
+    return { ok: true, record: rec, lookup: ladderLookup(registry, inspections, g.id) };
+  }
+  /* "Report a defect or unsafe condition". Description and the Do Not Use
+     acknowledgment are required; the photo is optional. Field users can never
+     resolve or delete a defect — only a future office workflow may. */
+  function reportLadderDefect(registry, inspections, req, serverNow) {
+    var g = ladderGuard(registry, inspections, req);
+    if (!g.ok) return g;
+    var desc = String(req.description || '').trim();
+    if (!desc) return { ok: false, code: 'defect-description', message: 'Describe the defect or unsafe condition.' };
+    if (req.acknowledged !== true) {
+      return { ok: false, code: 'defect-ack', message: 'Confirm that you marked or tagged the ladder Do Not Use and removed it from service.' };
+    }
+    var at = new Date(serverNow).toISOString();
+    var rec = ladderEvent('defect', g, req, at, { result: 'defect',
+      defect: { description: desc, photo: req.photo || null, tagged_do_not_use: true,
+        acknowledgment_text: LADDER_DEFECT_ACK.text, acknowledgment_version: LADDER_DEFECT_ACK.version,
+        reported_at: at, reported_by: g.user.name, resolved_at: null } });
+    inspections.push(rec);
+    return { ok: true, record: rec, lookup: ladderLookup(registry, inspections, g.id) };
   }
 
-  /* What a JHA stores about the ladder it planned to use — the information
-     that was visible when it was submitted. */
-  function ladderSnapshot(look) {
-    if (!look || look.state !== 'found') {
-      return look && look.state === 'unknown' ? { ladder_id: look.id, status: 'no-history',
-        status_label: 'No inspection history found' } : null;
-    }
-    return { ladder_id: look.id,
+  /* What a JHA stores about each selected ladder — the information visible
+     when it was submitted, plus any inspection or defect recorded during this
+     JHA (identified by the inspection record id). */
+  function ladderSnapshot(look, todays) {
+    if (!look || look.state !== 'found') return null;
+    var safe = (todays || []).filter(function (r) { return r.result === 'safe'; }).pop() || null;
+    return { ladder_id: look.id, description: look.ladder.description || '',
       last_inspected_at: look.last ? look.last.inspected_at : null,
       last_inspected_by: look.last ? look.last.inspected_by : null,
       status: look.status, status_label: look.statusLabel,
       open_defect: look.openDefect ? { description: look.openDefect.description,
-        removed_from_service: look.openDefect.removed_from_service } : null };
+        reported_at: look.openDefect.reported_at || null, reported_by: look.openDefect.reported_by || null } : null,
+      todays_check: safe ? { record_id: safe.id, result: 'safe', at: safe.inspected_at, by: safe.inspected_by,
+        by_user_id: safe.inspected_by_user_id, attestation_version: safe.attestation_version } : null };
+  }
+  function defectSnapshot(rec) {
+    return { record_id: rec.id, ladder_id: rec.ladder_id, description: rec.defect.description,
+      reported_at: rec.defect.reported_at, reported_by: rec.defect.reported_by,
+      reported_by_user_id: rec.inspected_by_user_id, has_photo: !!rec.defect.photo,
+      acknowledgment_version: rec.defect.acknowledgment_version };
   }
 
   /* ---------------- the JHA field model ---------------- */
@@ -5836,8 +5938,10 @@ ${photoUrls}`;
     ['jhaJobsiteSafety', 'Jobsite Safety Requirements — PPE, housekeeping, dust walls, spark-proof tools, etc.']
   ];
   var LADDER_USE_LABEL = 'Is any ladder use planned or expected today?';
+  var LADDER_PICK_LABEL = 'Which ladder or ladders will be used today?';
+  var NO_LADDERS_ASSIGNED = 'No ladders are assigned to this job. Contact the office before using a ladder.';
   var AERIAL_USE_LABEL = 'Will any aerial lift devices be used today?';
-  var AERIAL_WHO_LABEL = 'What competent person or persons will conduct the lift inspections?';
+  var AERIAL_WHO_LABEL = 'Who will conduct the lift inspections?';
   /* Questions retired on Tony's Oct 1 instruction. New JHAs never collect or
      store them; JHAs submitted before the change still show what was asked
      and answered at the time. */
@@ -5866,11 +5970,22 @@ ${photoUrls}`;
     var d = {};
     Object.keys(raw || {}).forEach(function (k) { d[k] = raw[k]; });
     LEGACY_FIELDS.forEach(function (f) { delete d[f[0]]; });
+    // jhaLadderId / jhaLadderInspection were the single typed-ID format of the
+    // previous review build; new JHAs use the job-assigned selection instead.
+    delete d.jhaLadderId; delete d.jhaLadderInspection;
     if (d.jhaLadderUse === 'yes') {
-      d.jhaLadderId = normalizeLadderId(d.jhaLadderId);
-      d.jhaLadderInspection = parseMaybe(d.jhaLadderInspection, null);
+      var ids = parseMaybe(d.jhaLadderIds, []);
+      d.jhaLadderIds = (Array.isArray(ids) ? ids : []).map(normalizeLadderId)
+        .filter(function (x, i, a) { return x && a.indexOf(x) === i; });
+      var checks = parseMaybe(d.jhaLadderChecks, []);
+      d.jhaLadderChecks = (Array.isArray(checks) ? checks : []).filter(function (c) {
+        return c && d.jhaLadderIds.indexOf(normalizeLadderId(c.ladder_id)) !== -1; });
+      // Defects reported during this JHA stay on it even if that ladder was
+      // then swapped for another.
+      var defects = parseMaybe(d.jhaLadderDefects, []);
+      d.jhaLadderDefects = Array.isArray(defects) ? defects : [];
     } else {
-      delete d.jhaLadderId; delete d.jhaLadderInspection;
+      delete d.jhaLadderIds; delete d.jhaLadderChecks; delete d.jhaLadderDefects;
     }
     if (d.jhaAerialUse === 'yes') {
       var who = parseMaybe(d.jhaAerialInspectors, []);
@@ -5931,17 +6046,31 @@ ${photoUrls}`;
     var lad = [];
     if (filled(d.jhaLadderUse)) lad.push(item('jhaLadderUse', LADDER_USE_LABEL, yesNo(d.jhaLadderUse)));
     if (d.jhaLadderUse === 'yes') {
+      var ids = parseMaybe(d.jhaLadderIds, []);
+      if (Array.isArray(ids) && ids.length) lad.push(item('jhaLadderIds', LADDER_PICK_LABEL, ids.join(', ')));
+      (parseMaybe(d.jhaLadderChecks, []) || []).forEach(function (c) {
+        var p = 'Ladder ' + c.ladder_id + ' \u2014 ';
+        lad.push(item('ladder:' + c.ladder_id + ':last', p + 'Last inspected',
+          c.last_inspected_at ? fmtIndy(c.last_inspected_at) : 'No previous inspection is recorded for this ladder.'));
+        if (c.last_inspected_by) lad.push(item('ladder:' + c.ladder_id + ':by', p + 'Inspected by', c.last_inspected_by));
+        lad.push(item('ladder:' + c.ladder_id + ':status', p + 'Current status', c.status_label || '',
+          { flagged: c.status === 'do-not-use' }));
+        lad.push(item('ladder:' + c.ladder_id + ':today', p + 'Inspection for today\u2019s use',
+          c.todays_check ? 'Confirmed safe for use by ' + c.todays_check.by + ' \u00b7 ' + fmtIndy(c.todays_check.at)
+            : 'Not recorded on this JHA'));
+      });
+      (parseMaybe(d.jhaLadderDefects, []) || []).forEach(function (x) {
+        lad.push(item('ladder:' + x.ladder_id + ':defect:' + x.record_id, 'Ladder ' + x.ladder_id + ' \u2014 Defect reported',
+          x.description + ' \u00b7 marked Do Not Use and removed from service \u00b7 ' + x.reported_by +
+          ' \u00b7 ' + fmtIndy(x.reported_at) + (x.has_photo ? ' \u00b7 photo attached' : ''), { flagged: true }));
+      });
+      // Earlier review-build format (single typed ID) — shown as stored.
       if (filled(d.jhaLadderId)) lad.push(item('jhaLadderId', 'Ladder ID', d.jhaLadderId));
       var s = parseMaybe(d.jhaLadderInspection, null);
       if (s) {
         lad.push(item('jhaLadderLastInspected', 'Last inspection date', s.last_inspected_at ? fmtIndy(s.last_inspected_at) : 'None recorded'));
         if (s.last_inspected_by) lad.push(item('jhaLadderInspectedBy', 'Last inspected by', s.last_inspected_by));
-        lad.push(item('jhaLadderStatus', 'Inspection status', s.status_label || '',
-          { flagged: s.status === 'do-not-use' }));
-        if (s.open_defect) {
-          lad.push(item('jhaLadderDefect', 'Open defect', s.open_defect.description +
-            ' (removed from service: ' + yesNo(s.open_defect.removed_from_service) + ')', { flagged: true }));
-        }
+        lad.push(item('jhaLadderStatus', 'Inspection status', s.status_label || '', { flagged: s.status === 'do-not-use' }));
       }
     }
     if (lad.length) out.push({ title: 'Ladder Use', items: lad });
@@ -5972,14 +6101,23 @@ ${photoUrls}`;
     return out;
   }
 
-  /* Submit-time checks the HTML required attributes can't express. */
-  function jhaSubmitProblems(data, ladderLook) {
-    var d = data || {}, p = [];
+  /* Submit-time checks the HTML required attributes can't express.
+     ctx.ladders: { assigned: [ids assigned to this job], states: { id: lookup } } */
+  function jhaSubmitProblems(data, ctx) {
+    var d = data || {}, p = [], lad = (ctx && ctx.ladders) || null;
     if (d.jhaLadderUse === 'yes') {
-      if (!normalizeLadderId(d.jhaLadderId)) p.push('Enter the Ladder ID.');
-      else if (ladderLook && ladderLook.state === 'duplicate') p.push(ladderLook.message);
-      else if (ladderLook && ladderLook.status === 'do-not-use') {
-        p.push('Ladder ' + ladderLook.id + ' is marked Do Not Use. Use a different ladder and enter its ID, or change the ladder answer.');
+      var ids = parseMaybe(d.jhaLadderIds, []);
+      if (lad && !(lad.assigned || []).length) p.push(NO_LADDERS_ASSIGNED);
+      else if (!Array.isArray(ids) || !ids.length) p.push('Select which ladder or ladders will be used today.');
+      else if (lad) {
+        ids.forEach(function (id) {
+          var st = (lad.states || {})[id];
+          if ((lad.assigned || []).indexOf(id) === -1) p.push('Ladder ' + id + ' is not assigned to this job.');
+          else if (st && st.state === 'duplicate') p.push(st.message);
+          else if (st && st.status === 'do-not-use') {
+            p.push('Ladder ' + id + ' is marked Do Not Use. Remove it and select a different assigned ladder.');
+          }
+        });
       }
     }
     if (d.jhaAerialUse === 'yes') {
@@ -5989,10 +6127,33 @@ ${photoUrls}`;
     return p;
   }
 
+  /* Field-level difference between two versions, computed automatically. */
+  function diffJhaData(prevData, nextData, prevCrew, nextCrew) {
+    var A = flatAnswers(prevData, prevCrew), B = flatAnswers(nextData, nextCrew), out = [];
+    var keys = Object.keys(A);
+    Object.keys(B).forEach(function (k) { if (keys.indexOf(k) === -1) keys.push(k); });
+    keys.forEach(function (k) {
+      var a = A[k], b = B[k];
+      if ((a && a.value) === (b && b.value)) return;
+      out.push({ key: k, label: (b || a).label, from: a ? a.value : '', to: b ? b.value : '' });
+    });
+    return out;
+  }
+  function flatAnswers(data, crew) {
+    var m = {};
+    jhaSections(data || {}, { crew: crew || { employees: [], groups: [] } }).forEach(function (sec) {
+      sec.items.forEach(function (it) { m[it.key] = { label: it.label, value: it.value }; });
+    });
+    return m;
+  }
+
   var api = {
     TZ: TZ, JHA_REVISION_RULES: JHA_REVISION_RULES, LADDER_INSPECTION_CADENCE: LADDER_INSPECTION_CADENCE,
-    REVISION_CHANGE_TYPES: REVISION_CHANGE_TYPES, LEGACY_FIELDS: LEGACY_FIELDS, HEADER_FIELDS: HEADER_FIELDS,
-    LADDER_USE_LABEL: LADDER_USE_LABEL, AERIAL_USE_LABEL: AERIAL_USE_LABEL, AERIAL_WHO_LABEL: AERIAL_WHO_LABEL,
+    LEGACY_FIELDS: LEGACY_FIELDS, HEADER_FIELDS: HEADER_FIELDS,
+    LADDER_USE_LABEL: LADDER_USE_LABEL, LADDER_PICK_LABEL: LADDER_PICK_LABEL, NO_LADDERS_ASSIGNED: NO_LADDERS_ASSIGNED,
+    AERIAL_USE_LABEL: AERIAL_USE_LABEL, AERIAL_WHO_LABEL: AERIAL_WHO_LABEL,
+    LADDER_SAFE_ATTESTATION: LADDER_SAFE_ATTESTATION, LADDER_DEFECT_ACK: LADDER_DEFECT_ACK,
+    SIGN_IN_REQUIRED: SIGN_IN_REQUIRED,
     indyParts: indyParts, workweekOf: workweekOf, fmtIndy: fmtIndy, isoAddDays: isoAddDays,
     familyVersions: familyVersions, familyHead: familyHead, revisionsUsed: revisionsUsed,
     revisionLabel: revisionLabel, reviseEligibility: reviseEligibility,
@@ -6001,9 +6162,10 @@ ${photoUrls}`;
     revisionEventCount: revisionEventCount, freezeDeep: freezeDeep,
     normalizeLadderId: normalizeLadderId, ladderLookup: ladderLookup,
     ladderStatusLabel: ladderStatusLabel, ladderCadence: ladderCadence,
-    recordLadderInspection: recordLadderInspection, ladderSnapshot: ladderSnapshot,
+    laddersForJob: laddersForJob, confirmLadderSafe: confirmLadderSafe,
+    reportLadderDefect: reportLadderDefect, ladderSnapshot: ladderSnapshot, defectSnapshot: defectSnapshot,
     normalizeJhaData: normalizeJhaData, jhaSections: jhaSections,
-    jhaSubmitProblems: jhaSubmitProblems
+    jhaSubmitProblems: jhaSubmitProblems, diffJhaData: diffJhaData
   };
   root.JhaModel = api;
   if (typeof module === 'object' && module && module.exports) module.exports = api;
@@ -6942,6 +7104,8 @@ ${photoUrls}`;
           // A brand-new daily JHA — never a revision.
           JHA_CTX = null;
           JHA_CREW = { employees: [], groups: [] };
+          ladderReset();
+          JHA_DRAFT_ROOT = 'demo-jha-' + Date.now().toString(36);
           if (typeof window.openJhaForm === 'function') { window.openJhaForm(); applyLocks(); }
           return;
         }
@@ -6971,10 +7135,13 @@ ${photoUrls}`;
             'style="width:100%;margin-bottom:8px">Hot Work Permit</button>' +
           '<button type="button" class="action-button action-button--primary" data-demoform="toolbox" ' +
             'style="width:100%">Toolbox Talk — ' + esc(tbtCurrentTalk().t) + '</button>' +
-          // No completion method is named here: the walkthrough asks for one
-          // first, so claiming one on the tile would contradict the next screen.
-          '<div style="font-size:12px;color:#6b7280;margin-top:6px;text-align:center">' +
-            esc(TBT_CO[TBT_COMPANY].name) + ' · due ' + esc(tbtDueLabel()) + '</div>';
+          (TBT_ROLE
+            ? '<div style="font-size:12px;color:#6b7280;margin-top:6px;text-align:center">' +
+                esc(TBT_GREINER_ASSIGNMENT.job) + ' · ' + (TBT_ROLE === 'lead' ? 'you are leading this talk' : 'led by ' + esc(TBT_GREINER_ASSIGNMENT.lead)) + '</div>' +
+              '<a class="demo-preview-link" href="?demo=1' + (TBT_ROLE === 'lead' ? '&tbtas=participant' : '') + '">' +
+                'Review demo: open ' + (TBT_ROLE === 'lead' ? 'a participant\u2019s phone' : 'the lead\u2019s phone') + '</a>'
+            : '<div style="font-size:12px;color:#6b7280;margin-top:6px;text-align:center">' +
+                esc(TBT_CO[TBT_COMPANY].name) + ' · due ' + esc(tbtDueLabel()) + '</div>');
         landing.insertBefore(d, landing.firstChild);
         Array.prototype.forEach.call(d.querySelectorAll('[data-demoform]'), function (btn) {
           btn.addEventListener('click', function () { openDemoForm(btn.getAttribute('data-demoform')); });
@@ -7048,32 +7215,30 @@ ${photoUrls}`;
           if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = jhaSubmitLabel(); }
         }
         if (JHA_CTX) {
-          if (!JHA_CTX.changeType) {
-            restore();
-            toast('error', 'What changed?', 'Choose what changed in this revision before submitting.');
-            var ban = document.getElementById('jhaRevisionBanner');
-            if (ban) { ban.classList.add('jha-rev-need'); try { ban.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }
-            return Promise.reject(new Error('change type required'));
-          }
-          var n = JHA_CTX.nextNumber;
+          var n = JHA_CTX.nextNumber, ctx = JHA_CTX;
+          var noteEl = document.getElementById('jhaRevNote');
+          var note = noteEl ? noteEl.value : '';
+          var changes = M.diffJhaData(ctx.head.data, M.normalizeJhaData(raw), ctx.head.crew, crew);
           return jhaSheet('Submit Revision ' + n,
-            '<p class="jha-sheet-lede">This creates a new record with the current time. It does not replace or backdate the original JHA.</p>' +
-            '<div class="jha-sheet-meta">What changed: <b>' + esc(JHA_CTX.changeType) + '</b>' +
-              (JHA_CTX.note ? '<br>Note: ' + esc(JHA_CTX.note) : '') + '</div>' +
-            jhaReviewHtml(M.normalizeJhaData(raw), crew),
+            '<p class="jha-sheet-lede">This creates a new, time-stamped version. It does not replace or change the original JHA.</p>' +
+            '<div class="jha-sheet-meta" id="jhaRevChanges"><b>' + changes.length + ' change' + (changes.length === 1 ? '' : 's') +
+              ' from the version you opened</b>' +
+              (changes.length ? '<ul>' + changes.slice(0, 12).map(function (c) {
+                return '<li>' + esc(c.label) + '</li>'; }).join('') + (changes.length > 12 ? '<li>and ' + (changes.length - 12) + ' more</li>' : '') + '</ul>' : '') +
+              (String(note).trim() ? '<div style="margin-top:6px">Note: ' + esc(note.trim()) + '</div>' : '') + '</div>',
             [{ id: 'confirm', label: 'Submit Revision ' + n, primary: true }, { id: 'cancel', label: 'Keep editing' }]
           ).then(function (choice) {
             if (choice !== 'confirm') { restore(); return Promise.reject(new Error('cancelled')); }
-            var res = M.submitRevision(DEMO_JHA_STORE, {
-              rootId: JHA_CTX.rootId, baseVersionId: JHA_CTX.baseVersionId,
+            return JHA_SOURCE.submitRevision({
+              rootId: ctx.rootId, baseVersionId: ctx.baseVersionId,
               jobId: (NG.job && NG.job.id) || null, companyId: DEMO_COMPANY_ID,
-              by: NG.user || '', changeType: JHA_CTX.changeType, note: JHA_CTX.note,
-              data: raw, crew: crew, photos: photos }, jhaClock());
-            if (!res.ok) { restore(); jhaRefused(res); return Promise.reject(new Error(res.code)); }
-            return jhaFinish(res.record, payload, submitBtn);
+              by: NG.user || '', note: note, data: raw, crew: crew, photos: photos }).then(function (res) {
+              if (!res.ok) { restore(); jhaRefused(res); return Promise.reject(new Error(res.code)); }
+              return jhaFinish(res.record, payload, submitBtn);
+            });
           });
         }
-        var made = M.createOriginal(DEMO_JHA_STORE, {
+        var made = M.createOriginal(DEMO_JHA_STORE, { rootId: JHA_DRAFT_ROOT,
           jobId: (NG.job && NG.job.id) || null, companyId: DEMO_COMPANY_ID,
           by: NG.user || '', data: raw, crew: crew, photos: photos }, jhaClock());
         return jhaFinish(made.record, payload, submitBtn);
@@ -7167,6 +7332,7 @@ ${photoUrls}`;
       var DEMO_JHA_STORE = [];        // in-memory only, seeded per demo session
       var JHA_CTX = null;             // set while editing a revision, else null
       var DEMO_COMPANY_ID = 'demo-greiner';
+      var JHA_DRAFT_ROOT = null;       // root id reserved when a new JHA opens
       var DEMO_LADDERS = [];          // ladder registry (demo fixtures)
       var DEMO_LADDER_INSPECTIONS = [];
 
@@ -7203,19 +7369,28 @@ ${photoUrls}`;
       function seedDemoLadders() {
         var M = window.JhaModel, now = jhaClock().getTime(), H = 3600000;
         function ago(hours) { return new Date(now - hours * H).toISOString(); }
+        var job = 'demo-job-001';
         DEMO_LADDERS = [
-          { ladder_id: 'LAD-101', category: 'Ladder', description: '8 ft fiberglass step ladder' },
-          { ladder_id: 'LAD-204', category: 'Ladder', description: '24 ft fiberglass extension ladder' },
-          { ladder_id: 'LAD-317', category: 'Ladder', description: '10 ft fiberglass step ladder' },
-          { ladder_id: 'LAD-120', category: 'Ladder', description: '6 ft platform ladder' }
+          { ladder_id: 'LAD-101', job_id: job, category: 'Ladder', description: '8 ft fiberglass step ladder' },
+          { ladder_id: 'LAD-204', job_id: job, category: 'Ladder', description: '24 ft fiberglass extension ladder' },
+          { ladder_id: 'LAD-317', job_id: job, category: 'Ladder', description: '10 ft fiberglass step ladder' },
+          { ladder_id: 'LAD-120', job_id: job, category: 'Ladder', description: '6 ft platform ladder' },
+          { ladder_id: 'LAD-550', job_id: 'demo-job-002', category: 'Ladder', description: '12 ft step ladder (another job)' }
         ].map(M.freezeDeep);
+        function done(id, ladder, hours, by, uid) {
+          return { id: id, kind: 'inspection', result: 'safe', ladder_id: ladder, job_id: job, company_id: DEMO_COMPANY_ID,
+            inspected_at: ago(hours), inspected_by: by, inspected_by_user_id: uid,
+            attestation_text: M.LADDER_SAFE_ATTESTATION.text, attestation_version: M.LADDER_SAFE_ATTESTATION.version, defect: null };
+        }
         DEMO_LADDER_INSPECTIONS = [
-          { id: 'li-1', ladder_id: 'LAD-101', inspected_at: ago(26), inspected_by: 'Alex Rivera (Demo)', acknowledged: true, defect: null },
-          { id: 'li-2', ladder_id: 'LAD-204', inspected_at: ago(41 * 24), inspected_by: 'Jordan Blake (Demo)', acknowledged: true, defect: null },
-          { id: 'li-3', ladder_id: 'LAD-204', inspected_at: ago(75 * 24), inspected_by: 'Sam Whitfield (Demo)', acknowledged: true, defect: null },
-          { id: 'li-4', ladder_id: 'LAD-317', inspected_at: ago(3 * 24 + 2), inspected_by: 'Casey Nolan (Demo)', acknowledged: true,
-            defect: { description: 'Cracked right side rail below the third step', removed_from_service: 'yes',
-                      photo: null, reported_at: ago(3 * 24 + 2), resolved_at: null } }
+          done('li-1', 'LAD-101', 26, 'Alex Rivera (Demo)', 'demo-user-alex'),
+          done('li-2', 'LAD-204', 41 * 24, 'Jordan Blake (Demo)', 'demo-user-jordan'),
+          done('li-3', 'LAD-204', 75 * 24, 'Sam Whitfield (Demo)', 'demo-user-sam'),
+          { id: 'li-4', kind: 'defect', result: 'defect', ladder_id: 'LAD-317', job_id: job, company_id: DEMO_COMPANY_ID,
+            inspected_at: ago(3 * 24 + 2), inspected_by: 'Casey Nolan (Demo)', inspected_by_user_id: 'demo-user-casey',
+            defect: { description: 'Cracked right side rail below the third step', photo: null, tagged_do_not_use: true,
+              acknowledgment_text: M.LADDER_DEFECT_ACK.text, acknowledgment_version: M.LADDER_DEFECT_ACK.version,
+              reported_at: ago(3 * 24 + 2), reported_by: 'Casey Nolan (Demo)', resolved_at: null } }
         ].map(M.freezeDeep);
       }
       function ladderData() {
@@ -7247,11 +7422,11 @@ ${photoUrls}`;
           return M.createOriginal(DEMO_JHA_STORE, { rootId: rootId, jobId: job, companyId: DEMO_COMPANY_ID,
             by: 'Demo Foreman', data: data, crew: crew, photos: [] }, at).record;
         }
-        function revise(rootId, at, change, note, patch, crew) {
+        function revise(rootId, at, note, patch, crew) {
           var head = M.familyHead(DEMO_JHA_STORE, rootId);
           var data = Object.assign({}, head.data, patch);
           return M.submitRevision(DEMO_JHA_STORE, { rootId: rootId, baseVersionId: head.id, jobId: job,
-            companyId: DEMO_COMPANY_ID, by: 'Demo Foreman', changeType: change, note: note,
+            companyId: DEMO_COMPANY_ID, by: 'Demo Foreman', note: note,
             data: data, crew: crew || head.crew, photos: [] }, at);
         }
         var base = { jhaProjectName: 'Demo Greiner Job', jhaLocation: 'Demo Greiner Job (DEMO-001)',
@@ -7263,7 +7438,7 @@ ${photoUrls}`;
           jhaJobsiteSafety: 'Hard hat, safety glasses, gloves. Keep corridor clear.',
           jhaTask1: 'Ladders / Stairways Use', jhaHazard1: 'Falls / Loss of footing', jhaAction1: 'Maintain three points of contact',
           jhaTask2: 'Material Handling', jhaHazard2: 'Back or shoulder strain / awkward lifting', jhaAction2: 'Team lift anything over 50 lb',
-          jhaLadderUse: 'yes', jhaLadderId: 'LAD-101', jhaLadderInspection: M.ladderSnapshot(look101),
+          jhaLadderUse: 'yes', jhaLadderIds: ['LAD-101'], jhaLadderChecks: [M.ladderSnapshot(look101, [])],
           jhaAerialUse: 'no', jhaAdditionalNotes: 'Corridor shared with drywall crew until 10am.' }),
           { employees: ['Demo Foreman', 'Alex Rivera (Demo)', 'Jordan Blake (Demo)', 'Sam Whitfield (Demo)'],
             groups: [{ task: 'Ladders / Stairways Use', activity: 'Hanging rod and strut', members: ['Alex Rivera (Demo)', 'Jordan Blake (Demo)'] }] });
@@ -7275,7 +7450,7 @@ ${photoUrls}`;
           jhaLadderUse: 'no', jhaAerialUse: 'yes', jhaAerialInspectors: ['Casey Nolan (Demo)', 'Taylor Reed (Demo)'],
           jhaAdditionalNotes: 'Original scope before the afternoon addition.' }),
           { employees: ['Demo Foreman', 'Casey Nolan (Demo)', 'Taylor Reed (Demo)'], groups: [] });
-        revise('demo-jha-b', todayAt(0.8), 'Work scope', 'Added pump pad rigging after the morning walk.', {
+        revise('demo-jha-b', todayAt(0.8), 'Added pump pad rigging after the morning walk.', {
           jhaDescriptionOfWork: 'Install condenser water piping, Mechanical Room 302 (added pump pad work)',
           jhaTask2: 'Hoisting & Rigging', jhaHazard2: 'Equipment or Rigging Failure', jhaAction2: 'Inspect slings before every lift' },
           { employees: ['Demo Foreman', 'Casey Nolan (Demo)', 'Taylor Reed (Demo)', 'Morgan Ellis (Demo)'],
@@ -7290,10 +7465,10 @@ ${photoUrls}`;
           jhaLadderUse: 'no', jhaAerialUse: 'no' }),
           { employees: ['Demo Foreman', 'Alex Rivera (Demo)'], groups: [] });
         var capTimes = earlier ? [[9, 5], [11, 40], [14, 10]] : null;
-        ['Crew assignment', 'Hazard or site condition', 'Control or procedure'].forEach(function (why, i) {
+        [0, 1, 2].forEach(function (i) {
           var at = capTimes ? indyAt(capDay, capTimes[i][0], capTimes[i][1])
             : new Date(Math.min(nowMs - (30 - i * 10) * 60000, nowMs)).toISOString();
-          revise('demo-jha-c', at, why, '', { jhaAdditionalNotes: 'Update ' + (i + 1) + ' to the demolition plan.' });
+          revise('demo-jha-c', at, '', { jhaAdditionalNotes: 'Update ' + (i + 1) + ' to the demolition plan.' });
         });
 
         if (earlier) {
@@ -7314,7 +7489,7 @@ ${photoUrls}`;
         DEMO_JHA_STORE.push(M.freezeDeep({ id: 'demo-jha-e-v1', root_jha_id: 'demo-jha-e', previous_revision_id: null,
           revision_number: 1, company_id: DEMO_COMPANY_ID, job_id: job, work_date: prevFri,
           original_submitted_at: at, revised_at: null, submitted_by: 'Demo Foreman', revised_by: 'Demo Foreman',
-          status: 'submitted', revision_change_type: null, revision_note: null,
+          status: 'submitted', revision_note: null, revision_diff: null,
           data: Object.assign({}, base, { jhaDate: prevFri, jhaNewRevised: 'new',
             jhaDescriptionOfWork: 'Hang ceiling grid supports, Level 2 west',
             jhaJobsiteSafety: 'Hard hat, glasses, gloves.',
@@ -7382,100 +7557,128 @@ ${photoUrls}`;
         v.querySelector('#reviseJhaBack').addEventListener('click', function () { window.showView('landing'); });
         return v;
       }
-      function reviseCardHtml(card) {
+      /* Where revisable JHAs come from. Demo mode reads the in-page fixtures;
+         nothing here pretends they came from a database. The production source
+         is deliberately not connected on this branch — see
+         docs/tony-jha-conditionals-2026-10-02.md for what it must do. */
+      var demoJhaSource = {
+        candidates: function (ctx) { return Promise.resolve(window.JhaModel.revisionCandidates(DEMO_JHA_STORE, ctx)); },
+        latest: function (rootId, ctx) {
+          var e = window.JhaModel.reviseEligibility(DEMO_JHA_STORE, rootId, ctx);
+          return Promise.resolve(e);
+        },
+        submitRevision: function (req) { return Promise.resolve(window.JhaModel.submitRevision(DEMO_JHA_STORE, req, jhaClock())); }
+      };
+      var productionJhaSource = {
+        candidates: function () { return Promise.reject(new Error('Revising a submitted JHA is not connected to Greiner\u2019s records in this build.')); },
+        latest: function () { return Promise.reject(new Error('Revising a submitted JHA is not connected to Greiner\u2019s records in this build.')); },
+        submitRevision: function () { return Promise.reject(new Error('Revising a submitted JHA is not connected to Greiner\u2019s records in this build.')); }
+      };
+      var JHA_SOURCE = DEMO ? demoJhaSource : productionJhaSource;
+
+      // One full-width row per JHA. The whole row is the action.
+      function reviseRowHtml(card) {
         var M = window.JhaModel, e = card.eligibility, head = card.head, orig = card.original;
         var crewN = (head.crew && head.crew.employees && head.crew.employees.length) || 0;
         var capped = e.code === 'cap';
-        return '<div class="jha-rev-card' + (capped ? ' is-capped' : '') + '" data-revise-card="' + esc(card.rootId) + '">' +
-          '<div class="jha-rev-card-title">' + esc(head.data.jhaDescriptionOfWork || 'JHA') + '</div>' +
-          '<div class="jha-rev-grid">' +
-            '<span>Original submitted</span><b>' + esc(M.fmtIndy(orig.original_submitted_at)) + '</b>' +
-            '<span>Latest revision</span><b>' + esc(head.revised_at ? M.fmtIndy(head.revised_at) : 'Not revised yet') + '</b>' +
-            '<span>Foreman</span><b>' + esc(orig.submitted_by || '—') + '</b>' +
-            '<span>Crew</span><b>' + crewN + ' employee' + (crewN === 1 ? '' : 's') + '</b>' +
-            '<span>Current version</span><b>' + esc(M.revisionLabel(head.revision_number)) + '</b>' +
-            '<span>Remaining</span><b>' + (e.remaining ? e.remaining + ' revision' + (e.remaining === 1 ? '' : 's') + ' available' : 'No revisions left') + '</b>' +
-          '</div>' +
-          (capped
-            ? '<p class="jha-rev-capmsg">' + esc(e.message) + '</p>' +
-              '<button type="button" class="action-button action-button--primary" data-new-jha="1" style="width:100%">Complete New JHA</button>'
-            : '<button type="button" class="action-button action-button--primary" data-revise-root="' + esc(card.rootId) + '" style="width:100%">Create revision</button>') +
-          '</div>';
+        return '<button type="button" class="jha-rev-row' + (capped ? ' is-capped' : '') + '" ' +
+          (capped ? 'data-capped-root' : 'data-revise-root') + '="' + esc(card.rootId) + '" data-revise-card="' + esc(card.rootId) + '">' +
+          '<span class="jha-rev-row-title">' + esc(head.data.jhaDescriptionOfWork || 'JHA') + '</span>' +
+          '<span class="jha-rev-row-meta">Submitted ' + esc(M.fmtIndy(orig.original_submitted_at)) +
+            (head.revised_at ? ' \u00b7 last revised ' + esc(M.fmtIndy(head.revised_at)) : '') + '</span>' +
+          '<span class="jha-rev-row-meta">' + esc(orig.submitted_by || '') + ' \u00b7 ' + crewN + ' employee' + (crewN === 1 ? '' : 's') +
+            ' \u00b7 ' + esc(M.revisionLabel(head.revision_number)) + '</span>' +
+          '<span class="jha-rev-row-cta">' + (capped
+            ? 'This JHA already has 3 revisions. Start a new JHA to document additional changes.'
+            : e.remaining + ' revision' + (e.remaining === 1 ? '' : 's') + ' left \u00b7 Tap to revise') + '</span>' +
+          '</button>';
       }
       function renderReviseList() {
         var M = window.JhaModel;
         var v = ensureReviseView();
-        var c = M.revisionCandidates(DEMO_JHA_STORE, jhaPickerCtx());
-        var list = v.querySelector('#reviseJhaList'), html = '';
-        if (!c.windowOpen) {
-          html += '<div class="jha-rev-notice">JHAs can be revised Monday through Friday. Start a new JHA to document today’s work.</div>' +
-            '<button type="button" class="action-button action-button--primary" data-new-jha="1" style="width:100%;margin-bottom:14px">Complete New JHA</button>';
-        } else if (!c.today.length && !c.earlier.length) {
-          html += '<div class="jha-rev-notice">No JHAs from this job can be revised this workweek.</div>' +
-            '<button type="button" class="action-button action-button--primary" data-new-jha="1" style="width:100%;margin-bottom:14px">Complete New JHA</button>';
-        }
-        if (c.today.length) html += '<h3 class="jha-rev-group" data-group="today">Today</h3>' + c.today.map(reviseCardHtml).join('');
-        if (c.earlier.length) html += '<h3 class="jha-rev-group" data-group="earlier">Earlier this workweek</h3>' + c.earlier.map(reviseCardHtml).join('');
-        // Outside the window: viewable, never revisable.
-        var pastIds = [], seen = {}, ctx = jhaPickerCtx();
-        DEMO_JHA_STORE.forEach(function (r) {
-          if (r.job_id !== ctx.jobId || seen[r.root_jha_id]) return;
-          seen[r.root_jha_id] = 1;
-          var code = M.reviseEligibility(DEMO_JHA_STORE, r.root_jha_id, ctx).code;
-          if (code === 'outside-week' || code === 'weekend-original' || code === 'weekend-now') pastIds.push(r.root_jha_id);
-        });
-        if (pastIds.length) {
-          html += '<h3 class="jha-rev-group" data-group="past">View only</h3>' +
-            '<p class="jha-row-hint">These JHAs are outside the revision window. You can view them, or start a new JHA.</p>' +
-            pastIds.map(function (id) {
-              var h = M.familyHead(DEMO_JHA_STORE, id);
-              return '<button type="button" class="jha-rev-view" data-view-root="' + esc(id) + '">' +
-                '<b>' + esc(h.data.jhaDescriptionOfWork || 'JHA') + '</b>' +
-                '<span>' + esc(M.fmtIndy(h.original_submitted_at)) + ' \u00b7 ' + esc(M.revisionLabel(h.revision_number)) + '</span></button>';
-            }).join('');
-        }
-        list.innerHTML = html;
-        Array.prototype.forEach.call(list.querySelectorAll('[data-revise-root]'), function (b) {
-          b.addEventListener('click', function () { startRevision(b.getAttribute('data-revise-root')); });
-        });
-        Array.prototype.forEach.call(list.querySelectorAll('[data-new-jha]'), function (b) {
-          b.addEventListener('click', function () { openDemoForm('jha'); });
-        });
-        Array.prototype.forEach.call(list.querySelectorAll('[data-view-root]'), function (b) {
-          b.addEventListener('click', function () { viewJhaHistory(b.getAttribute('data-view-root')); });
-        });
+        var ctx = jhaPickerCtx(), list = v.querySelector('#reviseJhaList');
         window.showView('reviseJha');
+        return JHA_SOURCE.candidates(ctx).then(function (c) {
+          var html = '';
+          if (!c.windowOpen) {
+            html += '<div class="jha-rev-notice">JHAs can be revised Monday through Friday. Start a new JHA to document today\u2019s work.</div>' +
+              '<button type="button" class="action-button action-button--primary" data-new-jha="1" style="width:100%;margin-bottom:14px">Complete New JHA</button>';
+          } else if (!c.today.length && !c.earlier.length) {
+            html += '<div class="jha-rev-notice">No JHAs from this job can be revised this workweek.</div>' +
+              '<button type="button" class="action-button action-button--primary" data-new-jha="1" style="width:100%;margin-bottom:14px">Complete New JHA</button>';
+          }
+          if (c.today.length) html += '<h3 class="jha-rev-group" data-group="today">Today</h3>' + c.today.map(reviseRowHtml).join('');
+          if (c.earlier.length) html += '<h3 class="jha-rev-group" data-group="earlier">Earlier this workweek</h3>' + c.earlier.map(reviseRowHtml).join('');
+          // Outside the window: viewable, never revisable.
+          var pastIds = [], seen = {};
+          DEMO_JHA_STORE.forEach(function (r) {
+            if (r.job_id !== ctx.jobId || seen[r.root_jha_id]) return;
+            seen[r.root_jha_id] = 1;
+            var code = M.reviseEligibility(DEMO_JHA_STORE, r.root_jha_id, ctx).code;
+            if (code === 'outside-week' || code === 'weekend-original' || code === 'weekend-now') pastIds.push(r.root_jha_id);
+          });
+          if (pastIds.length) {
+            html += '<h3 class="jha-rev-group" data-group="past">View only</h3>' +
+              '<p class="jha-row-hint">These JHAs are outside the revision window. You can view them, or start a new JHA.</p>' +
+              pastIds.map(function (id) {
+                var h = M.familyHead(DEMO_JHA_STORE, id);
+                return '<button type="button" class="jha-rev-view" data-view-root="' + esc(id) + '">' +
+                  '<b>' + esc(h.data.jhaDescriptionOfWork || 'JHA') + '</b>' +
+                  '<span>' + esc(M.fmtIndy(h.original_submitted_at)) + ' \u00b7 ' + esc(M.revisionLabel(h.revision_number)) + '</span></button>';
+              }).join('');
+          }
+          list.innerHTML = html;
+          Array.prototype.forEach.call(list.querySelectorAll('[data-revise-root]'), function (b) {
+            b.addEventListener('click', function () { startRevision(b.getAttribute('data-revise-root')); });
+          });
+          Array.prototype.forEach.call(list.querySelectorAll('[data-capped-root]'), function (b) {
+            b.addEventListener('click', function () {
+              jhaSheet('Revision limit reached',
+                '<p class="jha-sheet-lede">This JHA already has 3 revisions. Start a new JHA to document additional changes.</p>',
+                [{ id: 'new', label: 'Complete New JHA', primary: true }, { id: 'close', label: 'Close' }]
+              ).then(function (ch) { if (ch === 'new') openDemoForm('jha'); });
+            });
+          });
+          Array.prototype.forEach.call(list.querySelectorAll('[data-new-jha]'), function (b) {
+            b.addEventListener('click', function () { openDemoForm('jha'); });
+          });
+          Array.prototype.forEach.call(list.querySelectorAll('[data-view-root]'), function (b) {
+            b.addEventListener('click', function () { viewJhaHistory(b.getAttribute('data-view-root')); });
+          });
+        }).catch(function (err) {
+          list.innerHTML = '<div class="jha-rev-notice" role="alert">' + esc(err.message) + '</div>';
+        });
       }
       function viewJhaHistory(rootId) {
         var M = window.JhaModel, versions = jhaHistory(rootId), head = versions[versions.length - 1];
         jhaSheet(head.data.jhaDescriptionOfWork || 'JHA',
-          '<p class="jha-sheet-lede">Viewing ' + esc(M.revisionLabel(head.revision_number)) + ' · submitted ' +
-            esc(M.fmtIndy(head.revised_at || head.original_submitted_at)) + '. This JHA can’t be revised.</p>' +
+          '<p class="jha-sheet-lede">Viewing ' + esc(M.revisionLabel(head.revision_number)) + ' \u00b7 submitted ' +
+            esc(M.fmtIndy(head.revised_at || head.original_submitted_at)) + '. This JHA can\u2019t be revised.</p>' +
           jhaReviewHtml(head.data, head.crew),
           [{ id: 'new', label: 'Complete New JHA', primary: true }, { id: 'close', label: 'Close' }]
         ).then(function (c) { if (c === 'new') openDemoForm('jha'); });
       }
 
-      /* ---------------- load latest revision into the form -------------- */
+      /* ---------------- tap a JHA: open it, populated, straight away ------ */
       function startRevision(rootId) {
-        var M = window.JhaModel;
-        var e = M.reviseEligibility(DEMO_JHA_STORE, rootId, jhaPickerCtx());
-        if (!e.ok) { jhaRefused(e); return; }
-        var latest = e.head;   // always the latest submitted version — never an older one
-        JHA_CTX = {
-          rootId: latest.root_jha_id,
-          baseVersionId: latest.id,
-          nextNumber: e.nextNumber,
-          remaining: e.remaining,
-          original_submitted_at: latest.original_submitted_at,
-          job_id: latest.job_id,
-          carriedPhotos: (latest.photos || []).slice(),   // existing photos stay part of the revision
-          changeType: '', note: ''
-        };
-        if (typeof window.openJhaForm === 'function') window.openJhaForm();
-        applyLocks();
-        fillJhaForm(latest);
-        renderJhaBanner();
+        return JHA_SOURCE.latest(rootId, jhaPickerCtx()).then(function (e) {
+          if (!e.ok) { jhaRefused(e); return; }
+          var latest = e.head;   // always the latest submitted version — never an older one
+          JHA_CTX = {
+            rootId: latest.root_jha_id,
+            baseVersionId: latest.id,
+            nextNumber: e.nextNumber,
+            remaining: e.remaining,
+            original_submitted_at: latest.original_submitted_at,
+            job_id: latest.job_id,
+            head: latest,
+            carriedPhotos: (latest.photos || []).slice()   // existing photos stay part of the revision
+          };
+          if (typeof window.openJhaForm === 'function') window.openJhaForm();
+          applyLocks();
+          fillJhaForm(latest);
+          renderJhaBanner();
+        }).catch(function (err) { toast('error', 'Could not open the JHA', err.message); });
       }
       function fillJhaForm(rec) {
         var form = document.getElementById('jhaForm'); if (!form || !rec) return;
@@ -7497,6 +7700,7 @@ ${photoUrls}`;
         JHA_CREW = { employees: ((rec.crew && rec.crew.employees) || []).slice(),
                      groups: JSON.parse(JSON.stringify((rec.crew && rec.crew.groups) || [])) };
         renderCrew();
+        ladderRestore(data);
         syncLadderPanel();
         syncAerialPanel();
       }
@@ -7504,36 +7708,26 @@ ${photoUrls}`;
       function renderJhaBanner() {
         var view = document.getElementById('inspectionJhaView'); if (!view) return;
         var old = document.getElementById('jhaRevisionBanner'); if (old) old.remove();
+        var oldNote = document.getElementById('jhaRevNoteWrap'); if (oldNote) oldNote.remove();
         var btn = document.getElementById('jhaSubmitBtn');
         if (btn) btn.innerHTML = jhaSubmitLabel();
         if (!JHA_CTX) return;
         var b = document.createElement('div');
         b.id = 'jhaRevisionBanner';
         b.className = 'jha-rev-banner';
-        b.innerHTML = '<div class="jha-rev-banner-head">Creating Revision ' + JHA_CTX.nextNumber + '</div>' +
-          '<div class="jha-rev-banner-sub">Changes apply when this revision is submitted. Earlier versions stay in the history.</div>' +
-          '<div class="jha-rev-banner-sub">Original submitted ' + esc(jhaTime(JHA_CTX.original_submitted_at)) + '</div>' +
-          '<div class="jha-rev-why"><div class="jha-rev-why-label">What changed? <span class="required">*</span></div>' +
-            '<div class="jha-rev-why-opts" role="radiogroup" aria-label="What changed">' +
-            window.JhaModel.REVISION_CHANGE_TYPES.map(function (t) {
-              return '<button type="button" role="radio" aria-checked="' + (JHA_CTX.changeType === t) + '" class="jha-rev-why-opt' +
-                (JHA_CTX.changeType === t ? ' is-on' : '') + '" data-change-type="' + esc(t) + '">' + esc(t) + '</button>';
-            }).join('') + '</div>' +
-            '<label class="jha-rev-why-label" for="jhaRevNote" style="margin-top:10px">Note <span class="opt">optional</span></label>' +
-            '<textarea id="jhaRevNote" class="form-textarea" rows="2" placeholder="What changed, in a few words">' + esc(JHA_CTX.note || '') + '</textarea>' +
-          '</div>';
+        b.innerHTML = '<div class="jha-rev-banner-head">Revising JHA submitted ' + esc(jhaTime(JHA_CTX.original_submitted_at)) + '</div>' +
+          '<div class="jha-rev-banner-sub">Your submission will create Revision ' + JHA_CTX.nextNumber +
+            '. The earlier versions will remain unchanged.</div>';
         var host = view.querySelector('.form-container') || view;
         host.insertBefore(b, host.firstChild);
-        Array.prototype.forEach.call(b.querySelectorAll('[data-change-type]'), function (o) {
-          o.addEventListener('click', function () {
-            JHA_CTX.changeType = o.getAttribute('data-change-type');
-            b.classList.remove('jha-rev-need');
-            Array.prototype.forEach.call(b.querySelectorAll('[data-change-type]'), function (x) {
-              var on = x === o; x.classList.toggle('is-on', on); x.setAttribute('aria-checked', String(on));
-            });
-          });
-        });
-        b.querySelector('#jhaRevNote').addEventListener('input', function (ev) { JHA_CTX.note = ev.target.value; });
+        if (btn) {
+          // No name attribute: the note is revision metadata, not a JHA answer.
+          var w = document.createElement('div');
+          w.id = 'jhaRevNoteWrap'; w.className = 'form-group';
+          w.innerHTML = '<label class="form-label" for="jhaRevNote">Revision note, optional</label>' +
+            '<textarea id="jhaRevNote" class="form-textarea" rows="2" placeholder="Anything the office should know about this revision"></textarea>';
+          btn.parentNode.insertBefore(w, btn);
+        }
       }
 
       /* ---------------- crew picker (searchable, up to 30) -------------- */
@@ -7697,24 +7891,45 @@ ${photoUrls}`;
         });
       }
 
-      /* ---------------- ladder: ID + inspection card --------------------- */
-      /* One equipment category, "Ladder". The ID is typed for now; a QR or
-         barcode reader only has to call setLadderId(id) — the stored ID and
-         everything after it stay the same. */
-      var LADDER_UI = { open: false, defectOpen: false, removed: '', photo: null, error: '' };
-      function setLadderId(id) {
-        var el = document.getElementById('jhaLadderId'); if (!el) return;
-        el.value = window.JhaModel.normalizeLadderId(id);
-        el.dispatchEvent(new Event('input', { bubbles: true }));
+      /* ---------------- ladders: job-assigned selection + per-ladder cards ----
+         The foreman selects from ladders assigned to this job — nobody types an
+         ID, and there is no free-text fallback. Each selected ladder gets its
+         own card with "Inspect for today's use" and an optional defect report.
+         Identity is the signed-in employee; times come from the server clock. */
+      var LADDER_SEL = [];        // selected ladder ids, in pick order
+      var LADDER_TODAY = {};      // id -> inspection records made on this JHA
+      var LADDER_DEFECTS = [];    // defect snapshots reported on this JHA
+      var LADDER_Q = '';          // picker search text (filters the list only)
+      var LADDER_UI = {};         // id -> { panel, ack, desc, defectAck, photo, error }
+      function ladderReset() {
+        LADDER_SEL = []; LADDER_TODAY = {}; LADDER_DEFECTS = []; LADDER_Q = ''; LADDER_UI = {};
       }
-      function currentLadderLook() {
-        var src = ladderData(), el = document.getElementById('jhaLadderId');
-        var id = el ? el.value : '';
-        if (!src) {
-          var n = window.JhaModel.normalizeLadderId(id);
-          return n ? { state: 'unavailable', id: n } : { state: 'empty', id: '' };
-        }
+      function ladderUi(id) { return LADDER_UI[id] || (LADDER_UI[id] = { panel: null }); }
+      function jhaUser() {
+        return (NG.userId && NG.user) ? { id: NG.userId, name: NG.user } : null;
+      }
+      function jobLadders() {
+        var src = ladderData(); if (!src || !NG.job) return null;
+        return window.JhaModel.laddersForJob(src.registry, src.inspections, NG.job.id);
+      }
+      function ladderLook(id) {
+        var src = ladderData(); if (!src) return null;
         return window.JhaModel.ladderLookup(src.registry, src.inspections, id);
+      }
+      function jhaDraftLink() {
+        return JHA_CTX ? { root: JHA_CTX.rootId, rev: JHA_CTX.nextNumber + 1 }
+          : { root: JHA_DRAFT_ROOT, rev: 1 };
+      }
+      function syncLadderHidden() {
+        var M = window.JhaModel;
+        var checks = LADDER_SEL.map(function (id) {
+          var look = ladderLook(id);
+          return look ? M.ladderSnapshot(look, LADDER_TODAY[id]) : null;
+        }).filter(Boolean);
+        var set = function (id, v) { var e = document.getElementById(id); if (e) e.value = v; };
+        set('jhaLadderIds', LADDER_SEL.length ? JSON.stringify(LADDER_SEL) : '');
+        set('jhaLadderChecks', checks.length ? JSON.stringify(checks) : '');
+        set('jhaLadderDefects', LADDER_DEFECTS.length ? JSON.stringify(LADDER_DEFECTS) : '');
       }
       function syncLadderPanel() {
         var form = document.getElementById('jhaForm'); if (!form) return;
@@ -7722,136 +7937,202 @@ ${photoUrls}`;
         var panel = document.getElementById('jhaLadderPanel'); if (!panel) return;
         var on = !!use && use.value === 'yes';
         panel.style.display = on ? '' : 'none';
-        var idEl = document.getElementById('jhaLadderId');
-        var snap = document.getElementById('jhaLadderInspection');
-        if (idEl) { if (on) idEl.setAttribute('required', 'required'); else idEl.removeAttribute('required'); }
         if (!on) {
           // A "No" answer clears every ladder child value.
-          if (idEl) idEl.value = '';
-          if (snap) snap.value = '';
-          LADDER_UI = { open: false, defectOpen: false, removed: '', photo: null, error: '' };
-          var card = document.getElementById('jhaLadderCard'); if (card) card.innerHTML = '';
+          ladderReset(); syncLadderHidden();
+          ['jhaLadderOptions', 'jhaLadderCards'].forEach(function (id) {
+            var e = document.getElementById(id); if (e) e.innerHTML = ''; });
           return;
         }
-        renderLadderCard();
+        renderLadderPicker();
+        renderLadderCards();
+      }
+      function renderLadderPicker() {
+        var M = window.JhaModel, box = document.getElementById('jhaLadderOptions'); if (!box) return;
+        var search = document.getElementById('jhaLadderSearch');
+        var opts = jobLadders();
+        if (search) search.style.display = opts && opts.length ? '' : 'none';
+        if (!opts) {
+          box.innerHTML = '<div class="jha-lad-empty" role="alert">Ladder records are not connected for this job yet. Contact the office before using a ladder.</div>';
+          return;
+        }
+        if (!opts.length) {
+          box.innerHTML = '<div class="jha-lad-empty" role="alert" id="jhaNoLadders">' + esc(M.NO_LADDERS_ASSIGNED) + '</div>';
+          return;
+        }
+        var q = LADDER_Q.trim().toLowerCase();
+        var shown = opts.filter(function (o) {
+          return !q || (o.id + ' ' + (o.description || '')).toLowerCase().indexOf(q) !== -1; });
+        box.innerHTML = shown.map(function (o) {
+          var on = LADDER_SEL.indexOf(o.id) !== -1;
+          return '<button type="button" class="jha-lad-opt' + (on ? ' is-on' : '') + (o.do_not_use ? ' is-dnu' : '') +
+            '" role="checkbox" aria-checked="' + on + '" data-ladder-opt="' + esc(o.id) + '"' + (o.duplicate ? ' disabled' : '') + '>' +
+            '<span class="jha-lad-box">' + (on ? '&#10003;' : '') + '</span>' +
+            '<span class="jha-lad-txt"><b>' + esc(o.id) + '</b>' + (o.description ? ' · ' + esc(o.description) : '') +
+              '<small>' + (o.duplicate ? 'Duplicate ID — ask the office to correct the ladder list'
+                : o.last_inspected_at ? 'Last inspected ' + esc(M.fmtIndy(o.last_inspected_at)) : 'No inspection recorded') + '</small></span>' +
+            (o.do_not_use ? '<span class="jha-lad-dnu">DO NOT USE</span>' : '') + '</button>';
+        }).join('') || '<div class="jha-row-hint">No assigned ladder matches that search.</div>';
+        Array.prototype.forEach.call(box.querySelectorAll('[data-ladder-opt]'), function (b) {
+          b.addEventListener('click', function () {
+            var id = b.getAttribute('data-ladder-opt'), i = LADDER_SEL.indexOf(id);
+            if (i === -1) LADDER_SEL.push(id); else LADDER_SEL.splice(i, 1);
+            var g = box.closest('.form-group'); if (g) g.classList.remove('error');
+            renderLadderPicker(); renderLadderCards();
+          });
+        });
       }
       function ladderRow(k, v, extra) {
         return '<div class="jha-ladder-row' + (extra || '') + '"><span>' + esc(k) + '</span><b>' + esc(v) + '</b></div>';
       }
-      function renderLadderCard() {
-        var M = window.JhaModel, card = document.getElementById('jhaLadderCard'); if (!card) return;
-        var look = currentLadderLook();
-        var snap = document.getElementById('jhaLadderInspection');
-        var s = (look.state === 'found' || look.state === 'unknown') ? M.ladderSnapshot(look) : null;
-        if (snap) snap.value = s ? JSON.stringify(s) : '';
-        if (look.state === 'empty') { card.innerHTML = ''; return; }
-        if (look.state === 'unavailable') {
-          card.innerHTML = '<div class="jha-ladder-card"><div class="jha-ladder-head">Ladder inspection</div>' +
-            ladderRow('Ladder ID', look.id) +
-            '<p class="jha-row-hint" style="margin:8px 0 0">Ladder inspection records are not connected yet. The Ladder ID is saved with this JHA.</p></div>';
-          return;
-        }
-        if (look.state === 'duplicate') {
-          card.innerHTML = '<div class="jha-ladder-card is-error" role="alert"><div class="jha-ladder-head">Ladder inspection</div>' +
-            '<p class="jha-ladder-msg">' + esc(look.message) + '</p></div>';
-          return;
-        }
-        var h = '<div class="jha-ladder-card' + (look.status === 'do-not-use' ? ' is-dnu' : '') + '">' +
-          '<div class="jha-ladder-head">Ladder inspection</div>';
-        if (look.state === 'unknown') {
-          h += ladderRow('Ladder ID', look.id) + '<p class="jha-ladder-msg">' + esc(look.message) + '</p>';
-        } else {
-          h += ladderRow('Ladder ID', look.id) +
-            ladderRow('Last inspection date', look.last ? M.fmtIndy(look.last.inspected_at) : 'None recorded') +
-            ladderRow('Last inspected by', look.last ? look.last.inspected_by : '—') +
-            ladderRow('Inspection status', look.statusLabel, look.status === 'do-not-use' ? ' is-dnu' : '');
-          if (look.status === 'do-not-use') {
-            h += '<div class="jha-ladder-dnu" role="alert">DO NOT USE — ' + esc(look.openDefect.description) +
-              (look.openDefect.removed_from_service === 'yes' ? ' (removed from service)' : '') +
-              '. Use a different ladder and enter its ID.</div>';
+      function renderLadderCards() {
+        var M = window.JhaModel, host = document.getElementById('jhaLadderCards'); if (!host) return;
+        syncLadderHidden();
+        host.innerHTML = LADDER_SEL.map(function (id) {
+          var look = ladderLook(id); if (!look || look.state !== 'found') return '';
+          var u = ladderUi(id), dnu = look.status === 'do-not-use';
+          var safe = (LADDER_TODAY[id] || []).filter(function (r) { return r.result === 'safe'; }).pop();
+          var h = '<div class="jha-ladder-card' + (dnu ? ' is-dnu' : '') + '" data-ladder-card="' + esc(id) + '">' +
+            '<div class="jha-ladder-head">Ladder ' + esc(id) +
+              (look.ladder.description ? '<small>' + esc(look.ladder.description) + '</small>' : '') + '</div>';
+          if (look.last) {
+            h += ladderRow('Last inspected', M.fmtIndy(look.last.inspected_at)) +
+              ladderRow('Inspected by', look.last.inspected_by) +
+              ladderRow('Current status', look.statusLabel, dnu ? ' is-dnu' : '');
+          } else {
+            h += '<p class="jha-ladder-msg">No previous inspection is recorded for this ladder.</p>';
           }
-        }
-        h += LADDER_UI.open ? ladderRecordForm() :
-          '<button type="button" class="inspection-add-row-btn" id="jhaLadRecOpen" style="margin-top:10px">Record inspection</button>';
-        card.innerHTML = h + '</div>';
-        wireLadderCard();
+          if (dnu) {
+            h += '<div class="jha-ladder-dnu" role="alert">DO NOT USE — ' + esc(look.openDefect.description) +
+              '. This ladder can’t be used or confirmed safe. Select a different assigned ladder.</div>';
+          } else if (safe) {
+            h += '<div class="jha-ladder-ok">Confirmed safe for use today · ' + esc(safe.inspected_by) +
+              ' · ' + esc(M.fmtIndy(safe.inspected_at)) + '</div>';
+          }
+          if (u.panel === 'inspect' && !dnu) h += ladderInspectPanel(id, u);
+          else if (u.panel === 'defect' && !dnu) h += ladderDefectPanel(id, u);
+          else if (!dnu) {
+            h += (safe ? '' : '<button type="button" class="submit-button jha-lad-primary" data-lad-inspect="' + esc(id) + '">Inspect for today’s use</button>') +
+              '<button type="button" class="jha-lad-link" data-lad-defect="' + esc(id) + '">Report a defect or unsafe condition</button>';
+          }
+          return h + '</div>';
+        }).join('');
+        wireLadderCards(host);
       }
-      function ladderRecordForm() {
-        // No name attributes here: these controls are not JHA answers.
-        var who = NG.user
-          ? '<div class="jha-ladder-row"><span>Inspected by</span><b id="jhaLadRecWho">' + esc(NG.user) + '</b></div>'
-          : '<label class="form-label" for="jhaLadRecWhoInput">Inspected by</label>' +
-            '<input type="text" class="form-input" id="jhaLadRecWhoInput" autocomplete="name" placeholder="Your name">';
-        var d = LADDER_UI.defectOpen;
-        return '<div class="jha-ladder-rec" id="jhaLadRec">' + who +
-          '<p class="jha-row-hint" style="margin:6px 0 10px">The inspection date and time are recorded automatically when you save.</p>' +
-          '<label class="jha-ladder-ack"><input type="checkbox" id="jhaLadRecAck"> I inspected this ladder before use.</label>' +
-          (d
-            ? '<div class="jha-ladder-defect" id="jhaLadRecDefect">' +
-                '<label class="form-label" for="jhaLadRecDefDesc">Describe the defect or unsafe condition <span class="required">*</span></label>' +
-                '<textarea class="form-textarea" id="jhaLadRecDefDesc" rows="2"></textarea>' +
-                '<label class="form-label" for="jhaLadRecDefPhoto" style="margin-top:8px">Photo <span class="opt">optional</span></label>' +
-                '<input type="file" id="jhaLadRecDefPhoto" accept="image/*">' +
-                '<div class="form-label" style="margin-top:8px">Was the ladder removed from service? <span class="required">*</span></div>' +
-                '<div class="jha-rev-why-opts" role="radiogroup" aria-label="Was the ladder removed from service">' +
-                  ['yes', 'no'].map(function (v) {
-                    return '<button type="button" role="radio" aria-checked="' + (LADDER_UI.removed === v) + '" class="jha-rev-why-opt' +
-                      (LADDER_UI.removed === v ? ' is-on' : '') + '" data-lad-removed="' + v + '">' + (v === 'yes' ? 'Yes' : 'No') + '</button>';
-                  }).join('') + '</div>' +
-                '<button type="button" class="jha-sheet-secondary" id="jhaLadRecDefCancel" style="margin-top:8px">Remove defect</button>' +
-              '</div>'
-            : '<button type="button" class="jha-sheet-secondary" id="jhaLadRecDefOpen">Add defect or unsafe condition</button>') +
-          (LADDER_UI.error ? '<p class="err small" role="alert" id="jhaLadRecErr">' + esc(LADDER_UI.error) + '</p>' : '') +
-          '<div style="display:flex;gap:8px;margin-top:10px">' +
-            '<button type="button" class="submit-button" id="jhaLadRecSave" style="margin:0;flex:1">Save inspection</button>' +
-            '<button type="button" class="jha-sheet-secondary" id="jhaLadRecCancel" style="flex:0 0 auto">Cancel</button>' +
-          '</div></div>';
+      function ladderInspectPanel(id, u) {
+        var M = window.JhaModel, me = jhaUser();
+        if (!me) return '<div class="jha-ladder-rec"><p class="jha-ladder-msg" role="alert">' + esc(M.SIGN_IN_REQUIRED) + '</p>' +
+          '<button type="button" class="jha-sheet-secondary" data-lad-cancel="' + esc(id) + '">Close</button></div>';
+        return '<div class="jha-ladder-rec" data-lad-panel="inspect">' +
+          '<div class="jha-ladder-row"><span>Inspector</span><b data-lad-inspector>' + esc(me.name) + '</b></div>' +
+          '<div class="jha-ladder-row"><span>Inspection time</span><b data-lad-time>' + esc(M.fmtIndy(jhaClock().toISOString())) +
+            ' <small>set automatically</small></b></div>' +
+          '<label class="jha-ladder-ack"><input type="checkbox" data-lad-attest="' + esc(id) + '"' + (u.ack ? ' checked' : '') + '> ' +
+            esc(M.LADDER_SAFE_ATTESTATION.text) + '</label>' +
+          (u.error ? '<p class="err" role="alert">' + esc(u.error) + '</p>' : '') +
+          '<div class="jha-lad-actions">' +
+            '<button type="button" class="submit-button" data-lad-confirm="' + esc(id) + '"' + (u.ack ? '' : ' disabled') + '>Confirm safe for use</button>' +
+            '<button type="button" class="jha-sheet-secondary" data-lad-cancel="' + esc(id) + '">Cancel</button></div></div>';
       }
-      function wireLadderCard() {
-        function on(id, fn) { var e = document.getElementById(id); if (e) e.addEventListener('click', fn); }
-        on('jhaLadRecOpen', function () { LADDER_UI.open = true; LADDER_UI.error = ''; renderLadderCard(); });
-        on('jhaLadRecCancel', function () { LADDER_UI = { open: false, defectOpen: false, removed: '', photo: null, error: '' }; renderLadderCard(); });
-        on('jhaLadRecDefOpen', function () { keepLadderInputs(); LADDER_UI.defectOpen = true; renderLadderCard(); });
-        on('jhaLadRecDefCancel', function () { keepLadderInputs(); LADDER_UI.defectOpen = false; LADDER_UI.removed = ''; LADDER_UI.photo = null; renderLadderCard(); });
-        Array.prototype.forEach.call(document.querySelectorAll('[data-lad-removed]'), function (b) {
-          b.addEventListener('click', function () { keepLadderInputs(); LADDER_UI.removed = b.getAttribute('data-lad-removed'); renderLadderCard(); });
-        });
-        var ph = document.getElementById('jhaLadRecDefPhoto');
-        if (ph) ph.addEventListener('change', function () {
-          var f = ph.files && ph.files[0]; if (!f) { LADDER_UI.photo = null; return; }
-          var rd = new FileReader();
-          rd.onload = function () { LADDER_UI.photo = { filename: f.name, data_url: rd.result }; };
-          rd.readAsDataURL(f);
-        });
-        var ack = document.getElementById('jhaLadRecAck');
-        if (ack && LADDER_UI.ack) ack.checked = true;
-        var desc = document.getElementById('jhaLadRecDefDesc');
-        if (desc && LADDER_UI.desc) desc.value = LADDER_UI.desc;
-        var whoIn = document.getElementById('jhaLadRecWhoInput');
-        if (whoIn && LADDER_UI.who) whoIn.value = LADDER_UI.who;
-        on('jhaLadRecSave', saveLadderInspection);
+      function ladderDefectPanel(id, u) {
+        var M = window.JhaModel, me = jhaUser();
+        if (!me) return '<div class="jha-ladder-rec"><p class="jha-ladder-msg" role="alert">' + esc(M.SIGN_IN_REQUIRED) + '</p>' +
+          '<button type="button" class="jha-sheet-secondary" data-lad-cancel="' + esc(id) + '">Close</button></div>';
+        return '<div class="jha-ladder-defect" data-lad-panel="defect">' +
+          '<label class="form-label" for="jhaLadDef-' + esc(id) + '">Describe the defect or unsafe condition <span class="required">*</span></label>' +
+          '<textarea class="form-textarea" id="jhaLadDef-' + esc(id) + '" data-lad-desc="' + esc(id) + '" rows="3">' + esc(u.desc || '') + '</textarea>' +
+          '<div class="form-label" style="margin-top:10px">Photo <span class="opt">optional</span></div>' +
+          // The native file control stays hidden; the visible buttons drive it.
+          '<input type="file" accept="image/*" capture="environment" class="jha-lad-file" data-lad-file="' + esc(id) + '" hidden>' +
+          (u.photo
+            ? '<div class="jha-lad-photo"><img src="' + esc(u.photo.data_url) + '" alt="Defect photo">' +
+                '<div class="jha-lad-actions"><button type="button" class="jha-sheet-secondary" data-lad-take="' + esc(id) + '">Retake photo</button>' +
+                '<button type="button" class="jha-sheet-secondary" data-lad-rmphoto="' + esc(id) + '">Remove photo</button></div></div>'
+            : '<button type="button" class="jha-sheet-secondary jha-lad-take" data-lad-take="' + esc(id) + '">&#128247; Take photo</button>') +
+          '<label class="jha-ladder-ack" style="margin-top:12px"><input type="checkbox" data-lad-defack="' + esc(id) + '"' + (u.defectAck ? ' checked' : '') + '> ' +
+            esc(M.LADDER_DEFECT_ACK.text) + '</label>' +
+          (u.error ? '<p class="err" role="alert">' + esc(u.error) + '</p>' : '') +
+          '<div class="jha-lad-actions">' +
+            '<button type="button" class="submit-button jha-lad-danger" data-lad-savedef="' + esc(id) + '">Save defect report</button>' +
+            '<button type="button" class="jha-sheet-secondary" data-lad-cancel="' + esc(id) + '">Cancel defect report</button></div></div>';
       }
-      // Keep what was typed when the card re-renders.
-      function keepLadderInputs() {
-        var ack = document.getElementById('jhaLadRecAck'); if (ack) LADDER_UI.ack = ack.checked;
-        var desc = document.getElementById('jhaLadRecDefDesc'); if (desc) LADDER_UI.desc = desc.value;
-        var who = document.getElementById('jhaLadRecWhoInput'); if (who) LADDER_UI.who = who.value;
+      function wireLadderCards(host) {
+        function each(sel, fn) { Array.prototype.forEach.call(host.querySelectorAll(sel), fn); }
+        each('[data-lad-inspect]', function (b) { b.onclick = function () {
+          var u = ladderUi(b.getAttribute('data-lad-inspect')); u.panel = 'inspect'; u.ack = false; u.error = ''; renderLadderCards(); }; });
+        each('[data-lad-defect]', function (b) { b.onclick = function () {
+          var u = ladderUi(b.getAttribute('data-lad-defect')); u.panel = 'defect'; u.error = ''; renderLadderCards(); }; });
+        each('[data-lad-cancel]', function (b) { b.onclick = function () {
+          LADDER_UI[b.getAttribute('data-lad-cancel')] = { panel: null }; renderLadderCards(); }; });
+        each('[data-lad-attest]', function (c) { c.onchange = function () {
+          var id = c.getAttribute('data-lad-attest'); ladderUi(id).ack = c.checked;
+          var btn = host.querySelector('[data-lad-confirm="' + id + '"]'); if (btn) btn.disabled = !c.checked; }; });
+        each('[data-lad-desc]', function (t) { t.oninput = function () { ladderUi(t.getAttribute('data-lad-desc')).desc = t.value; }; });
+        each('[data-lad-defack]', function (c) { c.onchange = function () { ladderUi(c.getAttribute('data-lad-defack')).defectAck = c.checked; }; });
+        each('[data-lad-take]', function (b) { b.onclick = function () {
+          var f = host.querySelector('[data-lad-file="' + b.getAttribute('data-lad-take') + '"]'); if (f) { f.value = ''; f.click(); } }; });
+        each('[data-lad-file]', function (f) { f.onchange = function () {
+          var id = f.getAttribute('data-lad-file'), file = f.files && f.files[0]; if (!file) return;
+          ladderPhoto(file).then(function (p) { if (p) { ladderUi(id).photo = p; renderLadderCards(); } });
+        }; });
+        each('[data-lad-rmphoto]', function (b) { b.onclick = function () {
+          ladderUi(b.getAttribute('data-lad-rmphoto')).photo = null; renderLadderCards(); }; });
+        each('[data-lad-confirm]', function (b) { b.onclick = function () { saveLadderSafe(b.getAttribute('data-lad-confirm')); }; });
+        each('[data-lad-savedef]', function (b) { b.onclick = function () { saveLadderDefect(b.getAttribute('data-lad-savedef')); }; });
       }
-      function saveLadderInspection() {
-        keepLadderInputs();
+      // Same compression as every other inspection photo (1600 px JPEG).
+      function ladderPhoto(file) {
+        var shrink = (typeof downscalePhoto === 'function') ? downscalePhoto
+          : (typeof window.downscalePhoto === 'function' ? window.downscalePhoto : null);
+        var read = function () {
+          return new Promise(function (resolve) {
+            var r = new FileReader();
+            r.onload = function () { resolve(r.result); }; r.onerror = function () { resolve(null); };
+            r.readAsDataURL(file);
+          });
+        };
+        return Promise.resolve(shrink ? shrink(file) : null).then(function (u) { return u || read(); })
+          .then(function (u) { return u ? { filename: file.name || 'ladder-defect.jpg', mime: 'image/jpeg', data_url: u } : null; });
+      }
+      function ladderReq(id) {
+        var link = jhaDraftLink();
+        return { ladderId: id, jobId: NG.job && NG.job.id, companyId: DEMO ? DEMO_COMPANY_ID : (NG.companyId || null),
+                 user: jhaUser() || {}, jhaRootId: link.root, jhaRevisionNumber: link.rev };
+      }
+      function saveLadderSafe(id) {
         var src = ladderData(); if (!src) return;
-        var res = window.JhaModel.recordLadderInspection(src.registry, src.inspections, {
-          ladderId: (document.getElementById('jhaLadderId') || {}).value,
-          inspector: NG.user || LADDER_UI.who || '',
-          acknowledged: LADDER_UI.ack === true,
-          defect: LADDER_UI.defectOpen
-            ? { description: LADDER_UI.desc || '', removedFromService: LADDER_UI.removed, photo: LADDER_UI.photo }
-            : null
-        }, jhaClock());
-        if (!res.ok) { LADDER_UI.error = res.message; renderLadderCard(); return; }
-        LADDER_UI = { open: false, defectOpen: false, removed: '', photo: null, error: '' };
-        toast('success', 'Inspection recorded', 'Ladder ' + res.record.ladder_id + ' · ' + window.JhaModel.fmtIndy(res.record.inspected_at));
-        renderLadderCard();
+        var u = ladderUi(id), M = window.JhaModel;
+        var res = M.confirmLadderSafe(src.registry, src.inspections, Object.assign(ladderReq(id), {
+          attested: u.ack === true, attestationVersion: M.LADDER_SAFE_ATTESTATION.version }), jhaClock());
+        if (!res.ok) { u.error = res.message; renderLadderCards(); return; }
+        (LADDER_TODAY[id] = LADDER_TODAY[id] || []).push(res.record);
+        LADDER_UI[id] = { panel: null };
+        toast('success', 'Ladder ' + id + ' confirmed safe', M.fmtIndy(res.record.inspected_at));
+        renderLadderPicker(); renderLadderCards();
+      }
+      function saveLadderDefect(id) {
+        var src = ladderData(); if (!src) return;
+        var u = ladderUi(id), M = window.JhaModel;
+        var res = M.reportLadderDefect(src.registry, src.inspections, Object.assign(ladderReq(id), {
+          description: u.desc || '', photo: u.photo || null, acknowledged: u.defectAck === true }), jhaClock());
+        if (!res.ok) { u.error = res.message; renderLadderCards(); return; }
+        (LADDER_TODAY[id] = LADDER_TODAY[id] || []).push(res.record);
+        LADDER_DEFECTS.push(M.defectSnapshot(res.record));
+        LADDER_UI[id] = { panel: null };
+        toast('error', 'Ladder ' + id + ' marked Do Not Use', 'Select a different assigned ladder for today.');
+        renderLadderPicker(); renderLadderCards();
+      }
+      // Revision prefill: restore the selection, today's checks and defects.
+      function ladderRestore(data) {
+        ladderReset();
+        var parse = function (v) { try { return typeof v === 'string' ? JSON.parse(v) : (v || []); } catch (e) { return []; } };
+        LADDER_SEL = (parse(data.jhaLadderIds) || []).slice();
+        (parse(data.jhaLadderChecks) || []).forEach(function (c) {
+          if (c.todays_check) LADDER_TODAY[c.ladder_id] = [{ id: c.todays_check.record_id, result: 'safe',
+            inspected_at: c.todays_check.at, inspected_by: c.todays_check.by,
+            inspected_by_user_id: c.todays_check.by_user_id, attestation_version: c.todays_check.attestation_version }];
+        });
+        LADDER_DEFECTS = (parse(data.jhaLadderDefects) || []).slice();
       }
 
       /* ---------------- aerial lifts: who will inspect ------------------- */
@@ -7897,15 +8178,21 @@ ${photoUrls}`;
       function jhaSubmitGuard() {
         var M = window.JhaModel; if (!M) return '';
         var form = document.getElementById('jhaForm'); if (!form) return '';
-        var data = jhaFormValues(form);
-        var look = data.jhaLadderUse === 'yes' ? currentLadderLook() : null;
-        var problems = M.jhaSubmitProblems(data, look && look.state !== 'unavailable' ? look : null);
+        var data = jhaFormValues(form), ctx = {};
+        if (data.jhaLadderUse === 'yes') {
+          var opts = jobLadders() || [];
+          var states = {};
+          LADDER_SEL.forEach(function (id) { states[id] = ladderLook(id); });
+          ctx.ladders = { assigned: opts.filter(function (o) { return !o.duplicate; }).map(function (o) { return o.id; }), states: states };
+        }
+        var problems = M.jhaSubmitProblems(data, ctx);
         if (!problems.length) return '';
         if (data.jhaAerialUse === 'yes' && !aerialSelected().length) {
           var g = document.getElementById('jhaAerialRoster'); g = g && g.closest('.form-group'); if (g) g.classList.add('error');
         }
-        if (look && (look.state === 'duplicate' || look.status === 'do-not-use')) {
-          var c = document.getElementById('jhaLadderCard'); if (c) try { c.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+        if (data.jhaLadderUse === 'yes') {
+          var lg = document.getElementById('jhaLadderOptions'); lg = lg && lg.closest('.form-group');
+          if (lg) { lg.classList.add('error'); try { lg.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
         }
         return problems[0];
       }
@@ -7951,8 +8238,9 @@ ${photoUrls}`;
         dmodel.sections.push({ title: 'Revision History', aux: true, items: hist.map(function (h) {
           return it(M.revisionLabel(h.revision_number), (h.revision_number === 1
             ? 'Original submitted ' + M.fmtIndy(h.original_submitted_at)
-            : 'Revised ' + M.fmtIndy(h.revised_at) + ' · ' + (h.revision_change_type || '') +
-              (h.revision_note ? ' — ' + h.revision_note : '')) + ' · ' + h.revised_by);
+            : 'Revised ' + M.fmtIndy(h.revised_at) + ' \u00b7 ' + ((h.revision_diff || []).length) + ' field' +
+              ((h.revision_diff || []).length === 1 ? '' : 's') + ' changed' +
+              (h.revision_note ? ' \u2014 ' + h.revision_note : '')) + ' \u00b7 ' + h.revised_by);
         }) });
         return dmodel;
       }
@@ -7977,10 +8265,7 @@ ${photoUrls}`;
           });
           form.addEventListener('input', function (e) {
             if (e.target && /^jhaTask\d+$/.test(e.target.name || '')) renderAssignments();
-            if (e.target && e.target.id === 'jhaLadderId') {
-              LADDER_UI = { open: false, defectOpen: false, removed: '', photo: null, error: '' };
-              renderLadderCard();
-            }
+            if (e.target && e.target.id === 'jhaLadderSearch') { LADDER_Q = e.target.value; renderLadderPicker(); }
           });
         }
         if (!JHA_CTX) { var bn = document.getElementById('jhaSubmitBtn'); if (bn) bn.innerHTML = 'Submit JHA'; }
@@ -8072,6 +8357,28 @@ ${photoUrls}`;
         var c = (params.get('company') || '').toLowerCase();
         return TBT_CO[c] ? c : 'greiner';
       })();
+      /* Greiner's fixed workflow (Oct 2 meeting). The office assigns ONE talk
+         to a job; the designated lead presents it and records attendance; every
+         participant follows the same talk on their own phone and submits their
+         own acknowledgment. Nobody on the phone chooses the talk or the workflow.
+         First rollout: Purdue Academic Building, Fall Protection, limited to the
+         safety manager and the full-access lead-foreman group. Names are
+         fictional stand-ins for the public demo; no message is ever sent. */
+      var TBT_GREINER_ASSIGNMENT = {
+        id: 'tbt-asg-purdue-fall-protection',
+        job: 'Purdue Academic Building',
+        talkId: 'fall',
+        lead: 'Demo Lead Foreman',
+        observer: 'Demo Safety Manager',
+        participants: ['Second Lead Foreman (Demo)', 'Alex Rivera (Demo)', 'Jordan Blake (Demo)']
+      };
+      // Who the demo phone belongs to. A real phone knows this from sign-in;
+      // ?tbtas=participant previews a participant's phone for review.
+      var TBT_ROLE = TBT_COMPANY !== 'greiner' ? null
+        : ((params.get('tbtas') || '').toLowerCase() === 'participant' ? 'participant' : 'lead');
+      function tbtMe() {
+        return TBT_ROLE === 'participant' ? TBT_GREINER_ASSIGNMENT.participants[1] : TBT_GREINER_ASSIGNMENT.lead;
+      }
       // ?tbtmode= stays for direct testing. Without it the walkthrough opens on
       // the method chooser, which is how a reviewer is meant to see it.
       var TBT_URL_MODE = (function () {
@@ -8082,7 +8389,7 @@ ${photoUrls}`;
       // reviewers can inspect a future alternative, but Greiner opens with the
       // current foreman-led group model instead of an unselected state.
       var TBT_MODE = TBT_URL_MODE || TBT_CO[TBT_COMPANY].mode;
-      var TBT_STEP = TBT_URL_MODE ? 'review' : 'method';
+      var TBT_STEP = (TBT_URL_MODE || TBT_ROLE) ? 'review' : 'method';
       var TBT_PAGE = 0;                        // page index inside the talk
       var TBT_READ = false;                    // reached the final page?
       var TBT_SEL = { group: null, attendees: [], manual: [], presenter: '', presented: false };
@@ -8120,11 +8427,22 @@ ${photoUrls}`;
         return TBT_FORMAT === 'guided' ? tbtSectionsDone() : TBT_READ;
       }
 
-      var TBT_STEP_LABELS = [
-        ['method', 'Choose Method'],
-        ['review', 'Review Talk'],
-        ['complete', 'Record Completion']
-      ];
+      var TBT_STEP_LABELS = TBT_ROLE === 'lead'
+        ? [['review', 'Present the talk'], ['complete', 'Record attendance']]
+        : TBT_ROLE === 'participant'
+          ? [['review', 'Follow along'], ['complete', 'Acknowledge']]
+          : [['method', 'Choose Method'], ['review', 'Review Talk'], ['complete', 'Record Completion']];
+      // Active time with the talk on screen (view open, app in the foreground).
+      var TBT_ACTIVE_MS = 0, TBT_TICK = null;
+      function tbtStartClock() {
+        TBT_ACTIVE_MS = 0;
+        if (TBT_TICK) clearInterval(TBT_TICK);
+        TBT_TICK = setInterval(function () {
+          var v = document.getElementById('toolboxTalkView');
+          if (v && v.classList.contains('active') && !document.hidden) TBT_ACTIVE_MS += 1000;
+        }, 1000);
+      }
+      function tbtActiveSeconds() { return Math.round(TBT_ACTIVE_MS / 1000); }
 
       function tbtMondayISO() {
         var d = new Date(); d.setHours(12, 0, 0, 0);
@@ -8135,20 +8453,12 @@ ${photoUrls}`;
         var p = tbtMondayISO().split('-');
         return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
       }
-      /* Greiner's foreman picks the week's talk (Tony, Oct 2: foreman-led). The
-         default is the talk the office scheduled; other companies keep theirs. */
-      var TBT_TALK_IDX = 0;
-      function tbtCurrentTalk() { return TBT_TALKS[TBT_TALK_IDX] || TBT_TALKS[0]; }
-      function tbtTalkPickerHtml() {
-        if (TBT_COMPANY !== 'greiner' || TBT_TALKS.length < 2) return '';
-        return '<label for="tbtTalkPick" style="display:block;font-weight:700;font-size:13px;margin:10px 0 4px">This week\u2019s talk</label>' +
-          '<select id="tbtTalkPick" class="form-input" style="width:100%">' +
-          TBT_TALKS.map(function (x, i) {
-            return '<option value="' + i + '"' + (i === TBT_TALK_IDX ? ' selected' : '') + '>' + esc(x.t) +
-              (i === 0 ? ' (scheduled)' : '') + '</option>';
-          }).join('') + '</select>' +
-          '<div style="color:var(--color-text-secondary);font-size:12px;margin-top:4px">' +
-            'The foreman chooses the talk the crew covers this week.</div>';
+      function tbtCurrentTalk() {
+        if (TBT_ROLE) {
+          var id = TBT_GREINER_ASSIGNMENT.talkId;
+          return TBT_TALKS.filter(function (t) { return t.i === id; })[0] || TBT_TALKS[0];
+        }
+        return TBT_TALKS[0];
       }
       function tbtState() {
         try { return JSON.parse(localStorage.getItem(TBT_KEY) || '{"records":[]}'); }
@@ -8203,7 +8513,7 @@ ${photoUrls}`;
       // Back walks the three steps in order, then leaves for the homepage.
       function tbtBack() {
         if (TBT_STEP === 'complete') { tbtGo('review'); return; }
-        if (TBT_STEP === 'review') { tbtGo('method'); return; }
+        if (TBT_STEP === 'review' && !TBT_ROLE) { tbtGo('method'); return; }
         window.showView('landing');
       }
       function tbtStepsHtml() {
@@ -8221,8 +8531,10 @@ ${photoUrls}`;
       function tbtRender() {
         ensureTbtView();
         document.getElementById('tbtSteps').innerHTML = tbtStepsHtml();
-        if (TBT_STEP === 'method') return renderTbtMethod();
-        if (TBT_STEP === 'review') return renderTbtReview();
+        if (TBT_STEP === 'method' && !TBT_ROLE) return renderTbtMethod();
+        if (TBT_STEP === 'method' || TBT_STEP === 'review') return renderTbtReview();
+        if (TBT_ROLE === 'lead') return renderTbtLead();
+        if (TBT_ROLE === 'participant') return renderTbtParticipant();
         if (TBT_MODE === 'individual') return renderTbtIndividual();
         return renderTbtGroup();
       }
@@ -8235,7 +8547,7 @@ ${photoUrls}`;
           '<div class="tbt-doc" style="padding:12px 14px">' +
             '<div class="tbt-doc-title" style="font-size:16px">' + esc(t.t) + '</div>' +
             '<div class="tbt-doc-sub" style="margin-bottom:0">' + esc(co.name) +
-              ' · due ' + esc(tbtDueLabel()) + '</div>' + tbtTalkPickerHtml() + '</div>' +
+              ' · due ' + esc(tbtDueLabel()) + '</div></div>' +
           '<p style="color:var(--color-text-secondary);font-size:13.5px;line-height:1.5;margin:0 0 12px">' +
             'Choose which completion workflow to demonstrate.</p>' +
           '<button type="button" class="tbt-optcard' + (TBT_MODE === 'group' ? ' is-on' : '') +
@@ -8255,18 +8567,7 @@ ${photoUrls}`;
           '<p style="color:var(--color-text-secondary);font-size:12.5px;line-height:1.5;margin:14px 0 0">' +
             'This selector is for the demo only. In production the office configuration ' +
             'decides which option an employee receives — employees do not choose the ' +
-            'company workflow themselves.</p>' +
-          (TBT_COMPANY === 'greiner'
-            ? '<p style="color:var(--color-text-secondary);font-size:12.5px;line-height:1.5;margin:8px 0 0">' +
-                'Greiner currently uses the foreman-led group workflow. Individual completion ' +
-                'is shown here only for review of a possible future option.</p>'
-            : '');
-        var pick = document.getElementById('tbtTalkPick');
-        if (pick) pick.onchange = function () {
-          TBT_TALK_IDX = +pick.value;
-          TBT_PAGE = 0; TBT_READ = false; TBT_SECTION = 0; TBT_SECTION_DONE = [];
-          renderTbtMethod();
-        };
+            'company workflow themselves.</p>';
         Array.prototype.forEach.call(body.querySelectorAll('[data-tbt-method]'), function (b) {
           b.onclick = function () {
             TBT_MODE = b.getAttribute('data-tbt-method');
@@ -8308,6 +8609,20 @@ ${photoUrls}`;
             };
           });
       }
+      // Greiner: who this phone is in the talk, shown above the talk itself.
+      function tbtRoleHtml() {
+        if (!TBT_ROLE) return '';
+        var a = TBT_GREINER_ASSIGNMENT;
+        return '<div class="tbt-role" id="tbtRole">' +
+          '<div class="tbt-role-tag">' + (TBT_ROLE === 'lead' ? 'Leading this talk' : 'Following along') + '</div>' +
+          '<div class="tbt-role-line"><b>' + esc(tbtCurrentTalk().t) + '</b></div>' +
+          '<div class="tbt-role-line">' + esc(a.job) + ' \u00b7 led by ' + esc(a.lead) + '</div>' +
+          '<div class="tbt-role-line">Signed in as ' + esc(tbtMe()) + '</div></div>';
+      }
+      function tbtSwitchHtml() {
+        return TBT_ROLE ? '' : '<button type="button" class="back-button" id="tbtChangeMethod" ' +
+          'style="width:100%;justify-content:center;margin:12px 0 0">Switch demo workflow</button>';
+      }
       function renderTbtDoc() {
         var t = tbtCurrentTalk(), co = TBT_CO[TBT_COMPANY];
         var total = t.pages.length;
@@ -8315,7 +8630,7 @@ ${photoUrls}`;
         if (TBT_PAGE < 0) TBT_PAGE = 0;
         if (TBT_PAGE === total - 1) TBT_READ = true;
         var body = document.getElementById('tbtBody');
-        body.innerHTML = tbtFormatBarHtml() +
+        body.innerHTML = tbtRoleHtml() + tbtFormatBarHtml() +
           '<div class="tbt-doc">' +
             '<h3 class="tbt-doc-title">' + esc(t.t) + '</h3>' +
             '<div class="tbt-doc-sub">' + esc(t.f) + ' · ' + esc(co.name) +
@@ -8334,9 +8649,7 @@ ${photoUrls}`;
             '<p id="tbtReadHint" style="color:var(--color-text-secondary);font-size:13px;margin:0 0 10px">' +
               'Read to the last page before recording completion.</p>') +
           '<button type="button" class="submit-button" id="tbtToComplete"' +
-            (TBT_READ ? '' : ' disabled') + '>Continue to completion</button>' +
-          '<button type="button" class="back-button" id="tbtChangeMethod" ' +
-            'style="width:100%;justify-content:center;margin:12px 0 0">Switch demo workflow</button>';
+            (TBT_READ ? '' : ' disabled') + '>' + tbtContinueLabel() + '</button>' + tbtSwitchHtml();
 
         document.getElementById('tbtPrev').onclick = function () {
           if (TBT_PAGE > 0) { TBT_PAGE--; renderTbtDoc(); }
@@ -8351,8 +8664,12 @@ ${photoUrls}`;
           }
           tbtGo('complete');
         };
-        document.getElementById('tbtChangeMethod').onclick = function () { tbtGo('method'); };
+        var sw = document.getElementById('tbtChangeMethod'); if (sw) sw.onclick = function () { tbtGo('method'); };
         tbtWireFormatBar();
+      }
+      function tbtContinueLabel() {
+        return TBT_ROLE === 'lead' ? 'Continue to attendance'
+          : TBT_ROLE === 'participant' ? 'Continue to acknowledgment' : 'Continue to completion';
       }
 
       /* ---------------- STEP 2b: Guided Talk ----------------
@@ -8370,10 +8687,11 @@ ${photoUrls}`;
         var allDone = tbtSectionsDone();
         // The wording differs by who is confirming: a foreman covering the
         // section with a crew, or an employee reading it themselves.
-        var checkLabel = TBT_MODE === 'individual'
-          ? 'I reviewed this section' : 'This section was covered';
+        var checkLabel = TBT_ROLE === 'participant' ? 'I followed this section'
+          : TBT_ROLE === 'lead' ? 'This section was covered'
+          : TBT_MODE === 'individual' ? 'I reviewed this section' : 'This section was covered';
         var body = document.getElementById('tbtBody');
-        body.innerHTML = tbtFormatBarHtml() +
+        body.innerHTML = tbtRoleHtml() + tbtFormatBarHtml() +
           '<div class="tbt-doc">' +
             '<h3 class="tbt-doc-title">' + esc(t.t) + '</h3>' +
             '<div class="tbt-doc-sub">' + esc(t.f) + ' · ' + esc(s.pgl) +
@@ -8407,9 +8725,7 @@ ${photoUrls}`;
             '<p id="tbtSecHint" style="color:var(--color-text-secondary);font-size:13px;margin:0 0 10px">' +
               'Check every section before recording completion.</p>') +
           '<button type="button" class="submit-button" id="tbtToComplete"' +
-            (allDone ? '' : ' disabled') + '>Continue to completion</button>' +
-          '<button type="button" class="back-button" id="tbtChangeMethod" ' +
-            'style="width:100%;justify-content:center;margin:12px 0 0">Switch demo workflow</button>';
+            (allDone ? '' : ' disabled') + '>' + tbtContinueLabel() + '</button>' + tbtSwitchHtml();
 
         // Ticks are held in TBT_SECTION_DONE, so paging away and back keeps them.
         document.getElementById('tbtSecDone').onchange = function () {
@@ -8429,8 +8745,103 @@ ${photoUrls}`;
           }
           tbtGo('complete');
         };
-        document.getElementById('tbtChangeMethod').onclick = function () { tbtGo('method'); };
+        var sw = document.getElementById('tbtChangeMethod'); if (sw) sw.onclick = function () { tbtGo('method'); };
         tbtWireFormatBar();
+      }
+
+      /* ---------------- Greiner lead: attendance + presentation ----------
+         Only the designated lead reaches this screen. */
+      function tbtLeadRecord() {
+        var a = TBT_GREINER_ASSIGNMENT, wk = tbtMondayISO();
+        return tbtState().records.filter(function (r) {
+          return r.company === 'greiner' && r.kind === 'lead_presentation' && r.assignmentId === a.id && r.week === wk; })[0] || null;
+      }
+      function tbtAckRecord(name) {
+        var a = TBT_GREINER_ASSIGNMENT, wk = tbtMondayISO();
+        return tbtState().records.filter(function (r) {
+          return r.company === 'greiner' && r.kind === 'participant_ack' && r.assignmentId === a.id &&
+                 r.week === wk && r.employee === name; })[0] || null;
+      }
+      function renderTbtLead() {
+        var a = TBT_GREINER_ASSIGNMENT, done = tbtLeadRecord();
+        var picked = TBT_SEL.attendees.length + TBT_SEL.manual.length;
+        var body = document.getElementById('tbtBody');
+        body.innerHTML = tbtRoleHtml() +
+          (done ? '<div class="tbt-notice" style="background:rgba(61,207,130,.12);border-color:var(--accentBorder);color:var(--accent)">' +
+            '<span>&#10003;</span><span>You already recorded this talk (' + (done.present.length + done.manual.length) +
+            ' present).</span></div>' : '') +
+          '<div class="form-group">' +
+            '<label class="form-label">Crew present <span id="tbtCount">(' + picked + ' selected)</span></label>' +
+            '<div style="display:flex;gap:8px;margin-bottom:10px">' +
+              '<button type="button" class="tbt-pagebtn" id="tbtAll" style="flex:1;min-width:0">Select everyone assigned</button>' +
+              '<button type="button" class="tbt-pagebtn" id="tbtNone" style="flex:1;min-width:0">Clear</button></div>' +
+            '<div class="tbt-rosterlist">' + a.participants.map(function (n) {
+              var on = TBT_SEL.attendees.indexOf(n) !== -1;
+              return '<button type="button" class="tbt-rosterrow' + (on ? ' is-on' : '') + '" data-tbt-att="' + esc(n) +
+                '" aria-pressed="' + on + '"><span class="box">' + (on ? '&#10003;' : '') + '</span><span>' + esc(n) + '</span></button>';
+            }).join('') + '</div></div>' +
+          '<div class="form-group"><label class="form-label" for="tbtManual">Add someone not listed</label>' +
+            '<div style="display:flex;gap:8px">' +
+              '<input type="text" class="form-input" id="tbtManual" placeholder="Type a name" style="flex:1">' +
+              '<button type="button" class="tbt-pagebtn" id="tbtManualAdd">Add Name</button></div></div>' +
+          (TBT_SEL.manual.length ? '<div style="margin-bottom:12px">' + TBT_SEL.manual.map(function (n) {
+              return '<span class="tbt-manualpill">' + esc(n) + '<span class="tag">MANUAL ENTRY</span>' +
+                '<button type="button" data-tbt-rmm="' + esc(n) + '" aria-label="Remove ' + esc(n) + '">&times;</button></span>';
+            }).join('') + '</div>' : '') +
+          '<label class="check" style="display:flex;gap:9px;align-items:flex-start;margin:14px 0;color:var(--color-text-primary);font-size:14px">' +
+            '<input type="checkbox" id="tbtPresented"' + (TBT_SEL.presented ? ' checked' : '') + '>' +
+            '<span>I presented this Toolbox Talk to the people listed above.</span></label>' +
+          '<button type="button" class="submit-button" id="tbtSubmitLead">Submit group presentation</button>' +
+          '<p class="jha-row-hint" style="margin-top:10px">Each person also submits their own acknowledgment from their phone. ' +
+            'This presentation record does not count as theirs.</p>';
+        document.getElementById('tbtAll').onclick = function () { TBT_SEL.attendees = a.participants.slice(); renderTbtLead(); };
+        document.getElementById('tbtNone').onclick = function () { TBT_SEL.attendees = []; TBT_SEL.manual = []; renderTbtLead(); };
+        Array.prototype.forEach.call(body.querySelectorAll('[data-tbt-att]'), function (b) {
+          b.onclick = function () {
+            var n = b.getAttribute('data-tbt-att'), i = TBT_SEL.attendees.indexOf(n);
+            if (i === -1) TBT_SEL.attendees.push(n); else TBT_SEL.attendees.splice(i, 1);
+            renderTbtLead(); };
+        });
+        Array.prototype.forEach.call(body.querySelectorAll('[data-tbt-rmm]'), function (b) {
+          b.onclick = function () {
+            var i = TBT_SEL.manual.indexOf(b.getAttribute('data-tbt-rmm')); if (i !== -1) TBT_SEL.manual.splice(i, 1); renderTbtLead(); };
+        });
+        document.getElementById('tbtManualAdd').onclick = function () {
+          var el = document.getElementById('tbtManual'), n = (el.value || '').trim(); if (!n) return;
+          if (TBT_SEL.manual.indexOf(n) === -1 && TBT_SEL.attendees.indexOf(n) === -1) TBT_SEL.manual.push(n);
+          el.value = ''; renderTbtLead(); };
+        document.getElementById('tbtPresented').onchange = function () { TBT_SEL.presented = this.checked; };
+        document.getElementById('tbtSubmitLead').onclick = function () {
+          if (!TBT_SEL.attendees.length && !TBT_SEL.manual.length) { toast('error', 'No one marked present', 'Select who attended.'); return; }
+          if (!TBT_SEL.presented) { toast('error', 'Confirm the talk', 'Tick the box confirming you presented it.'); return; }
+          var rec = { company: 'greiner', kind: 'lead_presentation', assignmentId: a.id, week: tbtMondayISO(),
+            talkId: tbtCurrentTalk().i, job: a.job, lead: a.lead, present: TBT_SEL.attendees.slice(),
+            manual: TBT_SEL.manual.slice(), presented: true, engagementSeconds: tbtActiveSeconds(),
+            at: new Date().toISOString() };
+          tbtPush(rec); renderTbtDone(rec);
+        };
+      }
+
+      /* ---------------- Greiner participant: individual acknowledgment ----
+         Never the presentation attestation, attendance or missing names. */
+      function renderTbtParticipant() {
+        var a = TBT_GREINER_ASSIGNMENT, me = tbtMe(), mine = tbtAckRecord(me);
+        var body = document.getElementById('tbtBody');
+        body.innerHTML = tbtRoleHtml() +
+          (mine ? '<div class="tbt-notice" style="background:rgba(61,207,130,.12);border-color:var(--accentBorder);color:var(--accent)">' +
+              '<span>&#10003;</span><span>You already acknowledged this talk.</span></div>'
+            : '<label class="check" style="display:flex;gap:9px;align-items:flex-start;margin:14px 0;color:var(--color-text-primary);font-size:14px">' +
+                '<input type="checkbox" id="tbtAckConfirm">' +
+                '<span>I followed along with this Toolbox Talk and had the opportunity to ask questions.</span></label>' +
+              '<button type="button" class="submit-button" id="tbtSubmitAck">Submit my acknowledgment</button>');
+        var btn = document.getElementById('tbtSubmitAck');
+        if (btn) btn.onclick = function () {
+          if (!document.getElementById('tbtAckConfirm').checked) { toast('error', 'Confirm first', 'Tick the box to acknowledge the talk.'); return; }
+          var rec = { company: 'greiner', kind: 'participant_ack', assignmentId: a.id, week: tbtMondayISO(),
+            talkId: tbtCurrentTalk().i, job: a.job, lead: a.lead, employee: me,
+            format: TBT_FORMAT, engagementSeconds: tbtActiveSeconds(), at: new Date().toISOString() };
+          tbtPush(rec); renderTbtDone(rec);
+        };
       }
 
       /* ---------------- STEP 3A: foreman-led group ---------------- */
@@ -8557,7 +8968,8 @@ ${photoUrls}`;
         return '<div class="tbt-doc" style="padding:12px 14px;margin-bottom:14px">' +
           '<div class="tbt-doc-title" style="font-size:16px">' + esc(t.t) + '</div>' +
           '<div class="tbt-doc-sub" style="margin-bottom:0">' + esc(co.name) + ' · ' +
-            (TBT_MODE === 'group' ? 'Foreman-led group talk' : 'Individual completion') +
+            (TBT_ROLE ? (TBT_ROLE === 'lead' ? 'Leading this talk' : 'Following along')
+              : TBT_MODE === 'group' ? 'Foreman-led group talk' : 'Individual completion') +
             ' · ' + esc(tbtStatusText()) + '</div></div>';
       }
 
@@ -8569,7 +8981,11 @@ ${photoUrls}`;
             '<div style="font-weight:800;font-size:17px">Toolbox Talk recorded</div>' +
             '<div style="font-size:13.5px;margin-top:6px;font-weight:600">' + esc(t.t) +
               ' · week of ' + esc(rec.week) + '</div>' +
-            '<div style="font-size:13.5px;font-weight:600">' + (rec.kind === 'group'
+            '<div style="font-size:13.5px;font-weight:600">' + (rec.kind === 'lead_presentation'
+              ? esc(rec.job) + ' · presented by ' + esc(rec.lead) + '<br>' + (rec.present.length + rec.manual.length) + ' marked present'
+              : rec.kind === 'participant_ack'
+              ? 'Acknowledged by ' + esc(rec.employee) + ' · led by ' + esc(rec.lead)
+              : rec.kind === 'group'
               ? 'Group: ' + esc(rec.group) + ' · presented by ' + esc(rec.presenter) + '<br>' +
                 (rec.roster.length + rec.manual.length) + ' attendees (' + rec.roster.length + ' roster' +
                 (rec.manual.length ? ' + ' + rec.manual.length + ' manual' : '') + ')'
@@ -8584,7 +9000,8 @@ ${photoUrls}`;
           TBT_SECTION = 0; TBT_SECTION_DONE = [];
           TBT_SEL = { group: null, attendees: [], manual: [], presenter: '', presented: false };
           TBT_MODE = TBT_URL_MODE || TBT_CO[TBT_COMPANY].mode;
-          tbtGo('method');
+          tbtStartClock();
+          tbtGo(TBT_ROLE ? 'review' : 'method');
         };
         document.getElementById('tbtDoneHome').onclick = function () { window.showView('landing'); };
       }
@@ -8592,8 +9009,9 @@ ${photoUrls}`;
       function openToolboxTalk() {
         ensureTbtView();
         window.showView('toolboxTalk');
-        TBT_STEP = TBT_URL_MODE ? 'review' : 'method';
+        TBT_STEP = (TBT_URL_MODE || TBT_ROLE) ? 'review' : 'method';
         TBT_MODE = TBT_URL_MODE || TBT_CO[TBT_COMPANY].mode;
+        tbtStartClock();
         TBT_PAGE = 0; TBT_READ = false;
         TBT_FORMAT = TBT_URL_FORMAT || 'doc';
         TBT_SECTION = 0; TBT_SECTION_DONE = [];
@@ -8605,6 +9023,8 @@ ${photoUrls}`;
       if (DEMO) {
         NG.active = true; NG.demo = true; NG.ticket = null;
         NG.user = DEMO_HOME.user;
+        NG.userId = 'demo-user-foreman';
+        if (params.get('demouser') === 'none') { NG.user = ''; NG.userId = null; }   // review the signed-out state
         NG.job = DEMO_HOME.jobs[0];
         NG.equipment = DEMO_HOME.equipment;
         NG.people = DEMO_HOME.people;

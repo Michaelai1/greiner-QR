@@ -96,8 +96,11 @@ for (const [text, what] of [
  * ------------------------------------------------------------------ */
 includes('id="tbtChangeMethod"', 'there must be an in-page way back to the method chooser');
 includes('Switch demo workflow', 'the switch control needs a visible label');
-includes("document.getElementById('tbtChangeMethod').onclick = function () { tbtGo('method'); };",
+includes("var sw = document.getElementById('tbtChangeMethod'); if (sw) sw.onclick = function () { tbtGo('method'); };",
   'the switch control must return to the method step');
+// Greiner never shows the switch: its workflow is fixed (lead / participant).
+includes("return TBT_ROLE ? '' : '<button type=\"button\" class=\"back-button\" id=\"tbtChangeMethod\" '",
+  'Greiner must not offer a workflow switch');
 // Choosing a method resets the walkthrough so the two flows cannot bleed together.
 includes("TBT_MODE = b.getAttribute('data-tbt-method');",
   'choosing an option must set the mode');
@@ -256,8 +259,10 @@ const guidedSrc = flatten(html.slice(html.indexOf('function renderTbtGuided()'),
 assert.ok(guidedSrc.includes("'I reviewed this section'") &&
           guidedSrc.includes("'This section was covered'"),
   'both checkbox wordings must exist');
-assert.match(guidedSrc, /TBT_MODE === 'individual'\s*\? 'I reviewed this section' : 'This section was covered'/,
+assert.match(guidedSrc, /TBT_MODE === 'individual' \? 'I reviewed this section' : 'This section was covered'/,
   'the checkbox must be worded for the chosen completion method');
+assert.match(guidedSrc, /TBT_ROLE === 'participant' \? 'I followed this section'/,
+  'a Greiner participant follows along; they do not present');
 
 // The gate is per-format, and the document format keeps its own rule.
 includes("return TBT_FORMAT === 'guided' ? tbtSectionsDone() : TBT_READ;",
@@ -383,25 +388,30 @@ includes("if (TBT_SEL.manual.indexOf(n) === -1 && TBT_SEL.attendees.indexOf(n) =
 /* ------------------------------------------------------------------ *
  * 10. Back navigation follows the three steps
  * ------------------------------------------------------------------ */
-assert.deepEqual(mod.TBT_STEP_LABELS.map((s) => s[1]),
+// Companies that still demo the selector (Choice, Peine) keep three steps.
+assert.deepEqual(choice.TBT_STEP_LABELS.map((s) => s[1]),
   ['Choose Method', 'Review Talk', 'Record Completion'],
   'the progress indicator must name the three steps in order');
+// Greiner: no workflow step. The lead presents; a participant follows along.
+assert.deepEqual(mod.TBT_STEP_LABELS.map((s) => s[1]), ['Present the talk', 'Record attendance']);
+assert.deepEqual(makeModule('?demo=1&tbtas=participant').TBT_STEP_LABELS.map((s) => s[1]), ['Follow along', 'Acknowledge']);
 includes("if (TBT_STEP === 'complete') { tbtGo('review'); return; }",
   'Back from completion must return to Review Talk');
-includes("if (TBT_STEP === 'review') { tbtGo('method'); return; }",
-  'Back from Review Talk must return to Choose Method');
+includes("if (TBT_STEP === 'review' && !TBT_ROLE) { tbtGo('method'); return; }",
+  'Back from Review Talk must return to Choose Method (companies with a selector)');
 includes("window.showView('landing');", 'Back from Choose Method must return to the homepage');
 includes('class="tbt-steps"', 'the progress indicator must be rendered');
 includes('data-tbt-step=', 'each step must be identifiable');
 // Without ?tbtmode the walkthrough opens on step 1.
-assert.equal(mod.TBT_STEP, 'method', 'the walkthrough must open on Choose Method');
-assert.equal(mod.TBT_MODE, 'group', 'Greiner must default to the foreman-led group method');
+assert.equal(choice.TBT_STEP, 'method', 'the walkthrough must open on Choose Method');
+assert.equal(mod.TBT_STEP, 'review', 'Greiner opens straight on the assigned talk');
+assert.equal(mod.TBT_MODE, 'group', 'Greiner stays foreman-led');
 // ?tbtmode stays available for direct testing and skips to the talk.
 const direct = makeModule('?demo=1&company=peine&tbtmode=individual');
 assert.equal(direct.TBT_URL_MODE, 'individual', '?tbtmode must still be honoured');
 assert.equal(direct.TBT_MODE, 'individual', '?tbtmode must preselect the method');
 assert.equal(direct.TBT_STEP, 'review', '?tbtmode must open straight on the talk');
-assert.equal(makeModule('?demo=1&tbtmode=garbage').TBT_STEP, 'method',
+assert.equal(makeModule('?demo=1&company=choice&tbtmode=garbage').TBT_STEP, 'method',
   'an invalid tbtmode must fall back to the chooser');
 
 /* ------------------------------------------------------------------ *

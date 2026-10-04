@@ -32,8 +32,16 @@ excludes('id="openJobSiteAnalysisBtn"', 'The older checklist JHA must no longer 
 
 includes('var TBT_MODE = TBT_URL_MODE || TBT_CO[TBT_COMPANY].mode;',
   'Toolbox Talk must start from the company-configured workflow');
-includes('Greiner currently uses the foreman-led group workflow.',
-  'the demo must identify Greiner\'s current workflow');
+// Oct 4 correction: Greiner has no workflow selector or explanatory note. The
+// role (lead / participant) comes from who is signed in, never from a choice.
+excludes('Greiner currently uses the foreman-led group workflow.',
+  'the Greiner workflow note must be gone with the selector');
+excludes('is shown here only for review of a possible future option',
+  'the future-option explanation must be gone');
+includes("var TBT_ROLE = TBT_COMPANY !== 'greiner' ? null",
+  'Greiner must use lead / participant roles');
+includes("if (TBT_STEP === 'method' && !TBT_ROLE) return renderTbtMethod();",
+  'the method selector must never render for Greiner');
 
 for (const required of [
   'The approved ladder-inspection freshness rule and source.',

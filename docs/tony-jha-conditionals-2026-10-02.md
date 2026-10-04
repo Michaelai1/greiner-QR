@@ -2,26 +2,62 @@
 
 This is an internal build note for the isolated Greiner review branch. It is not a production promise.
 
-## Final product decisions built in this branch (2026-10-03)
-
-The final prompt of 2026-10-03 overrides the research report where they differ.
+## Final product decisions built in this branch (corrected 2026-10-04)
 
 - Separate **Complete New JHA** and **Revise Submitted JHA** routes; New or Revised is never asked again.
 - **Estimated Time of Completion** replaces Complete Time.
-- The old ladder/fall-protection variance questions are retired from new and revised JHAs (form, validation,
-  conditional logic, payload, revision prefill, new PDFs, new office detail). Older JHAs still show the questions and
-  answers exactly as submitted.
-- Ladder use = Yes asks for a **Ladder ID** (one equipment category, "Ladder"), then shows a small **Ladder inspection**
-  card: Ladder ID, last inspection date, last inspected by, inspection status. **Record inspection** stamps the signed-in
-  inspector and the application's time (no backdating); an optional **Add defect or unsafe condition** asks for a
-  description, an optional photo, and whether the ladder was removed from service. An unresolved defect shows
-  **Do Not Use**, and a JHA cannot be submitted with that ladder.
-- Aerial lift use = Yes records every competent person who may conduct the lift inspections. It records planned
-  responsibility only.
-- Revisions: same company and job, current Indianapolis workweek (Mon 12:00 AM – Fri 11:59 PM), up to three revisions per
-  original, always from the latest version, "What changed?" required, server-stamped, immutable, stale submissions refused.
-- The shared JHA model (`JHA-MODEL` block in `index.html`, byte-identical copy in the dashboard's `jha-model.js`) is the
-  one definition of the fields that phone review, office detail and the PDF all render.
+- The old ladder/fall-protection variance questions are retired from new and revised JHAs. Older JHAs still show the
+  questions and answers exactly as submitted.
+- **Ladders are selected, never typed.** Ladder use = Yes asks **Which ladder or ladders will be used today?** and offers a
+  searchable multi-select of the ladders assigned to the job (ID, description, last inspection, Do Not Use). No ladders
+  assigned → "No ladders are assigned to this job. Contact the office before using a ladder." and the JHA cannot be
+  submitted with ladder use. There is no free-text fallback.
+- Each selected ladder has its own card: **Ladder {ID}**, last inspected, inspected by, current status.
+  **Inspect for today's use** records the signed-in employee (user id + name), job, company, server time, the JHA root and
+  version being written, and the exact versioned attestation "I inspected this ladder before use today and found it safe
+  to use." (`ladder-safe-use-v1`). Signed out → "Sign in with your employee access before recording an inspection." No
+  typed name is accepted. This is an attestation, not a handwritten signature, and makes no OSHA claim.
+- **Report a defect or unsafe condition** (hidden until chosen): required description, optional camera-first photo
+  (`accept="image/*" capture="environment"`, preview, retake, remove, same 1600 px JPEG compression as other inspection
+  photos), and the required acknowledgment "I marked or tagged this ladder 'Do Not Use' and removed it from service."
+  (`ladder-do-not-use-v1`). The ladder then shows Do Not Use, cannot be confirmed safe, and blocks the JHA until a
+  different assigned ladder is used. The defect stays on the JHA (review, office detail, revision prefill, PDF).
+- Aerial lift use = Yes asks **Who will conduct the lift inspections?** and records names only.
+- Revisions: tapping an eligible JHA opens the editor populated from the latest version, with a compact banner. No
+  required "What changed?"; the app stores a field-level difference automatically, plus an optional revision note. All
+  protections stay: immutable versions, same company and job, Mon–Fri Indianapolis workweek, three-revision cap, server
+  time, latest-head branching, stale-submission refusal.
+- Toolbox Talks (Greiner): no workflow selector. One assigned talk per job; the designated lead presents and records
+  attendance ("Leading this talk"); each participant follows along (original document or Guided Talk) and submits their
+  own acknowledgment. The office sees the lead's presentation and each acknowledgment separately, with engagement time.
+
+### Ladder IDs in production
+
+**Greiner must confirm how physical Ladder IDs will be labeled and maintained before this can become the production source
+of truth.** The demo uses fixture ladders assigned to the demo job; nothing is connected to real ladder records.
+
+### Not enforced yet (future Greiner decisions)
+
+- **Ladder training.** No training or qualification check gates "Inspect for today's use", because the production training
+  source is incomplete. Enforcement is a future Greiner decision.
+- **Defect resolution.** Field users can never resolve or delete a defect. Clearing an established defect will need an
+  office/admin resolution workflow, which is not built in this demo.
+
+### Production requirement — loading a JHA to revise
+
+The phone reads revisable JHAs through one data-access boundary (`JHA_SOURCE` in `index.html`). Demo mode uses the in-page
+fixtures; the production source is deliberately not connected on this branch. The production implementation must:
+
+1. **Query by company and job** — only the signed-in user's company and the job of the field session.
+2. **Use a stable root JHA ID** — every version of a family shares `root_jha_id`; versions are never re-keyed.
+3. **Resolve the latest revision** server-side (highest `revision_number`; the head is the only version a revision may
+   start from).
+4. **Authorize** — field-session scope plus the job assignment; never trust ids sent by the phone.
+5. **Apply workweek eligibility** — America/Indiana/Indianapolis, Monday 12:00 AM to Friday 11:59 PM (configurable).
+6. **Enforce the three-revision cap** in the database write, not only in the UI.
+7. **Protect against stale heads** — the write names the base version id and fails if the head has moved.
+8. **Hydrate every stored field and conditional state** — ladder selections, per-ladder checks, defects, aerial
+   inspectors, crew, photos — so the editor opens exactly as the latest version was submitted.
 
 ## Unresolved behavior — do not invent
 
@@ -37,8 +73,8 @@ The final prompt of 2026-10-03 overrides the research report where they differ.
   "Explain why using any fall restraint system is not needed in this instance" / Yes: who inspects the fall-protection
   equipment). The final prompt replaced the ladder section with the Ladder ID card and does not include this branch, so
   it is **not built**. Needs a product decision.
-- Where real ladder inspection records live in production. The demo uses fixtures; without a connected source the phone
-  saves the Ladder ID and says inspection history is not connected yet.
+- Where real ladder records and inspections live in production. Without a connected source the phone says ladder
+  records are not connected and the JHA cannot claim ladder use until the office provides them.
 
 ## Backlog — after the Peine launch
 

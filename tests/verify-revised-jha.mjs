@@ -26,14 +26,18 @@ includes("return no('other-job', 'Only JHAs from this job can be revised here.')
 includes('function jhaTodayISO()', 'A single source for "today" is required');
 
 /* ---------------- picker shows the required columns ------------------- */
-for (const bit of ['Original submitted', 'Latest revision', 'Foreman', 'Crew', 'Current version',
-  'Remaining', 'Create revision', 'Choose a JHA to revise', '>Today<', '>Earlier this workweek<']) {
+// Oct 4 correction: each JHA is one full-width row and the whole row is the
+// action — no separate "Create revision" button.
+for (const bit of ["'<span class=\"jha-rev-row-meta\">Submitted '", "' \\u00b7 last revised '", 'Tap to revise',
+  'Choose a JHA to revise', '>Today<', '>Earlier this workweek<']) {
   includes(bit, `Revision picker must show "${bit}"`);
 }
+includes("'<button type=\"button\" class=\"jha-rev-row'", 'the whole row must be the button');
+excludes('>Create revision<', 'no separate Create revision button');
 includes('Choose a JHA from this job. Your changes will create a new time-stamped version. The original will not change.',
   'Picker helper text must match the approved copy');
 includes('head.data.jhaDescriptionOfWork', 'Picker must show the description of work');
-includes('orig.submitted_by', 'Picker must show the foreman');
+includes("esc(orig.submitted_by || '')", 'Picker must show the foreman');
 
 /* ---------------- selecting loads the LATEST revision ----------------- */
 includes('var latest = e.head;   // always the latest submitted version', 'Selecting a JHA must load its latest revision');
@@ -66,19 +70,16 @@ for (const banned of ['Resume Draft', 'resumeDraft', 'autoSave(', 'saveDraft',
 assert.ok(!/localStorage\.setItem\(\s*['"]jha/i.test(html), 'JHA state must not be persisted to localStorage');
 includes('no autosave', 'The no-drafts intent should be recorded in a comment');
 
-/* ---------------- "What changed?" (final prompt, Oct 3) ---------------
-   Superseded the earlier no-reason rule: a revision now records what changed
-   from a fixed list, with an optional note. */
-includes('What changed? <span class="required">*</span>', 'Revisions must ask what changed');
-for (const t of ['Work scope', 'Hazard or site condition', 'Crew assignment',
-  'Equipment or material', 'Control or procedure', 'Correction or other']) {
-  includes(`'${t}'`, `"What changed?" must offer "${t}"`);
+/* ---------------- no required reason (Oct 4 correction) ----------------
+   Tony did not ask for a change category; the app computes the field-level
+   difference itself. Only an optional note remains. */
+for (const banned of ['data-change-type', 'REVISION_CHANGE_TYPES', 'changeType', 'Reason for Revision',
+  'What changed? <span class="required">']) {
+  excludes(banned, `No required change reason may exist: "${banned}"`);
 }
-includes("return { ok: false, code: 'reason', message: 'Choose what changed.' };",
-  'A revision without a change type must be refused');
-for (const banned of ['Reason for Revision', 'reasonForRevision']) {
-  excludes(banned, `Use the approved "What changed?" wording, not "${banned}"`);
-}
+includes('Revision note, optional', 'An optional revision note is offered');
+includes('revision_diff: diffJhaData(e.head.data, nextData, e.head.crew, nextCrew),',
+  'The field-level difference must be stored automatically');
 
 /* ---------------- Description of Work (required) ---------------------- */
 includes('id="jhaDescriptionOfWork" name="jhaDescriptionOfWork" rows="3" required',
@@ -141,8 +142,11 @@ includes("if (!/^jhaTask\\d+$/.test(i.name)) return;", 'Task scan must ignore th
 includes('Is any ladder use planned or expected today?', 'The required ladder question must exist');
 includes('name="jhaLadderUse" value="yes" required', 'The ladder question must be required');
 includes('function syncLadderPanel()', 'Ladder answers must drive the conditional panel');
-includes('>Ladder ID <span class="required">*</span>', 'Ladder Yes must ask for the Ladder ID');
-includes('Enter or scan the ID displayed on the ladder.', 'Ladder ID helper text must match');
+// Oct 4 correction: ladders are selected from the job's assigned list; there
+// is no free-text Ladder ID.
+includes('Which ladder or ladders will be used today? <span class="required">*</span>', 'Ladder Yes must ask which ladders');
+excludes('id="jhaLadderId"', 'There must be no free-text Ladder ID field');
+excludes('Enter or scan the ID displayed on the ladder.', 'The free-text helper must be gone');
 // The retired questions survive ONLY in the model's legacy list (for old records).
 const formHtml = html.slice(html.indexOf('<form id="jhaForm">'), html.indexOf('</form>', html.indexOf('<form id="jhaForm">')));
 for (const gone of ['Can this work be done safely from a ladder?', 'one-man scissor lift',

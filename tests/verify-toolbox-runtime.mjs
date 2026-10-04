@@ -14,7 +14,11 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 const ROOT = path.resolve(new URL('../', import.meta.url).pathname);
-const PAGE = `file://${ROOT}/index.html?demo=1`;
+// Greiner no longer shows a workflow selector (lead/participant roles instead;
+// covered by verify-jha-runtime.mjs). The shared selector machinery still runs
+// for Choice, so this suite drives it there.
+const BASE_PAGE = `file://${ROOT}/index.html?demo=1`;
+const PAGE = `${BASE_PAGE}&company=choice`;
 
 const BROWSE = [
   path.join(ROOT, '.claude/skills/gstack/browse/dist/browse'),
@@ -409,9 +413,9 @@ try {
   });
 
   check('Guided Talk leads into individual completion, with its own wording', () => {
-    goto(`${PAGE}&company=peine`);
+    goto(`${BASE_PAGE}&company=peine`);
     js(`try{localStorage.removeItem('cs_tbt_mobile_demo_v1');}catch(e){} return 'ok';`);
-    goto(`${PAGE}&company=peine`);
+    goto(`${BASE_PAGE}&company=peine`);
     const ind = js(`
       var b=null;
       Array.prototype.forEach.call(document.querySelectorAll('[data-demoform]'),function(x){

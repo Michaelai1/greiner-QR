@@ -135,6 +135,8 @@ try {
   });
 
   const page = await open('demo=1&demonow=' + WED);
+  const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAEklEQVR4nGP4z8CAFWEXHbQSACj/P8Fu7N9hAAAAAElFTkSuQmCC', 'base64');
+  const photo = (name) => ({ name, mimeType: 'image/png', buffer: PNG });
 
   await check('Part 1: two entry routes, no New/Revised question, Estimated Time of Completion', async () => {
     const tiles = await page.$$eval('[data-demoform]', (b) => b.map((x) => x.textContent));
@@ -146,158 +148,188 @@ try {
     assert.equal(await page.$('#openJobSiteAnalysisBtn'), null, 'the checklist JHA tile is gone');
   });
 
-  await check('1. Ladder No hides and clears every ladder child field', async () => {
-    await page.check('input[name=jhaLadderUse][value=yes]');
-    await page.fill('#jhaLadderId', 'LAD-101');
-    assert.ok((await val(page, '#jhaLadderInspection')).includes('LAD-101'));
-    await page.check('input[name=jhaLadderUse][value=no]');
-    assert.equal(await page.isVisible('#jhaLadderPanel'), false);
-    assert.equal(await val(page, '#jhaLadderId'), '');
-    assert.equal(await val(page, '#jhaLadderInspection'), '');
-    assert.equal(await page.$eval('#jhaLadderCard', (e) => e.innerHTML), '');
-    assert.equal(await page.$eval('#jhaLadderId', (e) => e.required), false);
-  });
-
-  await check('2. Ladder Yes requires a Ladder ID (label and helper text as approved)', async () => {
-    await page.check('input[name=jhaLadderUse][value=yes]');
-    assert.equal(await page.$eval('#jhaLadderId', (e) => e.required), true);
-    const panel = await text(page, '#jhaLadderPanel');
-    assert.ok(panel.includes('Ladder ID') && panel.includes('Enter or scan the ID displayed on the ladder.'));
-  });
-
-  await check('3. Known ID shows the last inspection and inspector', async () => {
-    await page.fill('#jhaLadderId', 'lad-101');
-    const card = await text(page, '#jhaLadderCard');
-    for (const bit of ['Ladder inspection', 'LAD-101', 'Last inspection date', 'Last inspected by',
-      'Alex Rivera (Demo)', 'Inspection status', 'No open defects reported', 'Record inspection']) {
-      assert.ok(card.includes(bit), `card is missing "${bit}"`);
-    }
-    assert.ok(!/approved|OSHA|ready for use|certified|compliant/i.test(card), 'no approval or OSHA claims');
-  });
-
-  await check('4. Unknown ID shows no history and never matches another ladder', async () => {
-    await page.fill('#jhaLadderId', 'LAD-10');
-    const card = await text(page, '#jhaLadderCard');
-    assert.ok(card.includes('No inspection history was found for Ladder LAD-10'));
-    assert.ok(!card.includes('Alex Rivera'), 'LAD-10 must not pick up LAD-101');
-  });
-
-  await check('5. Duplicate ladder IDs fail clearly in the card', async () => {
-    await page.evaluate(() => { NG.demoJha.ladders().registry.push({ ladder_id: 'LAD-555', category: 'Ladder' },
-      { ladder_id: 'lad-555', category: 'Ladder' }); });
-    await page.fill('#jhaLadderId', 'LAD-555');
-    const card = await text(page, '#jhaLadderCard');
-    assert.ok(card.includes('More than one ladder is registered as LAD-555'));
-    assert.ok(!card.includes('Record inspection'), 'no inspection may be recorded against an ambiguous ID');
-  });
-
-  await check('6-7. Recording an inspection: signed-in inspector, automatic time, no way to backdate', async () => {
-    await page.fill('#jhaLadderId', 'LAD-204');
-    await page.click('#jhaLadRecOpen');
-    assert.equal(await text(page, '#jhaLadRecWho'), 'Demo Foreman', 'inspector defaults to the signed-in user');
-    assert.equal(await page.$('#jhaLadRecWhoInput'), null, 'no name box when the user is known');
-    assert.equal(await page.$$eval('#jhaLadRec input[type=date], #jhaLadRec input[type=time], #jhaLadRec input[type=datetime-local]', (x) => x.length), 0,
-      'there is no date or time field to backdate with');
-    await page.click('#jhaLadRecSave');
-    assert.ok((await text(page, '#jhaLadRecErr')).includes('Confirm that you inspected this ladder before use.'));
-    await page.check('#jhaLadRecAck');
-    await page.click('#jhaLadRecSave');
-    const card = await text(page, '#jhaLadderCard');
-    assert.ok(card.includes('Demo Foreman'), 'the new inspection names the inspector');
-    assert.ok(card.includes('Sep 30, 2026') && card.includes('3:00 PM'), 'the time is the application clock');
-    const rec = await page.evaluate(() => { const i = NG.demoJha.ladders().inspections; return i[i.length - 1]; });
-    assert.equal(rec.inspected_at, '2026-09-30T19:00:00.000Z');
-    assert.equal(rec.defect, null, '8. no defect answer was required');
-  });
-
-  await check('8-9. Optional defect: required only once opened, then Do Not Use is shown', async () => {
-    await page.click('#jhaLadRecOpen');
-    await page.check('#jhaLadRecAck');
-    await page.click('#jhaLadRecDefOpen');
-    await page.click('#jhaLadRecSave');
-    assert.ok((await text(page, '#jhaLadRecErr')).includes('Describe the defect'));
-    await page.fill('#jhaLadRecDefDesc', 'Bent rung on step 4');
-    await page.click('#jhaLadRecSave');
-    assert.ok((await text(page, '#jhaLadRecErr')).includes('removed from service'));
-    await page.click('[data-lad-removed="yes"]');
-    await page.click('#jhaLadRecSave');
-    const card = await text(page, '#jhaLadderCard');
-    assert.ok(card.includes('DO NOT USE') && card.includes('Bent rung on step 4'), card);
-    await page.fill('#jhaLadderId', 'LAD-317');
-    assert.ok((await text(page, '#jhaLadderCard')).includes('DO NOT USE'), 'an existing open defect also shows Do Not Use');
-  });
-
-  await check('12-13. Aerial lifts: several responsible people; No clears them', async () => {
+  await check('1-2. Aerial lifts: question present; several inspectors; No clears them', async () => {
+    const sec = await text(page, '[data-jha-model="aerial"]');
+    assert.ok(sec.includes('Will any aerial lift devices be used today?'));
     await page.check('input[name=jhaAerialUse][value=yes]');
     const panel = await text(page, '#jhaAerialPanel');
-    assert.ok(panel.includes('What competent person or persons will conduct the lift inspections?'));
+    assert.ok(panel.includes('Who will conduct the lift inspections?'));
     assert.ok(panel.includes('Select every person who may conduct an inspection today.'));
+    assert.equal(await page.$$eval('#jhaAerialPanel input, #jhaAerialPanel textarea, #jhaAerialPanel select', (x) => x.filter((e) => e.type !== 'hidden').length), 0,
+      'no further questions in the aerial section');
     await page.click('[data-aerial-person="Alex Rivera (Demo)"]');
     await page.click('[data-aerial-person="Jordan Blake (Demo)"]');
     assert.deepEqual(JSON.parse(await val(page, '#jhaAerialInspectors')), ['Alex Rivera (Demo)', 'Jordan Blake (Demo)']);
     await page.check('input[name=jhaAerialUse][value=no]');
     assert.equal(await val(page, '#jhaAerialInspectors'), '');
     await page.check('input[name=jhaAerialUse][value=yes]');
-    assert.equal(await page.locator('#jhaAerialRoster .is-on').count(), 0, 'selections do not come back after No');
-  });
-
-  await check('A Do Not Use ladder cannot be submitted on a JHA', async () => {
     await page.click('[data-aerial-person="Alex Rivera (Demo)"]');
     await page.click('[data-aerial-person="Jordan Blake (Demo)"]');
+  });
+
+  await check('3, 5. Ladder choices are the job’s assigned ladders only; no free-text ID', async () => {
+    await page.check('input[name=jhaLadderUse][value=yes]');
+    assert.ok((await text(page, '#jhaLadderPanel')).includes('Which ladder or ladders will be used today?'));
+    const ids = await page.$$eval('[data-ladder-opt]', (b) => b.map((x) => x.getAttribute('data-ladder-opt')));
+    assert.deepEqual(ids, ['LAD-101', 'LAD-120', 'LAD-204', 'LAD-317']);
+    assert.ok(!ids.includes('LAD-550'), 'a ladder on another job is never offered');
+    assert.equal(await page.$('#jhaLadderId'), null, 'there is no free-text Ladder ID field');
+    const opt = await text(page, '[data-ladder-opt="LAD-317"]');
+    assert.ok(opt.includes('DO NOT USE') && opt.includes('10 ft fiberglass step ladder'));
+    assert.ok((await text(page, '[data-ladder-opt="LAD-101"]')).includes('Last inspected Sep 29, 2026'));
+    await page.fill('#jhaLadderSearch', '204');
+    assert.deepEqual(await page.$$eval('[data-ladder-opt]', (b) => b.map((x) => x.getAttribute('data-ladder-opt'))), ['LAD-204']);
+    await page.fill('#jhaLadderSearch', '');
+  });
+
+  await check('4, 7-8. Several ladders; each gets its own card with exactly its history', async () => {
+    await page.click('[data-ladder-opt="LAD-101"]');
+    await page.click('[data-ladder-opt="LAD-204"]');
+    assert.deepEqual(await page.$$eval('[data-ladder-card]', (c) => c.map((x) => x.getAttribute('data-ladder-card'))), ['LAD-101', 'LAD-204']);
+    const a = await text(page, '[data-ladder-card="LAD-101"]'), b = await text(page, '[data-ladder-card="LAD-204"]');
+    assert.ok(a.startsWith('Ladder LAD-101') && a.includes('Alex Rivera (Demo)') && a.includes('Current status'));
+    assert.ok(b.includes('Jordan Blake (Demo)') && !b.includes('Alex Rivera (Demo)'), 'no history crosses between ladders');
+    assert.ok(a.includes('Inspect for today’s use') && a.includes('Report a defect or unsafe condition'));
+    await page.click('[data-ladder-opt="LAD-120"]');
+    assert.ok((await text(page, '[data-ladder-card="LAD-120"]')).includes('No previous inspection is recorded for this ladder.'));
+    await page.click('[data-ladder-opt="LAD-120"]');
+  });
+
+  await check('9-12. Inspect for today’s use: session inspector, automatic time, exact attestation', async () => {
+    await page.click('[data-lad-inspect="LAD-101"]');
+    const panel = await text(page, '[data-ladder-card="LAD-101"] [data-lad-panel="inspect"]');
+    assert.ok(panel.includes('Inspector') && panel.includes('Demo Foreman'));
+    assert.ok(panel.includes('Inspection time') && panel.includes('Sep 30, 2026') && panel.includes('set automatically'));
+    assert.equal(await page.$$eval('[data-lad-panel="inspect"] input:not([type=checkbox]), [data-lad-panel="inspect"] textarea', (x) => x.length), 0,
+      'no editable name, date or time');
+    assert.ok(panel.includes('I inspected this ladder before use today and found it safe to use.'));
+    assert.equal(await page.$eval('[data-lad-confirm="LAD-101"]', (b) => b.disabled), true, 'Confirm stays disabled until the box is ticked');
+    await page.check('[data-lad-attest="LAD-101"]');
+    await page.click('[data-lad-confirm="LAD-101"]');
+    assert.ok((await text(page, '[data-ladder-card="LAD-101"]')).includes('Confirmed safe for use today · Demo Foreman'));
+    const rec = await page.evaluate(() => { const i = NG.demoJha.ladders().inspections; return i[i.length - 1]; });
+    assert.equal(rec.inspected_at, '2026-09-30T19:00:00.000Z');
+    assert.equal(rec.inspected_by_user_id, 'demo-user-foreman');
+    assert.equal(rec.attestation_text, 'I inspected this ladder before use today and found it safe to use.');
+    assert.equal(rec.attestation_version, 'ladder-safe-use-v1');
+    assert.equal(rec.job_id, 'demo-job-001'); assert.equal(rec.company_id, 'demo-greiner');
+    assert.ok(rec.jha_root_id && rec.jha_revision_number === 1, 'linked to the JHA being written');
+  });
+
+  await check('10. Signed out: no typed name can stand in for identity', async () => {
+    const p = await open('demo=1&ngform=jha&demouser=none&demonow=' + WED);
+    await p.check('input[name=jhaLadderUse][value=yes]');
+    await p.click('[data-ladder-opt="LAD-101"]');
+    await p.click('[data-lad-inspect="LAD-101"]');
+    const c = await text(p, '[data-ladder-card="LAD-101"]');
+    assert.ok(c.includes('Sign in with your employee access before recording an inspection.'));
+    assert.equal(await p.$('[data-ladder-card="LAD-101"] input[type=text]'), null);
+    assert.equal(await p.$('[data-lad-confirm="LAD-101"]'), null);
+    await p.close();
+  });
+
+  await check('13-16. Defect report: hidden until chosen; camera-first photo; acknowledgment', async () => {
+    assert.equal(await page.$('[data-ladder-card="LAD-204"] [data-lad-panel="defect"]'), null, 'hidden until selected');
+    await page.click('[data-lad-defect="LAD-204"]');
+    const panel = await text(page, '[data-ladder-card="LAD-204"]');
+    assert.ok(panel.includes('Describe the defect or unsafe condition'));
+    assert.ok(panel.includes('I marked or tagged this ladder ‘Do Not Use’ and removed it from service.'));
+    assert.ok(!/removed from service\?|Was the ladder removed/.test(panel), 'the old Yes/No question is gone');
+    assert.ok(panel.includes('Save defect report') && panel.includes('Cancel defect report') && !panel.includes('Remove defect'));
+    const file = await page.$eval('[data-lad-file="LAD-204"]', (f) => ({ accept: f.accept, capture: f.getAttribute('capture'), hidden: f.hidden, visible: f.offsetParent !== null }));
+    assert.deepEqual(file, { accept: 'image/*', capture: 'environment', hidden: true, visible: false }, 'native file control stays hidden');
+    assert.ok(panel.includes('Take photo'));
+    await page.setInputFiles('[data-lad-file="LAD-204"]', photo('a.png'));
+    await page.waitForSelector('[data-ladder-card="LAD-204"] .jha-lad-photo img');
+    assert.ok((await text(page, '[data-ladder-card="LAD-204"]')).includes('Retake photo'));
+    await page.setInputFiles('[data-lad-file="LAD-204"]', photo('b.png'));
+    await page.waitForTimeout(200);
+    await page.click('[data-lad-rmphoto="LAD-204"]');
+    assert.equal(await page.$('[data-ladder-card="LAD-204"] .jha-lad-photo img'), null, 'Remove photo clears it');
+    await page.setInputFiles('[data-lad-file="LAD-204"]', photo('c.png'));
+    await page.waitForSelector('[data-ladder-card="LAD-204"] .jha-lad-photo img');
+    await page.click('[data-lad-savedef="LAD-204"]');
+    assert.ok((await text(page, '[data-ladder-card="LAD-204"]')).includes('Describe the defect'), 'description required');
+    await page.fill('[data-lad-desc="LAD-204"]', 'Bent rung on step 4');
+    await page.click('[data-lad-savedef="LAD-204"]');
+    assert.ok((await text(page, '[data-ladder-card="LAD-204"]')).includes('Confirm that you marked or tagged'), 'acknowledgment required');
+    await page.check('[data-lad-defack="LAD-204"]');
+    await page.click('[data-lad-savedef="LAD-204"]');
+    const card = await text(page, '[data-ladder-card="LAD-204"]');
+    assert.ok(card.includes('DO NOT USE') && card.includes('Bent rung on step 4'));
+    assert.equal(await page.$('[data-lad-inspect="LAD-204"]'), null, '17. a defective ladder cannot be confirmed safe');
+    assert.ok(!/resolve|delete defect|clear defect/i.test(card), 'no field-side resolve or delete');
+    const rec = await page.evaluate(() => { const i = NG.demoJha.ladders().inspections; return i[i.length - 1]; });
+    assert.equal(rec.defect.photo.mime, 'image/jpeg', 'the photo went through the same compression as other inspection photos');
+  });
+
+  await check('17. A Do Not Use ladder blocks the JHA until a different ladder is used', async () => {
     await fillRequired(page, '#jhaForm');
-    await page.fill('#jhaLadderId', 'LAD-317');
     const before = await page.evaluate(() => NG.demoJha.store().length);
     await page.click('#jhaSubmitBtn');
     await page.waitForTimeout(200);
-    assert.equal(await page.evaluate(() => NG.demoJha.store().length), before, 'nothing was submitted');
-    assert.ok(/marked Do Not Use/.test(await page.locator('body').innerText()));
+    assert.equal(await page.evaluate(() => NG.demoJha.store().length), before);
+    assert.ok(/LAD-204 is marked Do Not Use/.test(await page.locator('body').innerText()));
+    await page.click('[data-ladder-opt="LAD-204"]');   // swap it out …
+    await page.click('[data-ladder-opt="LAD-120"]');   // … for another assigned ladder
   });
 
   let submitted;
-  await check('10, 25. New JHA submits; review, PDF document and PDF bytes carry the same answers', async () => {
-    await page.fill('#jhaLadderId', 'LAD-101');
+  await check('31. Submit: review, PDF document and PDF bytes carry the same ladder values', async () => {
     await fillRequired(page, '#jhaForm');
     await page.click('#jhaSubmitBtn');
     await page.waitForSelector('#jhaSubmittedReview', { timeout: 5000 });
     submitted = await page.evaluate(() => { const s = NG.demoJha.store(); return JSON.parse(JSON.stringify(s[s.length - 1])); });
-    for (const k of ['jhaLadderSafe', 'jhaLadderWhyNotLift', 'jhaLadderObstacle1', 'jhaLadderGreaterRisk', 'jhaNewRevised']) {
-      assert.ok(!(k in submitted.data), `retired field ${k} must not be stored`);
+    for (const k of ['jhaLadderSafe', 'jhaLadderWhyNotLift', 'jhaLadderObstacle1', 'jhaLadderGreaterRisk', 'jhaNewRevised', 'jhaLadderId']) {
+      assert.ok(!(k in submitted.data), `${k} must not be stored`);
     }
-    assert.equal(submitted.data.jhaLadderId, 'LAD-101');
-    assert.deepEqual(submitted.data.jhaAerialInspectors, ['Alex Rivera (Demo)', 'Jordan Blake (Demo)']);
+    assert.deepEqual(submitted.data.jhaLadderIds, ['LAD-101', 'LAD-120']);
+    assert.equal(submitted.data.jhaLadderChecks.find((c) => c.ladder_id === 'LAD-101').todays_check.by, 'Demo Foreman');
+    assert.equal(submitted.data.jhaLadderDefects[0].ladder_id, 'LAD-204', 'the defect stays on the JHA after the swap');
+    assert.ok(submitted.root_jha_id && submitted.data.jhaLadderChecks[0].todays_check.record_id);
     const review = await reviewPairs(page), doc = await docPairs(page);
-    assert.deepEqual(review, doc, 'phone review and the PDF document must list the same answers');
-    for (const must of ['Ladder ID = LAD-101', 'Last inspected by = Alex Rivera (Demo)',
-      'What competent person or persons will conduct the lift inspections? = Alex Rivera (Demo), Jordan Blake (Demo)',
-      'Estimated Time of Completion = 08:00']) {
+    assert.deepEqual(review, doc, 'phone review and the PDF document list the same answers');
+    for (const must of ['Which ladder or ladders will be used today? = LAD-101, LAD-120',
+      'Ladder LAD-101 — Inspection for today’s use = Confirmed safe for use by Demo Foreman · Sep 30, 2026 at 3:00 PM',
+      'Ladder LAD-120 — Last inspected = No previous inspection is recorded for this ladder.',
+      'Who will conduct the lift inspections? = Alex Rivera (Demo), Jordan Blake (Demo)']) {
       assert.ok(review.includes(must), `review is missing "${must}"`);
     }
+    assert.ok(review.some((r) => r.startsWith('Ladder LAD-204 — Defect reported = Bent rung on step 4')));
     if (JSPDF) {
       const pdf = await pdfText(page);
-      assert.ok(pdf.startsWith('%PDF'), 'a real PDF was produced');
-      for (const s of ['LAD-101', 'Alex Rivera (Demo), Jordan Blake (Demo)', 'Estimated Time of Completion']) {
-        assert.ok(pdf.includes(s), `the PDF text is missing "${s}"`);
-      }
-      assert.ok(!pdf.includes('one-man scissor lift'), 'the PDF must not carry retired questions');
-      assert.ok(pdf.includes('Sep 30, 2026'), 'the PDF header uses the record\u2019s server time, not the device clock');
+      assert.ok(pdf.startsWith('%PDF'));
+      for (const s of ['LAD-101, LAD-120', 'Bent rung on step 4', 'Who will conduct the lift inspections?']) assert.ok(pdf.includes(s), `PDF is missing "${s}"`);
+      assert.ok(!pdf.includes('one-man scissor lift'));
+      assert.ok(pdf.includes('Sep 30, 2026'), 'the PDF header uses the record’s server time');
     }
   });
 
-  await check('16. Revision picker groups Today and Earlier this workweek', async () => {
-    await page.evaluate(() => { document.querySelector('[data-demoform="revisejha"]') ? document.querySelector('[data-demoform="revisejha"]').click() : null; });
+  await check('6. No assigned ladders: clear message and the JHA cannot be submitted with ladder use', async () => {
+    const p = await open('demo=1&ngform=jha&demonow=' + WED);
+    await p.evaluate(() => { const r = NG.demoJha.ladders().registry; r.splice(0, r.length); });
+    await p.check('input[name=jhaLadderUse][value=yes]');
+    assert.equal(await text(p, '#jhaNoLadders'), 'No ladders are assigned to this job. Contact the office before using a ladder.');
+    assert.equal(await p.$('#jhaLadderSearch:visible'), null, 'no search box and no free-text fallback');
+    await p.check('input[name=jhaAerialUse][value=no]');
+    await fillRequired(p, '#jhaForm');
+    await p.click('#jhaSubmitBtn'); await p.waitForTimeout(200);
+    assert.equal(await p.$('#jhaSubmittedReview'), null, 'blocked');
+    await p.close();
+  });
+
+  await check('16 (picker). Rows grouped Today / Earlier this workweek; prior week view-only', async () => {
     await page.evaluate(() => window.showView('landing'));
     await page.click('[data-demoform="revisejha"]');
+    await page.waitForSelector('[data-revise-root]');
     const v = await text(page, '#reviseJhaView');
-    for (const bit of ['Choose a JHA to revise',
-      'Choose a JHA from this job. Your changes will create a new time-stamped version. The original will not change.',
-      'TODAY', 'EARLIER THIS WORKWEEK', 'Original submitted', 'Latest revision', 'Foreman', 'Crew',
-      'Current version', 'Remaining', 'Create revision', 'VIEW ONLY']) {
+    for (const bit of ['Choose a JHA to revise', 'Choose a JHA from this job. Your changes will create a new time-stamped version. The original will not change.',
+      'TODAY', 'EARLIER THIS WORKWEEK', 'VIEW ONLY', 'Tap to revise']) {
       assert.ok(v.toUpperCase().includes(bit.toUpperCase()), `picker is missing "${bit}"`);
     }
-    const groups = await page.evaluate(() => { const c = NG.demoJha.candidates();
-      return { today: c.today.map((x) => x.rootId), earlier: c.earlier.map((x) => x.rootId) }; });
-    assert.ok(groups.today.includes('demo-jha-a') && groups.today.includes('demo-jha-b'));
-    assert.ok(groups.earlier.includes('demo-jha-c') && groups.earlier.includes('demo-jha-d'));
+    assert.ok(!/Create revision/.test(v), 'no separate small action button');
+    const row = await page.$eval('[data-revise-root="demo-jha-a"]', (b) => ({ tag: b.tagName, w: b.getBoundingClientRect().width, vw: window.innerWidth }));
+    assert.equal(row.tag, 'BUTTON'); assert.ok(row.w >= row.vw - 40, 'rows are full width');
   });
 
   await check('11, 18. Prior-week JHA is view-only and still shows its original variance answers', async () => {
@@ -307,75 +339,82 @@ try {
     assert.ok(sheet.includes('Can this work be done safely from a ladder?'));
     assert.ok(sheet.includes('Corridor too narrow for a scissor lift at this location.'));
     await page.click('#jhaSheet [data-sheet="close"]');
-    assert.equal(await page.$('[data-revise-root="demo-jha-e"]'), null, 'no Create revision for a prior-week JHA');
+    assert.equal(await page.$('[data-revise-root="demo-jha-e"]'), null);
   });
 
-  await check('20. A JHA with three revisions offers Complete New JHA instead', async () => {
-    const card = await text(page, '[data-revise-card="demo-jha-c"]');
-    assert.ok(card.includes('This JHA already has 3 revisions. Start a new JHA to document additional changes.'));
-    assert.ok(card.includes('Complete New JHA') && !card.includes('Create revision'));
-    assert.ok(card.includes('No revisions left'));
+  await check('20. A JHA with three revisions routes to Complete New JHA', async () => {
+    const row = await text(page, '[data-capped-root="demo-jha-c"]');
+    assert.ok(row.includes('This JHA already has 3 revisions. Start a new JHA to document additional changes.'));
+    await page.click('[data-capped-root="demo-jha-c"]');
+    assert.ok((await text(page, '#jhaSheet')).includes('Complete New JHA'));
+    await page.click('#jhaSheet [data-sheet="close"]');
   });
 
-  await check('14-15, 19, 21-22. Revision prefills the latest version and submits as a new record', async () => {
+  await check('19-23. Tapping a JHA opens the populated editor; revision stores an automatic diff', async () => {
     const v1 = await page.evaluate(() => JSON.stringify(NG.demoJha.history('demo-jha-a')));
     await page.click('[data-revise-root="demo-jha-a"]');
+    await page.waitForSelector('#jhaRevisionBanner');
+    assert.equal(await page.evaluate(() => (document.querySelector('.view.active') || {}).id), 'inspectionJhaView', '19. straight into the editor');
     const banner = await text(page, '#jhaRevisionBanner');
-    assert.ok(banner.includes('Creating Revision 1'));
-    assert.ok(banner.includes('Changes apply when this revision is submitted. Earlier versions stay in the history.'));
-    assert.equal(await val(page, '#jhaLadderId'), 'LAD-101', '15. Ladder ID restored');
-    const card = await text(page, '#jhaLadderCard');
-    assert.ok(card.includes('Alex Rivera (Demo)') && card.includes('Last inspection date'), '15. inspection info visible');
-    assert.equal(await page.isChecked('input[name=jhaAerialUse][value=no]'), true);
+    assert.ok(banner.includes('Revising JHA submitted Sep 30, 2026'));
+    assert.ok(banner.includes('Your submission will create Revision 1. The earlier versions will remain unchanged.'));
+    assert.equal(await page.$('[data-change-type]'), null, '21. no "What changed?" selector');
+    assert.equal(await val(page, '#jhaDescriptionOfWork'), 'Set overhead pipe hangers, Level 2 east corridor', '20. latest values loaded');
+    assert.deepEqual(await page.$$eval('[data-ladder-card]', (c) => c.map((x) => x.getAttribute('data-ladder-card'))), ['LAD-101'], 'ladder selection restored');
+    assert.equal(await page.isChecked('input[name=jhaAerialUse][value=no]'), true, 'conditional state restored');
     assert.equal(await text(page, '#jhaSubmitBtn'), 'Submit Revision 1');
-    // 14. Same conditional logic on the revision route.
-    await page.check('input[name=jhaLadderUse][value=no]');
-    assert.equal(await val(page, '#jhaLadderId'), '');
-    await page.check('input[name=jhaLadderUse][value=yes]');
-    await page.fill('#jhaLadderId', 'LAD-101');
+    await page.fill('#jhaDescriptionOfWork', 'Set overhead pipe hangers, Level 2 east and west corridors');
+    await page.fill('#jhaRevNote', 'West corridor opened up after lunch');
     await fillRequired(page, '#jhaForm');
     await page.click('#jhaSubmitBtn');
-    await page.waitForTimeout(150);
-    assert.equal(await page.$('#jhaSheet'), null, 'no submit before "What changed?" is answered');
-    await page.click('[data-change-type="Hazard or site condition"]');
-    await page.fill('#jhaRevNote', 'Ceiling opened up near column C4');
-    await page.click('#jhaSubmitBtn');
     const sheet = await text(page, '#jhaSheet');
-    assert.ok(sheet.includes('This creates a new record with the current time. It does not replace or backdate the original JHA.'));
-    assert.ok(sheet.includes('Hazard or site condition'));
+    assert.ok(sheet.includes('This creates a new, time-stamped version. It does not replace or change the original JHA.'));
+    assert.ok(sheet.includes('Description of Work'), 'the computed changes are listed');
     await page.click('#jhaSheet [data-sheet="confirm"]');
     await page.waitForSelector('#jhaSubmittedReview', { timeout: 5000 });
-    const done = await text(page, '#demoSubmitNotice');
-    assert.ok(done.includes('Revision 1 submitted. The new version is active as of Sep 30, 2026'));
     const hist = await page.evaluate(() => NG.demoJha.history('demo-jha-a'));
     assert.deepEqual(hist.map((h) => h.revision_number), [1, 2]);
     assert.equal(hist[1].previous_revision_id, hist[0].id);
     assert.equal(hist[1].revised_at, '2026-09-30T19:00:00.000Z');
-    assert.equal(hist[1].revision_change_type, 'Hazard or site condition');
-    assert.equal(JSON.stringify([hist[0]]), JSON.stringify(JSON.parse(v1)), '22. the original is unchanged');
+    assert.equal(hist[1].revision_note, 'West corridor opened up after lunch');
+    const d = hist[1].revision_diff.find((x) => x.key === 'jhaDescriptionOfWork');
+    assert.deepEqual([d.from, d.to], ['Set overhead pipe hangers, Level 2 east corridor', 'Set overhead pipe hangers, Level 2 east and west corridors']);
+    assert.equal(JSON.stringify([hist[0]]), JSON.stringify(JSON.parse(v1)), '24. the original is unchanged');
   });
 
-  await check('23. A stale revision is refused and nothing is duplicated', async () => {
+  await check('24. A stale revision is refused and nothing is duplicated', async () => {
     await page.evaluate(() => window.showView('landing'));
     await page.click('[data-demoform="revisejha"]');
+    await page.waitForSelector('[data-revise-root="demo-jha-b"]');
     await page.click('[data-revise-root="demo-jha-b"]');
-    // Someone else revises demo-jha-b while this form is open.
+    await page.waitForSelector('#jhaRevisionBanner');
     await page.evaluate(() => {
       const s = NG.demoJha.store(), h = JhaModel.familyHead(s, 'demo-jha-b');
       JhaModel.submitRevision(s, { rootId: 'demo-jha-b', baseVersionId: h.id, jobId: 'demo-job-001',
-        companyId: 'demo-greiner', by: 'Other Foreman', changeType: 'Crew assignment', data: h.data }, new Date(NG.demoJha.clock()));
+        companyId: 'demo-greiner', by: 'Other Foreman', data: h.data, crew: h.crew }, new Date(NG.demoJha.clock()));
     });
     await fillRequired(page, '#jhaForm');
-    await page.click('[data-change-type="Work scope"]');
     await page.click('#jhaSubmitBtn');
     await page.click('#jhaSheet [data-sheet="confirm"]');
-    await page.waitForTimeout(150);
-    const sheet = await text(page, '#jhaSheet');
-    assert.ok(sheet.includes('This JHA was revised after you opened it. Refresh to load the latest version'));
-    const nums = await page.evaluate(() => NG.demoJha.history('demo-jha-b').map((h) => h.revision_number));
-    assert.deepEqual(nums, [1, 2, 3], 'only the other foreman’s revision was added');
+    await page.waitForTimeout(200);
+    assert.ok((await text(page, '#jhaSheet')).includes('This JHA was revised after you opened it. Refresh to load the latest version'));
+    assert.deepEqual(await page.evaluate(() => NG.demoJha.history('demo-jha-b').map((h) => h.revision_number)), [1, 2, 3]);
     await page.click('#jhaSheet [data-sheet="refresh"]');
-    assert.ok((await text(page, '#jhaRevisionBanner')).includes('Creating Revision 3'), 'refresh loads the latest version');
+    await page.waitForTimeout(200);
+    assert.ok((await text(page, '#jhaRevisionBanner')).includes('create Revision 3'), 'refresh loads the latest version');
+  });
+
+  await check('18. Revision prefill keeps the reported defect and the Do Not Use ladder', async () => {
+    await page.evaluate(() => window.showView('landing'));
+    await page.click('[data-demoform="revisejha"]');
+    await page.waitForSelector('[data-revise-root="' + submitted.root_jha_id + '"]');
+    await page.click('[data-revise-root="' + submitted.root_jha_id + '"]');
+    await page.waitForSelector('#jhaRevisionBanner');
+    const defects = JSON.parse(await val(page, '#jhaLadderDefects'));
+    assert.equal(defects[0].ladder_id, 'LAD-204'); assert.equal(defects[0].description, 'Bent rung on step 4');
+    assert.deepEqual(await page.$$eval('[data-ladder-card]', (c) => c.map((x) => x.getAttribute('data-ladder-card'))), ['LAD-101', 'LAD-120']);
+    assert.ok((await text(page, '[data-ladder-opt="LAD-204"]')).includes('DO NOT USE'));
+    assert.ok((await text(page, '[data-ladder-card="LAD-101"]')).includes('Confirmed safe for use today'), 'today\u2019s check is restored too');
   });
 
   await check('24. Compliance still counts each family once', async () => {
@@ -387,6 +426,7 @@ try {
   await check('Weekend: revising routes to Complete New JHA', async () => {
     const p = await open('demo=1&demonow=' + encodeURIComponent('2026-10-03T10:00:00-04:00'));
     await p.click('[data-demoform="revisejha"]');
+    await p.waitForSelector('#reviseJhaList [data-new-jha]');
     const v = await text(p, '#reviseJhaView');
     assert.ok(v.includes('JHAs can be revised Monday through Friday.'));
     assert.equal(await p.$('[data-revise-root]'), null);
@@ -427,43 +467,85 @@ try {
     await p.close();
   });
 
-  await check('28. Toolbox Talk: foreman-led for Greiner, foreman picks the week\u2019s talk', async () => {
+  const SELECTOR_TEXT = /Foreman Leads Group Talk|Each Employee Completes Individually|USES THIS|Switch demo workflow|employees do not choose|possible future option/;
+  await check('25-26, 28-29. Lead phone: assigned Purdue / Fall Protection, attendance + presentation', async () => {
     const p = await open('demo=1&demonow=' + WED);
     await p.click('[data-demoform="toolbox"]');
-    const t = await p.locator('body').innerText();
-    assert.ok(t.includes('Greiner currently uses the foreman-led group workflow.'));
-    assert.equal(await p.evaluate(() => typeof TBT_MODE === 'undefined' ? null : TBT_MODE), null, 'state stays private');
-    // The foreman picks this week's talk; the default is the scheduled one.
-    const opts = await p.$$eval('#tbtTalkPick option', (o) => o.map((x) => x.textContent));
-    assert.ok(opts.length >= 2 && /\(scheduled\)$/.test(opts[0]), 'Greiner shows the weekly talk chooser');
-    await p.selectOption('#tbtTalkPick', '1');
-    const title = await p.locator('#tbtBody .tbt-doc-title').innerText();
-    assert.equal(title + ' ', opts[1].replace(' (scheduled)', '') + ' ', 'the chosen talk is the one presented');
+    const t1 = await text(p, '#toolboxTalkView');
+    assert.ok(!SELECTOR_TEXT.test(t1), '25. no workflow selector or its explanations');
+    assert.equal(await p.$('[data-tbt-method]'), null);
+    assert.equal(await p.$('#tbtTalkPick'), null, '29. the talk is fixed — no picker');
+    const role = await text(p, '#tbtRole');
+    assert.ok(role.includes('Leading this talk') && role.includes('Fall Protection') && role.includes('Purdue Academic Building'));
+    assert.deepEqual(await p.$$eval('.tbt-fmtbtn', (b) => b.map((x) => x.textContent)), ['View Original Document', 'Guided Talk'], '28');
+    await p.click('.tbt-fmtbtn:has-text("View Original Document")');
+    for (let i = 0; i < 6; i++) { const n = await p.$('#tbtNext:not([disabled])'); if (!n) break; await n.click(); }
+    await p.click('#tbtToComplete');
+    const t2 = await text(p, '#toolboxTalkView');
+    assert.ok(t2.includes('I presented this Toolbox Talk to the people listed above.'), '26. lead sees the presentation attestation');
+    assert.ok(t2.includes('Crew present') && t2.includes('Add someone not listed'));
+    await p.click('#tbtAll'); await p.check('#tbtPresented'); await p.click('#tbtSubmitLead');
+    const rec = await p.evaluate(() => JSON.parse(localStorage.getItem('cs_tbt_mobile_demo_v1')).records.pop());
+    assert.equal(rec.kind, 'lead_presentation'); assert.equal(rec.job, 'Purdue Academic Building');
+    assert.equal(rec.talkId, 'fall'); assert.equal(rec.present.length, 3);
+    assert.ok(typeof rec.engagementSeconds === 'number');
+    await p.close();
+  });
+
+  await check('27. Participant phone: follow along + own acknowledgment only', async () => {
+    const p = await open('demo=1&tbtas=participant&demonow=' + WED);
+    await p.click('[data-demoform="toolbox"]');
+    const role = await text(p, '#tbtRole');
+    assert.ok(role.includes('Following along') && role.includes('led by Demo Lead Foreman') && role.includes('Purdue Academic Building'));
+    assert.deepEqual(await p.$$eval('.tbt-fmtbtn', (b) => b.map((x) => x.textContent)), ['View Original Document', 'Guided Talk']);
+    await p.click('.tbt-fmtbtn:has-text("Guided Talk")');
+    assert.ok((await text(p, '#toolboxTalkView')).includes('I followed this section'), 'section-by-section follow-along');
+    const n = await p.evaluate(() => document.querySelectorAll('#tbtSecCount').length ? +document.querySelector('#tbtSecCount').textContent.split(' of ')[1] : 0);
+    for (let i = 0; i < n; i++) { await p.check('#tbtSecDone'); const nx = await p.$('#tbtSecNext:not([disabled])'); if (nx) await nx.click(); }
+    await p.click('#tbtToComplete');
+    const t = await text(p, '#toolboxTalkView');
+    assert.ok(t.includes('I followed along with this Toolbox Talk and had the opportunity to ask questions.'));
+    assert.ok(!t.includes('I presented this Toolbox Talk'), 'participants never see the presentation attestation');
+    assert.equal(await p.$('#tbtAll'), null); assert.equal(await p.$('#tbtManual'), null);
+    assert.ok(!SELECTOR_TEXT.test(t));
+    await p.check('#tbtAckConfirm'); await p.click('#tbtSubmitAck');
+    const rec = await p.evaluate(() => JSON.parse(localStorage.getItem('cs_tbt_mobile_demo_v1')).records.pop());
+    assert.equal(rec.kind, 'participant_ack'); assert.equal(rec.employee, 'Alex Rivera (Demo)');
+    assert.equal(rec.format, 'guided'); assert.ok(!('present' in rec) && !('presented' in rec), 'an acknowledgment is not a presentation');
     await p.close();
     const peine = await open('demo=1&company=peine&demonow=' + WED);
     await peine.click('[data-demoform="toolbox"]');
-    assert.equal(await peine.$('#tbtTalkPick'), null, "Peine's scheduled workflow is unchanged");
+    assert.ok(await peine.$('[data-tbt-method]'), "Peine's demo flow is unchanged");
     await peine.close();
   });
 
-  await check('29. No horizontal overflow at 390, 820, 1024 and 1440 px', async () => {
+  await check('32. No horizontal overflow at 390, 820, 1024 and 1440 px', async () => {
     for (const w of [390, 820, 1024, 1440]) {
       const p = await open('demo=1&demonow=' + WED, w);
       await p.click('[data-demoform="revisejha"]');
+      await p.waitForSelector('[data-revise-root]');
       const pick = await p.evaluate(() => document.scrollingElement.scrollWidth - window.innerWidth);
       await p.click('[data-revise-root="demo-jha-a"]');
+      await p.waitForSelector('#jhaRevisionBanner');
       await p.check('input[name=jhaAerialUse][value=yes]');
       await p.click('[data-aerial-person="Alex Rivera (Demo)"]');
-      await p.fill('#jhaLadderId', 'LAD-317');
-      await p.click('#jhaLadRecOpen'); await p.click('#jhaLadRecDefOpen');
+      await p.click('[data-ladder-opt="LAD-204"]');
+      await p.click('[data-lad-defect="LAD-204"]');
+      await p.setInputFiles('[data-lad-file="LAD-204"]', photo('w.png'));
+      await p.waitForSelector('.jha-lad-photo img');
       const form = await p.evaluate(() => document.scrollingElement.scrollWidth - window.innerWidth);
-      await p.fill('#jhaLadderId', 'LAD-101');
+      await p.click('[data-lad-cancel="LAD-204"]');
+      await p.click('[data-ladder-opt="LAD-204"]');
       await fillRequired(p, '#jhaForm');
-      await p.click('[data-change-type="Work scope"]');
       await p.click('#jhaSubmitBtn');
+      await p.waitForSelector('.jha-sheet');
       const sheet = await p.evaluate(() => { const s = document.querySelector('.jha-sheet'); return s.scrollWidth - s.clientWidth; });
-      assert.ok(pick <= 1 && form <= 1 && sheet <= 1, `overflow at ${w}px: picker ${pick}, form ${form}, sheet ${sheet}`);
       await p.close();
+      const tb = await open('demo=1&tbtas=participant&demonow=' + WED, w);
+      await tb.click('[data-demoform="toolbox"]');
+      const talk = await tb.evaluate(() => document.scrollingElement.scrollWidth - window.innerWidth);
+      await tb.close();
+      assert.ok(pick <= 1 && form <= 1 && sheet <= 1 && talk <= 1, `overflow at ${w}px: picker ${pick}, form ${form}, sheet ${sheet}, talk ${talk}`);
     }
   });
 
