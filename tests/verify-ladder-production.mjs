@@ -117,8 +117,11 @@ async function check(name, fn) {
   catch (e) { failures++; console.log(`  FAIL ${name}\n       ${String(e.stack || e.message).split('\n').slice(0, 4).join('\n       ')}`); }
 }
 const browser = await webkit.launch();
-async function open(query, width = 390) {
+async function open(query, width = 390, { laddersLive = true } = {}) {
   const page = await browser.newPage({ viewport: { width, height: 900 } });
+  // Ladder ID selection is demo-only in production until launch; these tests
+  // exercise the launch-ready path unless told otherwise.
+  if (laddersLive) await page.addInitScript(() => { window.__ladderIdsLive = true; });
   page.errors = [];
   page.on('pageerror', (e) => page.errors.push(e.message));
   await page.route('**/*', (r) => {
@@ -272,6 +275,19 @@ try {
     assert.equal(await p.$eval('[name="aerialVehicleId"]', (i) => i.value), 'SL-1930-01', 'the only lift is preselected');
     await p.locator('#aerialAssetSelect').scrollIntoViewIfNeeded();
     await shot(p, '07-phone-equipment-list');
+    await p.close();
+  });
+
+  await check('Production default: ladder use is asked and recorded, but never blocks and shows no picker', async () => {
+    reset();
+    STATE.units.forEach((u) => { if (/ladder/i.test(u.equipment_type)) u.job_id = null; });   // no ladders on the job
+    const p = await open('ngform=jha', 390, { laddersLive: false });
+    await p.check('input[name=jhaLadderUse][value=yes]');
+    await p.waitForTimeout(150);
+    assert.equal(await p.$eval('#jhaLadderPanel', (e) => e.style.display), 'none', 'no ladder picker in production yet');
+    assert.ok(!/No ladders are assigned|not connected/.test(await text(p, 'body')), 'no ladder warning');
+    const msg = await p.evaluate(() => window.NG.jhaSubmitCheck());
+    assert.ok(!/ladder/i.test(msg || ''), 'ladder use does not block submit: ' + msg);
     await p.close();
   });
 

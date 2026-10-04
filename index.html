@@ -7478,6 +7478,12 @@ ${photoUrls}`;
         DEMO_LADDERS = M.ladderRegistryFromEquipment(DEMO_HOME.equipment).map(M.freezeDeep);
         DEMO_LADDER_INSPECTIONS = M.ladderInspectionsFromEquipment(DEMO_HOME.equipment).map(M.freezeDeep);
       }
+      /* Ladder ID selection (pick the job's ladders, inspect, report defects) is
+         demo-only until Greiner labels its ladders and it is launched. In
+         production the JHA still asks whether ladders will be used, records the
+         answer, and never blocks on ladder records. Tests can turn it on with
+         window.__ladderIdsLive before the page loads. */
+      var LADDER_IDS_LIVE = DEMO || window.__ladderIdsLive === true;
       function ladderData() {
         if (DEMO) return { registry: DEMO_LADDERS, inspections: DEMO_LADDER_INSPECTIONS };
         if (NG.ladders && NG.ladderInspections) return { registry: NG.ladders, inspections: NG.ladderInspections };
@@ -8022,7 +8028,7 @@ ${photoUrls}`;
         var form = document.getElementById('jhaForm'); if (!form) return;
         var use = form.querySelector('input[name="jhaLadderUse"]:checked');
         var panel = document.getElementById('jhaLadderPanel'); if (!panel) return;
-        var on = !!use && use.value === 'yes';
+        var on = LADDER_IDS_LIVE && !!use && use.value === 'yes';
         panel.style.display = on ? '' : 'none';
         if (!on) {
           // A "No" answer clears every ladder child value.
@@ -8316,10 +8322,14 @@ ${photoUrls}`;
 
       /* Checks the HTML required attributes can't express (Ladder ID state,
          at least one lift inspector). Returns a message, or '' when clear. */
+      // Read-only, so the production-path tests can ask what would block a submit.
+      window.NG.jhaSubmitCheck = function () { return jhaSubmitGuard(); };
       function jhaSubmitGuard() {
         var M = window.JhaModel; if (!M) return '';
         var form = document.getElementById('jhaForm'); if (!form) return '';
         var data = jhaFormValues(form), ctx = {};
+        // Without ladder ID selection a "Yes" is recorded as answered; nothing to check.
+        if (!LADDER_IDS_LIVE) data = Object.assign({}, data, { jhaLadderUse: 'no' });
         if (data.jhaLadderUse === 'yes') {
           var opts = jobLadders() || [];
           var states = {};
