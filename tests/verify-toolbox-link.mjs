@@ -24,14 +24,20 @@ const server = http.createServer((rq, rs) => {
 await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const BASE = `http://127.0.0.1:${server.address().port}/`;
 
-const GOOD = 'goodTokenAbcdefghijklmnopqrstuv12', DONE = 'doneTokenAbcdefghijklmnopqrstuv12';
-const state = { submitted: null, progress: [], calls: [] };
+const GOOD = 'goodTokenAbcdefghijklmnopqrstuv12', DONE = 'doneTokenAbcdefghijklmnopqrstuv12', LEAD = 'leadTokenAbcdefghijklmnopqrstuv12';
+const state = { submitted: null, progress: [], calls: [], leadSubmit: null };
+const CREW = ['Crew Alpha (Test)', 'Crew Bravo (Test)', 'Crew Charlie (Test)'];
 const RPC = {
-  cs_tbt_link_open: (b) => b.p_token === GOOD || b.p_token === DONE ? [{ company: 'Greiner Brothers', talk_key: 'fall-protection',
+  cs_tbt_link_open: (b) => b.p_token === LEAD ? [{ company: 'Greiner Brothers', talk_key: 'fall-protection',
+    talk_title: 'Fall Protection', recipient_name: 'Foreman One (Test)', week_start: '2026-10-05',
+    already_done: !!state.leadSubmit, submitted_at: null, role: 'leader', group_label: 'Purdue Academic Bldg. (C800-2025)', roster: CREW }]
+    : b.p_token === GOOD || b.p_token === DONE ? [{ company: 'Greiner Brothers', talk_key: 'fall-protection',
     talk_title: 'Fall Protection', recipient_name: 'Recipient One (Test)', week_start: '2026-10-05',
     already_done: b.p_token === DONE || !!state.submitted, submitted_at: b.p_token === DONE ? '2026-10-05T13:10:00Z' : state.submitted }] : [],
   cs_tbt_link_progress: (b) => { state.progress.push(b); return null; },
-  cs_tbt_link_submit: (b) => { if (b.p_token !== GOOD) return []; state.submitted = state.submitted || '2026-10-05T13:20:00Z';
+  cs_tbt_link_submit: (b) => { if (b.p_token === LEAD) { state.leadSubmit = b;
+      return b.p_group && b.p_group.presenter ? [{ submitted_at: '2026-10-05T13:30:00Z', active_ms: b.p_active_ms, attendees_stored: true }] : []; }
+    if (b.p_token !== GOOD) return []; state.submitted = state.submitted || '2026-10-05T13:20:00Z';
     return [{ submitted_at: state.submitted, active_ms: b.p_active_ms }]; }
 };
 let checks = 0, failures = 0;
@@ -92,6 +98,32 @@ try {
     assert.ok(/Toolbox Talk recorded/.test(d) && /Recorded at/.test(d) && /Guided Talk/.test(d), d.slice(0, 300));
     assert.equal(await p.$('.pin input'), null);
     assert.ok(state.calls.includes('cs_tbt_link_submit'));
+  });
+  await check('a foreman link: the crew list, typed-in names, one submission with who was there', async () => {
+    const f = await open('#' + LEAD);
+    await f.click('[data-tbt-format="guided"]');
+    for (let i = 0; i < 8; i++) {
+      if (!(await f.$eval('#tbtSecDone', (b) => b.checked))) await f.click('#tbtSecDone');
+      const n = await f.$('#tbtSecNext:not([disabled])'); if (n) await n.click();
+    }
+    await f.click('#tbtToComplete');
+    const t = await text(f);
+    assert.ok(/Foreman-led group talk/.test(t) && /Purdue Academic Bldg\. \(C800-2025\)/.test(t), t.slice(0, 300));
+    assert.equal((await f.$$('[data-tbt-att]')).length, 3, 'the whole crew is listed');
+    assert.equal(await f.$eval('#tbtPresenter', (i) => i.value), 'Foreman One (Test)', 'presenter defaults to the foreman');
+    assert.ok(!/I reviewed the complete Toolbox Talk/.test(t), 'no participant statement for the foreman');
+    await f.click('[data-tbt-att="Crew Alpha (Test)"]');
+    await f.click('[data-tbt-att="Crew Charlie (Test)"]');
+    await f.fill('#tbtManual', 'Walk In (Test)'); await f.click('#tbtManualAdd');
+    assert.match(await text(f), /\(3 selected\)/);
+    await f.click('#tbtPresented'); await f.click('#tbtSubmitGroup'); await f.waitForTimeout(500);
+    const d = await text(f);
+    assert.ok(/Toolbox Talk recorded/.test(d) && /Walk In \(Test\)/.test(d) && /Crew Charlie \(Test\)/.test(d), d.slice(0, 400));
+    assert.ok(!/does not store it yet/.test(d), 'the server stores the attendee list');
+    assert.deepEqual(state.leadSubmit.p_group, { presenter: 'Foreman One (Test)', attendees: ['Crew Alpha (Test)', 'Crew Charlie (Test)'], manual: ['Walk In (Test)'] });
+    const o = await f.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    assert.ok(o <= 1);
+    await f.close();
   });
   await check('the token never appears in a request URL', async () => {
     assert.ok(!p.urls.some((u) => u.includes(GOOD)));

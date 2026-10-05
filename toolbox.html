@@ -72,12 +72,20 @@
         window.ToolboxTalk.renderRecorded(root, { talk: talk, company: company, submittedAt: A.submitted_at });
         return;
       }
+      // The office decides who leads: a foreman link carries role 'leader' and
+      // that job's crew. A foreman marks who attended and types in anyone missing.
+      var leader = A.role === 'leader';
+      var group = A.group_label || '';
       tt = window.ToolboxTalk.mount(root, {
-        talk: talk, company: company, employeeName: A.recipient_name, role: 'participant',
+        talk: talk, company: company, employeeName: A.recipient_name, role: leader ? 'leader' : 'participant',
+        groups: leader && group ? [group] : [],
+        roster: leader ? (A.roster || []).map(function (n) { return { n: n, g: group }; }) : [],
         defaultFormat: 'doc', pinRequired: false,
         submit: function (args) {
-          return rpc('cs_tbt_link_submit', { p_token: token, p_active_ms: Math.min(args.activeMs, 86400000),
-            p_format: args.format === 'doc' ? 'doc' : 'guided' }).then(function (rows) {
+          var body = { p_token: token, p_active_ms: Math.min(args.activeMs, 86400000),
+            p_format: args.format === 'doc' ? 'doc' : 'guided' };
+          if (leader) body.p_group = { presenter: args.presenter, attendees: args.attendees, manual: args.manual };
+          return rpc('cs_tbt_link_submit', body).then(function (rows) {
             if (!Array.isArray(rows) || !rows.length) return null;
             A.already_done = true;
             return rows[0];
