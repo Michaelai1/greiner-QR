@@ -1,4 +1,5 @@
 /* JHA ladder / aerial / revision behavior, Hot Work, Forklift and Toolbox Talk,
+ * including the ladder inspector question (Tony, Oct 9 2026),
  * driven in a real browser (WebKit) against this checkout.
  *
  * Self-contained: serves the worktree from a local port, pins the demo clock
@@ -167,6 +168,64 @@ try {
     await page.click('[data-aerial-person="Jordan Blake (Demo)"]');
   });
 
+  // Demo clock: Wed Sep 30, 2026 3:00 PM in Indianapolis.
+  const WED_3PM_ISO = '2026-09-30T19:00:00.000Z';
+  await check('L1-L3. Ladder Yes asks who will inspect the ladders, with the same crew picker as aerial lifts', async () => {
+    const sec = await text(page, '[data-jha-model="ladder"]');
+    assert.ok(sec.includes('Is any ladder use planned or expected today?'));
+    await page.check('input[name=jhaLadderUse][value=yes]');
+    const panel = await text(page, '#jhaLadderPanel');
+    assert.ok(panel.includes('Who will inspect the ladders prior to use?'));
+    assert.ok(panel.indexOf('Who will inspect the ladders prior to use?') < panel.indexOf('Which ladder or ladders will be used today?'),
+      'the inspector question comes first; the demo-only ladder ID picker sits under it');
+    // Same component as the aerial lift inspectors: same chips, same crew list, same container.
+    const aerial = await page.$$eval('#jhaAerialRoster [data-aerial-person]', (b) => b.map((x) => x.getAttribute('data-aerial-person')));
+    const ladder = await page.$$eval('#jhaLadderRoster [data-ladder-person]', (b) => b.map((x) => x.getAttribute('data-ladder-person')));
+    const crew = await page.evaluate(() => (NG.people || []).map((p) => p.name || String(p)).filter(Boolean));
+    assert.ok(ladder.length >= 5, 'the job crew list is offered');
+    assert.deepEqual(ladder.filter((n) => crew.includes(n)), crew, 'every crew member is offered');
+    assert.deepEqual(ladder.filter((n) => !aerial.includes(n)), [], 'the same names as the aerial picker');
+    assert.equal(await page.$eval('#jhaLadderRoster', (e) => e.className), await page.$eval('#jhaAerialRoster', (e) => e.className));
+    assert.ok(await page.$$eval('#jhaLadderRoster button', (b) => b.every((x) => x.className.includes('jha-crew-chip'))));
+    assert.equal(await page.$('#jhaLadderRoster input[type=text], #jhaLadderPanel input[type=number]'), null, 'nothing is typed');
+    await page.click('[data-ladder-person="Alex Rivera (Demo)"]');
+    await page.click('[data-ladder-person="Jordan Blake (Demo)"]');
+    assert.deepEqual(JSON.parse(await val(page, '#jhaLadderInspectors')), ['Alex Rivera (Demo)', 'Jordan Blake (Demo)']);
+    assert.equal(await val(page, '#jhaLadderInspectorsAt'), WED_3PM_ISO, 'the pick time is recorded (demo clock)');
+    assert.equal(await page.$eval('[data-ladder-person="Alex Rivera (Demo)"]', (b) => b.getAttribute('aria-pressed')), 'true');
+    assert.equal(await text(page, '#jhaLadderInspectorsAtNote'), 'Selected Sep 30, 2026 at 3:00 PM');
+    await page.click('[data-ladder-person="Jordan Blake (Demo)"]');
+    assert.deepEqual(JSON.parse(await val(page, '#jhaLadderInspectors')), ['Alex Rivera (Demo)'], 'tapping again removes a person');
+    // No clears the picks and the time; Yes starts fresh.
+    await page.check('input[name=jhaLadderUse][value=no]');
+    assert.equal(await page.$eval('#jhaLadderPanel', (e) => e.style.display), 'none');
+    assert.equal(await val(page, '#jhaLadderInspectors'), '');
+    assert.equal(await val(page, '#jhaLadderInspectorsAt'), '');
+    const visibleLadderInputs = await page.$$eval('[data-jha-model="ladder"] input, [data-jha-model="ladder"] select, [data-jha-model="ladder"] textarea, [data-jha-model="ladder"] button',
+      (x) => x.filter((e) => e.type !== 'hidden' && e.type !== 'radio' && e.offsetParent !== null).length);
+    assert.equal(visibleLadderInputs, 0, 'No asks nothing else about ladders');
+    await page.check('input[name=jhaLadderUse][value=yes]');
+    assert.equal(await val(page, '#jhaLadderInspectors'), '');
+    await page.click('[data-ladder-person="Alex Rivera (Demo)"]');
+    await page.click('[data-ladder-person="Jordan Blake (Demo)"]');
+  });
+
+  await check('L4. Ladder Yes without an inspector cannot be submitted', async () => {
+    const p = await open('demo=1&ngform=jha&demonow=' + WED);
+    await p.check('input[name=jhaLadderUse][value=yes]');
+    await p.click('[data-ladder-opt="LAD-101"]');
+    await p.check('input[name=jhaAerialUse][value=no]');
+    await fillRequired(p, '#jhaForm');
+    const before = await p.evaluate(() => NG.demoJha.store().length);
+    assert.equal(await p.evaluate(() => NG.jhaSubmitCheck()), 'Select at least one person who will inspect the ladders prior to use.');
+    await p.click('#jhaSubmitBtn'); await p.waitForTimeout(200);
+    assert.equal(await p.evaluate(() => NG.demoJha.store().length), before, 'nothing was stored');
+    assert.ok(await p.$eval('#jhaLadderRoster', (e) => e.closest('.form-group').classList.contains('error')), 'the question is marked');
+    await p.click('[data-ladder-person="Sam Whitfield (Demo)"]');
+    assert.equal(await p.evaluate(() => NG.jhaSubmitCheck()), '');
+    await p.close();
+  });
+
   await check('3, 5. Ladder choices are the job’s assigned ladders only; no free-text ID', async () => {
     await page.check('input[name=jhaLadderUse][value=yes]');
     assert.ok((await text(page, '#jhaLadderPanel')).includes('Which ladder or ladders will be used today?'));
@@ -283,13 +342,17 @@ try {
     for (const k of ['jhaLadderSafe', 'jhaLadderWhyNotLift', 'jhaLadderObstacle1', 'jhaLadderGreaterRisk', 'jhaNewRevised', 'jhaLadderId']) {
       assert.ok(!(k in submitted.data), `${k} must not be stored`);
     }
+    assert.deepEqual(submitted.data.jhaLadderInspectors, ['Alex Rivera (Demo)', 'Jordan Blake (Demo)']);
+    assert.equal(submitted.data.jhaLadderInspectorsAt, WED_3PM_ISO);
     assert.deepEqual(submitted.data.jhaLadderIds, ['LAD-101', 'LAD-120']);
     assert.equal(submitted.data.jhaLadderChecks.find((c) => c.ladder_id === 'LAD-101').todays_check.by, 'Demo Foreman');
     assert.equal(submitted.data.jhaLadderDefects[0].ladder_id, 'LAD-204', 'the defect stays on the JHA after the swap');
     assert.ok(submitted.root_jha_id && submitted.data.jhaLadderChecks[0].todays_check.record_id);
     const review = await reviewPairs(page), doc = await docPairs(page);
     assert.deepEqual(review, doc, 'phone review and the PDF document list the same answers');
-    for (const must of ['Which ladder or ladders will be used today? = LAD-101, LAD-120',
+    for (const must of ['Who will inspect the ladders prior to use? = Alex Rivera (Demo), Jordan Blake (Demo)',
+      'Ladder inspector selected at = Sep 30, 2026 at 3:00 PM',
+      'Which ladder or ladders will be used today? = LAD-101, LAD-120',
       'Ladder LAD-101 — Inspection for today’s use = Confirmed safe for use by Demo Foreman · Sep 30, 2026 at 3:00 PM',
       'Ladder LAD-120 — Last inspected = No previous inspection is recorded for this ladder.',
       'Who will conduct the lift inspections? = Alex Rivera (Demo), Jordan Blake (Demo)']) {
@@ -299,7 +362,10 @@ try {
     if (JSPDF) {
       const pdf = await pdfText(page);
       assert.ok(pdf.startsWith('%PDF'));
-      for (const s of ['LAD-101, LAD-120', 'Bent rung on step 4', 'Who will conduct the lift inspections?']) assert.ok(pdf.includes(s), `PDF is missing "${s}"`);
+      for (const s of ['LAD-101, LAD-120', 'Bent rung on step 4', 'Who will conduct the lift inspections?',
+        'Who will inspect the ladders prior to use?', 'Alex Rivera (Demo), Jordan Blake (Demo)', 'Ladder inspector selected at']) {
+        assert.ok(pdf.includes(s), `PDF is missing "${s}"`);
+      }
       assert.ok(!pdf.includes('one-man scissor lift'));
       assert.ok(pdf.includes('Sep 30, 2026'), 'the PDF header uses the record’s server time');
     }
@@ -361,6 +427,10 @@ try {
     assert.equal(await page.$('[data-change-type]'), null, '21. no "What changed?" selector');
     assert.equal(await val(page, '#jhaDescriptionOfWork'), 'Set overhead pipe hangers, Level 2 east corridor', '20. latest values loaded');
     assert.deepEqual(await page.$$eval('[data-ladder-card]', (c) => c.map((x) => x.getAttribute('data-ladder-card'))), ['LAD-101'], 'ladder selection restored');
+    assert.deepEqual(await page.$$eval('#jhaLadderRoster [aria-pressed="true"]', (b) => b.map((x) => x.getAttribute('data-ladder-person'))),
+      ['Alex Rivera (Demo)'], 'the ladder inspector is restored');
+    const pickedAt = await val(page, '#jhaLadderInspectorsAt');
+    assert.ok(pickedAt && pickedAt < '2026-09-30T19:00:00.000Z', 'the original pick time is restored');
     assert.equal(await page.isChecked('input[name=jhaAerialUse][value=no]'), true, 'conditional state restored');
     assert.equal(await text(page, '#jhaSubmitBtn'), 'Submit Revision 1');
     await page.fill('#jhaDescriptionOfWork', 'Set overhead pipe hangers, Level 2 east and west corridors');
@@ -380,6 +450,48 @@ try {
     const d = hist[1].revision_diff.find((x) => x.key === 'jhaDescriptionOfWork');
     assert.deepEqual([d.from, d.to], ['Set overhead pipe hangers, Level 2 east corridor', 'Set overhead pipe hangers, Level 2 east and west corridors']);
     assert.equal(JSON.stringify([hist[0]]), JSON.stringify(JSON.parse(v1)), '24. the original is unchanged');
+    assert.deepEqual([hist[1].data.jhaLadderInspectors, hist[1].data.jhaLadderInspectorsAt],
+      [hist[0].data.jhaLadderInspectors, hist[0].data.jhaLadderInspectorsAt], 'an untouched ladder inspector keeps its pick time');
+    assert.ok(!hist[1].revision_diff.some((x) => /^jhaLadderInspectors/.test(x.key)), 'and is not listed as a change');
+  });
+
+  await check('L5. Revising a JHA stored before Oct 9 asks for the ladder inspector', async () => {
+    await page.evaluate(() => window.showView('landing'));
+    await page.evaluate(() => {
+      const M = window.JhaModel, s = NG.demoJha.store();
+      // Stored the way production stored ladder Yes before this change: no inspector, empty ID lists.
+      M.createOriginal(s, { rootId: 'demo-jha-old-ladder', jobId: 'demo-job-001', companyId: 'demo-greiner', by: 'Demo Foreman',
+        data: { jhaProjectName: 'Demo Greiner Job', jhaDescriptionOfWork: 'Stored before the ladder inspector question',
+          jhaDate: '2026-09-30', jhaStartTime: '07:00', jhaCompleteTime: '15:30', jhaLocation: 'Demo Greiner Job (DEMO-001)',
+          jhaAnalysisBy: 'Demo Foreman', jhaPmSupervisor: 'Demo Project Manager', jhaSubcontractors: 'N/A', jhaJobsiteSafety: 'Hard hat.',
+          jhaTask1: 'Ladders / Stairways Use', jhaHazard1: 'Falls / Loss of footing', jhaAction1: 'Maintain three points of contact',
+          jhaLadderUse: 'yes', jhaLadderIds: [], jhaLadderChecks: [], jhaLadderDefects: [], jhaAerialUse: 'no' },
+        crew: { employees: ['Demo Foreman'], groups: [] }, photos: [] }, new Date('2026-09-30T12:00:00.000Z'));
+    });
+    const old = await page.evaluate(() => JhaModel.jhaSections(NG.demoJha.history('demo-jha-old-ladder')[0].data)
+      .flatMap((s) => s.items.map((i) => i.label + ' = ' + i.value)));
+    assert.ok(old.includes('Is any ladder use planned or expected today? = Yes'));
+    assert.ok(!old.some((r) => /inspect the ladders|inspector selected/.test(r)), 'the old JHA shows no inspector line');
+    await page.click('[data-demoform="revisejha"]');
+    await page.waitForSelector('[data-revise-root="demo-jha-old-ladder"]');
+    await page.click('[data-revise-root="demo-jha-old-ladder"]');
+    await page.waitForSelector('#jhaRevisionBanner');
+    assert.equal(await page.isChecked('input[name=jhaLadderUse][value=yes]'), true);
+    assert.ok((await text(page, '#jhaLadderPanel')).includes('Who will inspect the ladders prior to use?'));
+    assert.equal(await page.$$eval('#jhaLadderRoster [aria-pressed="true"]', (b) => b.length), 0, 'nobody is picked yet');
+    await page.click('[data-ladder-opt="LAD-101"]');
+    await fillRequired(page, '#jhaForm');
+    await page.click('#jhaSubmitBtn'); await page.waitForTimeout(200);
+    assert.equal(await page.$('#jhaSheet [data-sheet="confirm"]'), null, 'blocked before the confirm sheet');
+    assert.deepEqual(await page.evaluate(() => NG.demoJha.history('demo-jha-old-ladder').length), 1);
+    await page.click('[data-ladder-person="Morgan Ellis (Demo)"]');
+    await page.click('#jhaSubmitBtn');
+    await page.click('#jhaSheet [data-sheet="confirm"]');
+    await page.waitForSelector('#jhaSubmittedReview', { timeout: 5000 });
+    const hist = await page.evaluate(() => NG.demoJha.history('demo-jha-old-ladder'));
+    assert.deepEqual(hist[1].data.jhaLadderInspectors, ['Morgan Ellis (Demo)']);
+    assert.equal(hist[1].data.jhaLadderInspectorsAt, WED_3PM_ISO);
+    assert.ok(!('jhaLadderInspectors' in hist[0].data), 'the stored original is unchanged');
   });
 
   await check('24. A stale revision is refused and nothing is duplicated', async () => {

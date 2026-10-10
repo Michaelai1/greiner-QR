@@ -40,13 +40,18 @@ const inspections = () => [
   { id: 'd', ladder_id: 'LAD-317', result: 'defect', inspected_at: at('2026-09-27T09:00:00-04:00'), inspected_by: 'Casey Nolan (Demo)',
     defect: { description: 'Cracked rail', tagged_do_not_use: true, reported_at: at('2026-09-27T09:00:00-04:00'), reported_by: 'Casey Nolan (Demo)', resolved_at: null } },
 ];
+// Ladder use = Yes always needs the ladder inspector (Tony, Oct 9); the ladder ID
+// checks below add it so they test only the ID rules.
+const WHO = { jhaLadderInspectors: ['Alex Rivera (Demo)'] };
 const safeReq = (id, extra) => Object.assign({ ladderId: id, jobId: 'j1', companyId: 'c1', user: USER, attested: true,
   attestationVersion: M.LADDER_SAFE_ATTESTATION.version, jhaRootId: 'root-1', jhaRevisionNumber: 1 }, extra || {});
 
 t('1. Ladder No clears every ladder child value', () => {
   const d = M.normalizeJhaData({ jhaLadderUse: 'no', jhaLadderIds: '["LAD-101"]', jhaLadderChecks: '[{"ladder_id":"LAD-101"}]',
-    jhaLadderDefects: '[{"ladder_id":"LAD-317"}]', jhaLadderId: 'LAD-101' });
-  for (const k of ['jhaLadderIds', 'jhaLadderChecks', 'jhaLadderDefects', 'jhaLadderId', 'jhaLadderInspection']) {
+    jhaLadderDefects: '[{"ladder_id":"LAD-317"}]', jhaLadderId: 'LAD-101',
+    jhaLadderInspectors: '["Alex Rivera (Demo)"]', jhaLadderInspectorsAt: '2026-10-09T11:05:00.000Z' });
+  for (const k of ['jhaLadderIds', 'jhaLadderChecks', 'jhaLadderDefects', 'jhaLadderId', 'jhaLadderInspection',
+    'jhaLadderInspectors', 'jhaLadderInspectorsAt']) {
     assert.ok(!(k in d), `${k} must be cleared on No`);
   }
 });
@@ -71,14 +76,14 @@ t('5. No free-text ID path: a ladder must be assigned to the job', () => {
     const r = M.confirmLadderSafe(registry(), inspections(), safeReq(id), WED_3PM);
     assert.equal(r.ok, false); assert.equal(r.code, 'not-assigned', `${id} must be refused`);
   }
-  assert.match(M.jhaSubmitProblems({ jhaLadderUse: 'yes', jhaLadderIds: ['LAD-550'] },
+  assert.match(M.jhaSubmitProblems({ ...WHO, jhaLadderUse: 'yes', jhaLadderIds: ['LAD-550'] },
     { ladders: { assigned: ['LAD-101', 'LAD-204', 'LAD-317'], states: {} } })[0], /not assigned to this job/);
 });
 
 t('6. No assigned ladders is clear and blocking', () => {
-  const p = M.jhaSubmitProblems({ jhaLadderUse: 'yes', jhaLadderIds: [] }, { ladders: { assigned: [], states: {} } });
+  const p = M.jhaSubmitProblems({ ...WHO, jhaLadderUse: 'yes', jhaLadderIds: [] }, { ladders: { assigned: [], states: {} } });
   assert.deepEqual(json(p), ['No ladders are assigned to this job. Contact the office before using a ladder.']);
-  assert.match(M.jhaSubmitProblems({ jhaLadderUse: 'yes' }, { ladders: { assigned: ['LAD-101'], states: {} } })[0],
+  assert.match(M.jhaSubmitProblems({ ...WHO, jhaLadderUse: 'yes' }, { ladders: { assigned: ['LAD-101'], states: {} } })[0],
     /Select which ladder/);
 });
 
@@ -140,9 +145,9 @@ t('17. A defective ladder cannot be confirmed safe or submitted on the JHA', () 
   assert.equal(r.code, 'do-not-use');
   const look = M.ladderLookup(reg, ins, 'LAD-204');
   assert.match(look.statusLabel, /^Do Not Use/);
-  assert.match(M.jhaSubmitProblems({ jhaLadderUse: 'yes', jhaLadderIds: ['LAD-204'] },
+  assert.match(M.jhaSubmitProblems({ ...WHO, jhaLadderUse: 'yes', jhaLadderIds: ['LAD-204'] },
     { ladders: { assigned: ['LAD-101', 'LAD-204'], states: { 'LAD-204': look } } })[0], /Do Not Use/);
-  assert.deepEqual(json(M.jhaSubmitProblems({ jhaLadderUse: 'yes', jhaLadderIds: ['LAD-101'] },
+  assert.deepEqual(json(M.jhaSubmitProblems({ ...WHO, jhaLadderUse: 'yes', jhaLadderIds: ['LAD-101'] },
     { ladders: { assigned: ['LAD-101', 'LAD-204'], states: { 'LAD-101': M.ladderLookup(reg, ins, 'LAD-101') } } })), [],
     'a different assigned ladder can be used instead');
   for (const st of ['do-not-use', 'no-open-defects', 'no-inspection']) {
@@ -209,6 +214,89 @@ t('13. Aerial Lift Yes keeps multiple responsible people', () => {
   assert.equal(row.label, 'Who will conduct the lift inspections?');
   assert.equal(row.value, 'Alex Rivera (Demo), Jordan Blake (Demo)');
   assert.match(M.jhaSubmitProblems({ jhaAerialUse: 'yes', jhaAerialInspectors: '[]' })[0], /at least one person/);
+});
+
+/* ---------------- ladder inspector (Tony, Oct 9 2026) ---------------- */
+const LEGACY_OLD = LEGACY;
+const OCT9_705 = at('2026-10-09T07:05:00-04:00');
+const ladderRows = (data) => json((M.jhaSections(data).find((s) => s.title === 'Ladder Use') || { items: [] })
+  .items.map((i) => i.label + ' = ' + i.value));
+
+t('L1. Ladder Yes asks one thing: who will inspect the ladders prior to use (required)', () => {
+  assert.equal(M.LADDER_WHO_LABEL, 'Who will inspect the ladders prior to use?');
+  assert.deepEqual(json(M.jhaSubmitProblems({ jhaLadderUse: 'yes' })),
+    ['Select at least one person who will inspect the ladders prior to use.'], 'nothing else is required');
+  assert.deepEqual(json(M.jhaSubmitProblems({ jhaLadderUse: 'yes', jhaLadderInspectors: '[]' })),
+    ['Select at least one person who will inspect the ladders prior to use.']);
+  assert.deepEqual(json(M.jhaSubmitProblems({ jhaLadderUse: 'yes', jhaLadderInspectors: '["Alex Rivera (Demo)"]' })), [],
+    'with an inspector picked and no ladder ID selection, ladder use never blocks');
+  assert.deepEqual(json(M.jhaSubmitProblems({ jhaLadderUse: 'no' })), [], 'No asks nothing else');
+});
+
+t('L2. More than one inspector; names and the pick time are stored', () => {
+  const d = M.normalizeJhaData({ jhaLadderUse: 'yes',
+    jhaLadderInspectors: '["Alex Rivera (Demo)","Jordan Blake (Demo)","Alex Rivera (Demo)"]', jhaLadderInspectorsAt: OCT9_705 });
+  assert.deepEqual(json(d.jhaLadderInspectors), ['Alex Rivera (Demo)', 'Jordan Blake (Demo)'], 'de-duplicated, in pick order');
+  assert.equal(d.jhaLadderInspectorsAt, OCT9_705);
+  const store = [];
+  const rec = M.createOriginal(store, { jobId: 'j1', by: 'F', data: { jhaLadderUse: 'yes',
+    jhaLadderInspectors: ['Alex Rivera (Demo)'], jhaLadderInspectorsAt: OCT9_705 } }, OCT9_705).record;
+  assert.deepEqual(json(rec.data.jhaLadderInspectors), ['Alex Rivera (Demo)']);
+  assert.equal(rec.data.jhaLadderInspectorsAt, OCT9_705);
+});
+
+t('L3. The pick time is kept only with a selection and only as a real time', () => {
+  assert.ok(!('jhaLadderInspectorsAt' in M.normalizeJhaData({ jhaLadderUse: 'yes', jhaLadderInspectors: '', jhaLadderInspectorsAt: OCT9_705 })));
+  assert.ok(!('jhaLadderInspectorsAt' in M.normalizeJhaData({ jhaLadderUse: 'yes', jhaLadderInspectors: ['A'], jhaLadderInspectorsAt: 'soon' })));
+  assert.ok(!('jhaLadderInspectorsAt' in M.normalizeJhaData({ jhaLadderUse: 'yes', jhaLadderInspectors: ['A'], jhaLadderInspectorsAt: '' })));
+});
+
+t('L4. Review, office detail and PDF list the inspectors and the time they were picked', () => {
+  const rows = ladderRows(M.normalizeJhaData({ jhaLadderUse: 'yes', jhaLadderInspectors: ['Alex Rivera (Demo)', 'Jordan Blake (Demo)'],
+    jhaLadderInspectorsAt: OCT9_705, jhaLadderIds: '', jhaLadderChecks: '', jhaLadderDefects: '' }));
+  assert.deepEqual(rows, ['Is any ladder use planned or expected today? = Yes',
+    'Who will inspect the ladders prior to use? = Alex Rivera (Demo), Jordan Blake (Demo)',
+    'Ladder inspector selected at = Oct 9, 2026, 7:05 AM'], 'exactly these three lines, in this order');
+});
+
+t('L5. Older stored JHAs render as before: no inspector line was ever asked of them', () => {
+  // Production today stores Yes with empty ladder-ID lists and nothing else.
+  assert.deepEqual(ladderRows({ jhaLadderUse: 'yes', jhaLadderIds: [], jhaLadderChecks: [], jhaLadderDefects: [] }),
+    ['Is any ladder use planned or expected today? = Yes']);
+  assert.deepEqual(ladderRows({ jhaLadderUse: 'yes' }), ['Is any ladder use planned or expected today? = Yes']);
+  assert.deepEqual(ladderRows({ jhaLadderUse: 'yes', jhaLadderIds: '[]', jhaLadderChecks: '[]', jhaLadderDefects: '[]' }),
+    ['Is any ladder use planned or expected today? = Yes'], 'string-encoded lists too');
+  assert.deepEqual(ladderRows({ jhaLadderUse: 'no' }), ['Is any ladder use planned or expected today? = No']);
+  assert.deepEqual(ladderRows({}), [], 'a JHA without the ladder question shows no ladder section');
+  // Retired variance answers and the single typed ID still show, unchanged.
+  const secs = M.jhaSections(Object.assign({ jhaLadderUse: 'yes', jhaLadderId: 'LAD-7' }, LEGACY_OLD));
+  const all = secs.flatMap((s) => s.items.map((i) => i.label + ' = ' + i.value));
+  assert.ok(all.includes('Ladder ID = LAD-7'));
+  assert.ok(all.includes('Can this work be done safely from a ladder? = Yes'));
+  assert.ok(!all.some((r) => /inspect the ladders|inspector selected/.test(r)));
+  // Normalizing an older record (revision prefill, PDF) never adds an empty answer.
+  const n = M.normalizeJhaData({ jhaLadderUse: 'yes', jhaLadderIds: [], jhaLadderChecks: [], jhaLadderDefects: [] });
+  assert.ok(!('jhaLadderInspectors' in n) && !('jhaLadderInspectorsAt' in n));
+  assert.deepEqual(ladderRows(n), ['Is any ladder use planned or expected today? = Yes']);
+  // A pick time with no names is never shown on its own.
+  assert.deepEqual(ladderRows({ jhaLadderUse: 'yes', jhaLadderInspectorsAt: OCT9_705 }), ['Is any ladder use planned or expected today? = Yes']);
+});
+
+t('L6. Revising an older JHA asks for the ladder inspector; a change is in the field diff', () => {
+  const store = [];
+  const o = M.createOriginal(store, { rootId: 'old', jobId: 'j1', by: 'F', data: { jhaLadderUse: 'yes' } }, WED_3PM).record;
+  assert.deepEqual(json(M.jhaSubmitProblems(o.data)), ['Select at least one person who will inspect the ladders prior to use.']);
+  const r = M.submitRevision(store, { rootId: 'old', baseVersionId: o.id, jobId: 'j1', by: 'F',
+    data: { jhaLadderUse: 'yes', jhaLadderInspectors: ['Jordan Blake (Demo)'], jhaLadderInspectorsAt: WED_3PM } }, WED_3PM).record;
+  const d = r.revision_diff.find((x) => x.key === 'jhaLadderInspectors');
+  assert.deepEqual([d.label, d.to], ['Who will inspect the ladders prior to use?', 'Jordan Blake (Demo)']);
+});
+
+t('L7. No quantity, 30-day or ladder-ID question is part of the ladder answers', () => {
+  const labels = Object.keys(M).filter((k) => /LABEL$/.test(k)).map((k) => M[k]).join('\n');
+  assert.ok(!/how many|quantity|30 days|thirty/i.test(labels));
+  const rows = ladderRows(M.normalizeJhaData({ jhaLadderUse: 'yes', jhaLadderInspectors: ['A'], jhaLadderInspectorsAt: OCT9_705 }));
+  assert.ok(!rows.some((r) => /Which ladder|Ladder ID|how many|30 days/i.test(r)), rows.join('\n'));
 });
 
 /* ---------------- revisions ---------------- */

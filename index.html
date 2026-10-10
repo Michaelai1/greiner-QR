@@ -2816,7 +2816,8 @@
                          (JHA-MODEL block), so the phone review, office detail and PDF
                          read the same list. Tony's Oct 1 instruction retired the old
                          ladder/fall-protection variance questions; older JHAs still show
-                         them from their stored answers. -->
+                         them from their stored answers. Tony's Oct 9 instruction: ladder
+                         use = Yes asks only who will inspect the ladders prior to use. -->
                     <div class="form-section" data-jha-model="ladder">
                         <div class="form-section-title">Ladder Use</div>
                         <div class="form-group">
@@ -2828,16 +2829,30 @@
                             <div class="form-error">Required</div>
                         </div>
                         <div id="jhaLadderPanel" style="display:none">
+                            <!-- Tony, Oct 9: the one ladder follow-up. Same crew picker as
+                                 the aerial lift inspectors; the pick time is kept too. -->
                             <div class="form-group">
-                                <span class="form-label">Which ladder or ladders will be used today? <span class="required">*</span></span>
-                                <input type="search" class="form-input" id="jhaLadderSearch" autocomplete="off" placeholder="Search this job&rsquo;s ladders" aria-label="Search this job&rsquo;s ladders" style="margin-bottom:8px">
-                                <div id="jhaLadderOptions" class="jha-lad-opts" role="group" aria-label="Ladders assigned to this job"></div>
-                                <div class="form-error">Select at least one ladder</div>
+                                <span class="form-label">Who will inspect the ladders prior to use? <span class="required">*</span></span>
+                                <p class="jha-row-hint" style="margin:0 0 8px">Select every person who will inspect the ladders before they are used.</p>
+                                <div id="jhaLadderRoster" class="jha-crew-roster"></div>
+                                <p class="jha-row-hint" id="jhaLadderInspectorsAtNote" style="margin:8px 0 0"></p>
+                                <div class="form-error">Select at least one person</div>
                             </div>
-                            <input type="hidden" id="jhaLadderIds" name="jhaLadderIds">
-                            <input type="hidden" id="jhaLadderChecks" name="jhaLadderChecks">
-                            <input type="hidden" id="jhaLadderDefects" name="jhaLadderDefects">
-                            <div id="jhaLadderCards" aria-live="polite"></div>
+                            <input type="hidden" id="jhaLadderInspectors" name="jhaLadderInspectors">
+                            <input type="hidden" id="jhaLadderInspectorsAt" name="jhaLadderInspectorsAt">
+                            <!-- Ladder ID selection: demo only until launch (LADDER_IDS_LIVE). -->
+                            <div id="jhaLadderIdPanel" style="display:none">
+                                <div class="form-group">
+                                    <span class="form-label">Which ladder or ladders will be used today? <span class="required">*</span></span>
+                                    <input type="search" class="form-input" id="jhaLadderSearch" autocomplete="off" placeholder="Search this job&rsquo;s ladders" aria-label="Search this job&rsquo;s ladders" style="margin-bottom:8px">
+                                    <div id="jhaLadderOptions" class="jha-lad-opts" role="group" aria-label="Ladders assigned to this job"></div>
+                                    <div class="form-error">Select at least one ladder</div>
+                                </div>
+                                <input type="hidden" id="jhaLadderIds" name="jhaLadderIds">
+                                <input type="hidden" id="jhaLadderChecks" name="jhaLadderChecks">
+                                <input type="hidden" id="jhaLadderDefects" name="jhaLadderDefects">
+                                <div id="jhaLadderCards" aria-live="polite"></div>
+                            </div>
                         </div>
                     </div>
                     <div class="form-section" data-jha-model="aerial">
@@ -5983,6 +5998,13 @@ ${photoUrls}`;
     ['jhaJobsiteSafety', 'Jobsite Safety Requirements — PPE, housekeeping, dust walls, spark-proof tools, etc.']
   ];
   var LADDER_USE_LABEL = 'Is any ladder use planned or expected today?';
+  /* Tony, Oct 9 2026: ladder use = Yes asks one thing — who will inspect the
+     ladders before use — picked from the job crew list like the aerial lift
+     inspectors. The JHA keeps the names and the time they were picked.
+     JHAs stored before this change have neither and render without them. */
+  var LADDER_WHO_LABEL = 'Who will inspect the ladders prior to use?';
+  var LADDER_WHO_AT_LABEL = 'Ladder inspector selected at';
+  var LADDER_WHO_REQUIRED = 'Select at least one person who will inspect the ladders prior to use.';
   var LADDER_PICK_LABEL = 'Which ladder or ladders will be used today?';
   var NO_LADDERS_ASSIGNED = 'No ladders are assigned to this job. Contact the office before using a ladder.';
   var AERIAL_USE_LABEL = 'Will any aerial lift devices be used today?';
@@ -6019,6 +6041,16 @@ ${photoUrls}`;
     // previous review build; new JHAs use the job-assigned selection instead.
     delete d.jhaLadderId; delete d.jhaLadderInspection;
     if (d.jhaLadderUse === 'yes') {
+      // Left absent when absent: a JHA stored before the question existed
+      // must not gain an empty answer to it.
+      if (d.jhaLadderInspectors != null) {
+        var lw = parseMaybe(d.jhaLadderInspectors, []);
+        d.jhaLadderInspectors = (Array.isArray(lw) ? lw : []).filter(function (n, i, a) {
+          return n && a.indexOf(n) === i; });
+      }
+      // The selection time is kept only with a selection, and only as a real instant.
+      if (!(d.jhaLadderInspectors || []).length || !filled(d.jhaLadderInspectorsAt) ||
+          isNaN(new Date(d.jhaLadderInspectorsAt))) delete d.jhaLadderInspectorsAt;
       var ids = parseMaybe(d.jhaLadderIds, []);
       d.jhaLadderIds = (Array.isArray(ids) ? ids : []).map(normalizeLadderId)
         .filter(function (x, i, a) { return x && a.indexOf(x) === i; });
@@ -6030,6 +6062,7 @@ ${photoUrls}`;
       var defects = parseMaybe(d.jhaLadderDefects, []);
       d.jhaLadderDefects = Array.isArray(defects) ? defects : [];
     } else {
+      delete d.jhaLadderInspectors; delete d.jhaLadderInspectorsAt;
       delete d.jhaLadderIds; delete d.jhaLadderChecks; delete d.jhaLadderDefects;
     }
     if (d.jhaAerialUse === 'yes') {
@@ -6091,6 +6124,15 @@ ${photoUrls}`;
     var lad = [];
     if (filled(d.jhaLadderUse)) lad.push(item('jhaLadderUse', LADDER_USE_LABEL, yesNo(d.jhaLadderUse)));
     if (d.jhaLadderUse === 'yes') {
+      // Shown only when the record has the answer: older JHAs were never asked.
+      if (d.jhaLadderInspectors != null) {
+        var lw = parseMaybe(d.jhaLadderInspectors, []);
+        lad.push(item('jhaLadderInspectors', LADDER_WHO_LABEL,
+          (Array.isArray(lw) && lw.length) ? lw.join(', ') : 'None selected'));
+        if (filled(d.jhaLadderInspectorsAt)) {
+          lad.push(item('jhaLadderInspectorsAt', LADDER_WHO_AT_LABEL, fmtIndy(d.jhaLadderInspectorsAt)));
+        }
+      }
       var ids = parseMaybe(d.jhaLadderIds, []);
       if (Array.isArray(ids) && ids.length) lad.push(item('jhaLadderIds', LADDER_PICK_LABEL, ids.join(', ')));
       (parseMaybe(d.jhaLadderChecks, []) || []).forEach(function (c) {
@@ -6147,22 +6189,28 @@ ${photoUrls}`;
   }
 
   /* Submit-time checks the HTML required attributes can't express.
-     ctx.ladders: { assigned: [ids assigned to this job], states: { id: lookup } } */
+     ctx.ladders: { assigned: [ids assigned to this job], states: { id: lookup } }
+     — passed only where ladder ID selection is switched on (the demo today);
+     without it no ladder ID is asked for or checked. */
   function jhaSubmitProblems(data, ctx) {
     var d = data || {}, p = [], lad = (ctx && ctx.ladders) || null;
     if (d.jhaLadderUse === 'yes') {
+      var lw = parseMaybe(d.jhaLadderInspectors, []);
+      if (!Array.isArray(lw) || !lw.length) p.push(LADDER_WHO_REQUIRED);
       var ids = parseMaybe(d.jhaLadderIds, []);
-      if (lad && !(lad.assigned || []).length) p.push(NO_LADDERS_ASSIGNED);
-      else if (!Array.isArray(ids) || !ids.length) p.push('Select which ladder or ladders will be used today.');
-      else if (lad) {
-        ids.forEach(function (id) {
-          var st = (lad.states || {})[id];
-          if ((lad.assigned || []).indexOf(id) === -1) p.push('Ladder ' + id + ' is not assigned to this job.');
-          else if (st && st.state === 'duplicate') p.push(st.message);
-          else if (st && st.status === 'do-not-use') {
-            p.push('Ladder ' + id + ' is marked Do Not Use. Remove it and select a different assigned ladder.');
-          }
-        });
+      if (lad) {
+        if (!(lad.assigned || []).length) p.push(NO_LADDERS_ASSIGNED);
+        else if (!Array.isArray(ids) || !ids.length) p.push('Select which ladder or ladders will be used today.');
+        else {
+          ids.forEach(function (id) {
+            var st = (lad.states || {})[id];
+            if ((lad.assigned || []).indexOf(id) === -1) p.push('Ladder ' + id + ' is not assigned to this job.');
+            else if (st && st.state === 'duplicate') p.push(st.message);
+            else if (st && st.status === 'do-not-use') {
+              p.push('Ladder ' + id + ' is marked Do Not Use. Remove it and select a different assigned ladder.');
+            }
+          });
+        }
       }
     }
     if (d.jhaAerialUse === 'yes') {
@@ -6196,6 +6244,7 @@ ${photoUrls}`;
     TZ: TZ, JHA_REVISION_RULES: JHA_REVISION_RULES, LADDER_INSPECTION_CADENCE: LADDER_INSPECTION_CADENCE,
     LEGACY_FIELDS: LEGACY_FIELDS, HEADER_FIELDS: HEADER_FIELDS,
     LADDER_USE_LABEL: LADDER_USE_LABEL, LADDER_PICK_LABEL: LADDER_PICK_LABEL, NO_LADDERS_ASSIGNED: NO_LADDERS_ASSIGNED,
+    LADDER_WHO_LABEL: LADDER_WHO_LABEL, LADDER_WHO_AT_LABEL: LADDER_WHO_AT_LABEL, LADDER_WHO_REQUIRED: LADDER_WHO_REQUIRED,
     AERIAL_USE_LABEL: AERIAL_USE_LABEL, AERIAL_WHO_LABEL: AERIAL_WHO_LABEL,
     LADDER_SAFE_ATTESTATION: LADDER_SAFE_ATTESTATION, LADDER_DEFECT_ACK: LADDER_DEFECT_ACK,
     SIGN_IN_REQUIRED: SIGN_IN_REQUIRED,
@@ -6484,6 +6533,7 @@ ${photoUrls}`;
             toast('error', 'Check the JHA', problem);
             return Promise.reject(new Error(problem));
           }
+          stampLadderInspectorTime(payload.fields);
           payload.fields = window.JhaModel.normalizeJhaData(payload.fields || {});
         }
         // DEMO short-circuit, first and unconditional: every submit in demo
@@ -7526,12 +7576,15 @@ ${photoUrls}`;
           jhaAnalysisBy: 'Demo Foreman', jhaPmSupervisor: 'Demo Project Manager', jhaSubcontractors: 'N/A',
           jhaStartTime: '07:00', jhaCompleteTime: '15:30' };
 
-        orig('demo-jha-a', todayAt(3), Object.assign({}, base, {
+        var aAt = todayAt(3);
+        orig('demo-jha-a', aAt, Object.assign({}, base, {
           jhaDate: lastWorkday, jhaDescriptionOfWork: 'Set overhead pipe hangers, Level 2 east corridor',
           jhaJobsiteSafety: 'Hard hat, safety glasses, gloves. Keep corridor clear.',
           jhaTask1: 'Ladders / Stairways Use', jhaHazard1: 'Falls / Loss of footing', jhaAction1: 'Maintain three points of contact',
           jhaTask2: 'Material Handling', jhaHazard2: 'Back or shoulder strain / awkward lifting', jhaAction2: 'Team lift anything over 50 lb',
-          jhaLadderUse: 'yes', jhaLadderIds: ['LAD-101'], jhaLadderChecks: [M.ladderSnapshot(look101, [])],
+          jhaLadderUse: 'yes', jhaLadderInspectors: ['Alex Rivera (Demo)'],
+          jhaLadderInspectorsAt: new Date(Date.parse(aAt) - 4 * 60000).toISOString(),
+          jhaLadderIds: ['LAD-101'], jhaLadderChecks: [M.ladderSnapshot(look101, [])],
           jhaAerialUse: 'no', jhaAdditionalNotes: 'Corridor shared with drywall crew until 10am.' }),
           { employees: ['Demo Foreman', 'Alex Rivera (Demo)', 'Jordan Blake (Demo)', 'Sam Whitfield (Demo)'],
             groups: [{ task: 'Ladders / Stairways Use', activity: 'Hanging rod and strut', members: ['Alex Rivera (Demo)', 'Jordan Blake (Demo)'] }] });
@@ -7776,6 +7829,11 @@ ${photoUrls}`;
       function fillJhaForm(rec) {
         var form = document.getElementById('jhaForm'); if (!form || !rec) return;
         var data = window.JhaModel.normalizeJhaData(rec.data || {});
+        // A JHA stored before the ladder inspector question has no answer to
+        // it: start empty rather than keep picks left from an earlier form.
+        ['jhaLadderInspectors', 'jhaLadderInspectorsAt'].forEach(function (k) {
+          var e = form.querySelector('[name="' + k + '"]'); if (e) e.value = '';
+        });
         Object.keys(data).forEach(function (k) {
           var els = form.querySelectorAll('[name="' + k + '"]');
           if (!els.length) return;
@@ -8024,14 +8082,18 @@ ${photoUrls}`;
         set('jhaLadderChecks', checks.length ? JSON.stringify(checks) : '');
         set('jhaLadderDefects', LADDER_DEFECTS.length ? JSON.stringify(LADDER_DEFECTS) : '');
       }
+      /* Ladder use = Yes shows the ladder inspector picker (the same crew
+         picker as the aerial lift inspectors, see personPicker below). Ladder ID
+         selection sits under it and only shows where LADDER_IDS_LIVE (demo). */
       function syncLadderPanel() {
         var form = document.getElementById('jhaForm'); if (!form) return;
-        var use = form.querySelector('input[name="jhaLadderUse"]:checked');
-        var panel = document.getElementById('jhaLadderPanel'); if (!panel) return;
-        var on = LADDER_IDS_LIVE && !!use && use.value === 'yes';
-        panel.style.display = on ? '' : 'none';
-        if (!on) {
-          // A "No" answer clears every ladder child value.
+        var on = LADDER_INSPECTOR_PICK.sync();
+        ladderInspectorsAtNote();
+        var idPanel = document.getElementById('jhaLadderIdPanel');
+        var ids = on && LADDER_IDS_LIVE;
+        if (idPanel) idPanel.style.display = ids ? '' : 'none';
+        if (!ids) {
+          // A "No" answer (or no ladder ID selection) clears every ladder ID value.
           ladderReset(); syncLadderHidden();
           ['jhaLadderOptions', 'jhaLadderCards'].forEach(function (id) {
             var e = document.getElementById(id); if (e) e.innerHTML = ''; });
@@ -8282,55 +8344,112 @@ ${photoUrls}`;
         LADDER_DEFECTS = (parse(data.jhaLadderDefects) || []).slice();
       }
 
-      /* ---------------- aerial lifts: who will inspect ------------------- */
-      // Records planned responsibility only: no text, no task, no
-      // qualification check, and the lift-inspection form is unchanged.
-      function aerialSelected() {
-        var h = document.getElementById('jhaAerialInspectors');
-        try { var v = JSON.parse((h && h.value) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
-      }
-      function syncAerialPanel() {
-        var form = document.getElementById('jhaForm'); if (!form) return;
-        var use = form.querySelector('input[name="jhaAerialUse"]:checked');
-        var panel = document.getElementById('jhaAerialPanel'); if (!panel) return;
-        var on = !!use && use.value === 'yes';
-        panel.style.display = on ? '' : 'none';
-        var h = document.getElementById('jhaAerialInspectors');
-        if (!on) { if (h) h.value = ''; var r = document.getElementById('jhaAerialRoster'); if (r) r.innerHTML = ''; return; }
-        renderAerialRoster();
-      }
-      function renderAerialRoster() {
-        var box = document.getElementById('jhaAerialRoster'); if (!box) return;
-        var sel = aerialSelected();
-        var names = crewRoster();
-        sel.forEach(function (n) { if (names.indexOf(n) === -1) names.push(n); });
-        box.innerHTML = names.map(function (n) {
-          var on = sel.indexOf(n) !== -1;
-          return '<button type="button" class="jha-crew-chip' + (on ? ' is-on' : '') + '" aria-pressed="' + on +
-            '" data-aerial-person="' + esc(n) + '">' + (on ? '&#10003; ' : '+ ') + esc(n) + '</button>';
-        }).join('') || '<div class="jha-row-hint">No crew roster is available for this job.</div>';
-        Array.prototype.forEach.call(box.querySelectorAll('[data-aerial-person]'), function (b) {
-          b.addEventListener('click', function () {
-            var n = b.getAttribute('data-aerial-person'), cur = aerialSelected(), i = cur.indexOf(n);
-            if (i === -1) cur.push(n); else cur.splice(i, 1);
-            document.getElementById('jhaAerialInspectors').value = cur.length ? JSON.stringify(cur) : '';
-            var g = box.closest('.form-group'); if (g) g.classList.remove('error');
-            renderAerialRoster();
+      /* ---------------- who will inspect: one crew picker ----------------
+         The foreman taps names from the job crew list; several people can be
+         picked; the names are kept as a JSON list in a hidden field. Used by
+         Aerial Lifts ("Who will conduct the lift inspections?") and Ladder Use
+         ("Who will inspect the ladders prior to use?"). Records planned
+         responsibility only: no text, no task, no qualification check.
+         cfg: use (Yes/No radio name), panel, roster, hidden (element ids),
+              attr (chip data attribute), onChange(list) (optional). */
+      function personPicker(cfg) {
+        function selected() {
+          var h = document.getElementById(cfg.hidden);
+          try { var v = JSON.parse((h && h.value) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+        }
+        function render() {
+          var box = document.getElementById(cfg.roster); if (!box) return;
+          var sel = selected();
+          var names = crewRoster();
+          sel.forEach(function (n) { if (names.indexOf(n) === -1) names.push(n); });
+          box.innerHTML = names.map(function (n) {
+            var on = sel.indexOf(n) !== -1;
+            return '<button type="button" class="jha-crew-chip' + (on ? ' is-on' : '') + '" aria-pressed="' + on +
+              '" ' + cfg.attr + '="' + esc(n) + '">' + (on ? '&#10003; ' : '+ ') + esc(n) + '</button>';
+          }).join('') || '<div class="jha-row-hint">No crew roster is available for this job.</div>';
+          Array.prototype.forEach.call(box.querySelectorAll('[' + cfg.attr + ']'), function (b) {
+            b.addEventListener('click', function () {
+              var n = b.getAttribute(cfg.attr), cur = selected(), i = cur.indexOf(n);
+              if (i === -1) cur.push(n); else cur.splice(i, 1);
+              document.getElementById(cfg.hidden).value = cur.length ? JSON.stringify(cur) : '';
+              if (cfg.onChange) cfg.onChange(cur);
+              var g = box.closest('.form-group'); if (g) g.classList.remove('error');
+              render();
+            });
           });
-        });
+        }
+        // Shows the panel on Yes; on No (or unanswered) clears the picks. Returns on/off.
+        function sync() {
+          var form = document.getElementById('jhaForm'); if (!form) return false;
+          var use = form.querySelector('input[name="' + cfg.use + '"]:checked');
+          var panel = document.getElementById(cfg.panel); if (!panel) return false;
+          var on = !!use && use.value === 'yes';
+          panel.style.display = on ? '' : 'none';
+          var h = document.getElementById(cfg.hidden);
+          if (!on) {
+            if (h) h.value = '';
+            if (cfg.onChange) cfg.onChange([]);
+            var r = document.getElementById(cfg.roster); if (r) r.innerHTML = '';
+            return false;
+          }
+          render();
+          return true;
+        }
+        function markError() {
+          var g = document.getElementById(cfg.roster); g = g && g.closest('.form-group');
+          if (g) g.classList.add('error');
+          return g;
+        }
+        return { selected: selected, render: render, sync: sync, markError: markError };
       }
 
-      /* Checks the HTML required attributes can't express (Ladder ID state,
-         at least one lift inspector). Returns a message, or '' when clear. */
+      /* Aerial lifts: who will conduct the lift inspections. */
+      var AERIAL_INSPECTOR_PICK = personPicker({ use: 'jhaAerialUse', panel: 'jhaAerialPanel',
+        roster: 'jhaAerialRoster', hidden: 'jhaAerialInspectors', attr: 'data-aerial-person' });
+      function aerialSelected() { return AERIAL_INSPECTOR_PICK.selected(); }
+      function syncAerialPanel() { AERIAL_INSPECTOR_PICK.sync(); }
+
+      /* Ladders: who will inspect the ladders prior to use, and when that was
+         picked. The time is set each time the selection changes (the phone's
+         clock; the demo clock in demo) and cleared with the selection. A
+         revision that leaves the selection alone keeps its original time. */
+      function ladderInspectorsAtNote() {
+        var at = document.getElementById('jhaLadderInspectorsAt');
+        var note = document.getElementById('jhaLadderInspectorsAtNote'); if (!note) return;
+        var v = at && at.value;
+        note.textContent = v ? 'Selected ' + window.JhaModel.fmtIndy(v) : '';
+      }
+      var LADDER_INSPECTOR_PICK = personPicker({ use: 'jhaLadderUse', panel: 'jhaLadderPanel',
+        roster: 'jhaLadderRoster', hidden: 'jhaLadderInspectors', attr: 'data-ladder-person',
+        onChange: function (list) {
+          var at = document.getElementById('jhaLadderInspectorsAt');
+          if (at) at.value = list.length ? jhaClock().toISOString() : '';
+          ladderInspectorsAtNote();
+        } });
+      function ladderInspectorsSelected() { return LADDER_INSPECTOR_PICK.selected(); }
+      // Safety net at submit: a selection without a time gets the submit time.
+      function stampLadderInspectorTime(fields) {
+        var form = document.getElementById('jhaForm'); if (!form) return;
+        var use = form.querySelector('input[name="jhaLadderUse"]:checked');
+        var at = document.getElementById('jhaLadderInspectorsAt');
+        if (!use || use.value !== 'yes' || !at || at.value || !ladderInspectorsSelected().length) return;
+        at.value = jhaClock().toISOString();
+        if (fields) fields.jhaLadderInspectorsAt = at.value;
+        ladderInspectorsAtNote();
+      }
+
+      /* Checks the HTML required attributes can't express (at least one ladder
+         inspector, at least one lift inspector, and — where ladder ID selection
+         is on — the Ladder ID state). Returns a message, or '' when clear. */
       // Read-only, so the production-path tests can ask what would block a submit.
       window.NG.jhaSubmitCheck = function () { return jhaSubmitGuard(); };
       function jhaSubmitGuard() {
         var M = window.JhaModel; if (!M) return '';
         var form = document.getElementById('jhaForm'); if (!form) return '';
         var data = jhaFormValues(form), ctx = {};
-        // Without ladder ID selection a "Yes" is recorded as answered; nothing to check.
-        if (!LADDER_IDS_LIVE) data = Object.assign({}, data, { jhaLadderUse: 'no' });
-        if (data.jhaLadderUse === 'yes') {
+        // Without ladder ID selection (production today) no ladder ID is checked;
+        // ladder use = Yes still needs the ladder inspector.
+        if (data.jhaLadderUse === 'yes' && LADDER_IDS_LIVE) {
           var opts = jobLadders() || [];
           var states = {};
           LADDER_SEL.forEach(function (id) { states[id] = ladderLook(id); });
@@ -8338,12 +8457,14 @@ ${photoUrls}`;
         }
         var problems = M.jhaSubmitProblems(data, ctx);
         if (!problems.length) return '';
-        if (data.jhaAerialUse === 'yes' && !aerialSelected().length) {
-          var g = document.getElementById('jhaAerialRoster'); g = g && g.closest('.form-group'); if (g) g.classList.add('error');
-        }
-        if (data.jhaLadderUse === 'yes') {
+        if (data.jhaAerialUse === 'yes' && !aerialSelected().length) AERIAL_INSPECTOR_PICK.markError();
+        if (data.jhaLadderUse === 'yes' && LADDER_IDS_LIVE) {
           var lg = document.getElementById('jhaLadderOptions'); lg = lg && lg.closest('.form-group');
           if (lg) { lg.classList.add('error'); try { lg.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
+        }
+        if (data.jhaLadderUse === 'yes' && !ladderInspectorsSelected().length) {
+          var wg = LADDER_INSPECTOR_PICK.markError();
+          if (wg) { try { wg.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
         }
         return problems[0];
       }

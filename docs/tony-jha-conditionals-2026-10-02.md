@@ -31,6 +31,18 @@ This is an internal build note for the isolated Greiner review branch. It is not
   attendance ("Leading this talk"); each participant follows along (original document or Guided Talk) and submits their
   own acknowledgment. The office sees the lead's presentation and each acknowledgment separately, with engagement time.
 
+### Ladder inspector (Tony, meeting of 2026-10-09)
+
+- Ladder use = Yes asks one follow-up: **Who will inspect the ladders prior to use?** It is required, uses the same
+  crew picker as the aerial lift question (names from the job crew list, more than one allowed), and stores the names
+  (`jhaLadderInspectors`) plus the time they were picked (`jhaLadderInspectorsAt`, the phone's clock, set each time the
+  pick changes). Both show in the phone review, `fields.doc`, the PDF and the office detail as
+  "Who will inspect the ladders prior to use?" and "Ladder inspector selected at".
+- Ladder use = No asks nothing else and stores no ladder answers.
+- No ladder quantity, 30-day check or ladder ID question in production. The interim quantity / 30-day design
+  (unmerged branch `feature/tony-feedback-2026-10-02`) is rejected. Ladder ID selection stays demo-only (below).
+- JHAs stored before this change have no inspector answer and render exactly as before; revising one asks for it.
+
 ### Ladder IDs in production (updated 2026-10-05)
 
 Ladders are ordinary equipment units (`cs_equipment` rows whose type contains "ladder"), managed on the office Equipment

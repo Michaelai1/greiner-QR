@@ -149,6 +149,21 @@ excludes('id="jhaLadderId"', 'There must be no free-text Ladder ID field');
 excludes('Enter or scan the ID displayed on the ladder.', 'The free-text helper must be gone');
 // The retired questions survive ONLY in the model's legacy list (for old records).
 const formHtml = html.slice(html.indexOf('<form id="jhaForm">'), html.indexOf('</form>', html.indexOf('<form id="jhaForm">')));
+// Oct 9 (Tony): ladder use = Yes asks who will inspect the ladders prior to use,
+// with the aerial lift crew picker. Ladder IDs stay demo-only; no quantity or 30-day check.
+includes('Who will inspect the ladders prior to use? <span class="required">*</span>', 'Ladder Yes must ask who will inspect the ladders');
+includes('<div id="jhaLadderRoster" class="jha-crew-roster"></div>', 'The ladder inspector uses the crew roster chips');
+includes('name="jhaLadderInspectors"', 'The ladder inspector names are a form field');
+includes('name="jhaLadderInspectorsAt"', 'The time the ladder inspector was picked is a form field');
+includes("var LADDER_INSPECTOR_PICK = personPicker({ use: 'jhaLadderUse'", 'The ladder inspector uses the shared crew picker');
+includes("var AERIAL_INSPECTOR_PICK = personPicker({ use: 'jhaAerialUse'", 'The aerial lift inspectors use the same picker');
+includes('var LADDER_IDS_LIVE = DEMO || window.__ladderIdsLive === true;', 'Ladder ID selection must stay demo-only');
+includes('var ids = on && LADDER_IDS_LIVE;', 'The ladder ID panel shows only where ladder ID selection is on');
+assert.ok(formHtml.indexOf('id="jhaLadderRoster"') < formHtml.indexOf('id="jhaLadderIdPanel"'),
+  'The inspector question comes before the demo-only ladder ID picker');
+for (const gone of ['jhaLadderCount', 'jhaLaddersInspected30Days', 'How many ladders', 'within the last 30 days']) {
+  assert.ok(!html.includes(gone), `The rejected interim ladder questions must not exist: "${gone}"`);
+}
 for (const gone of ['Can this work be done safely from a ladder?', 'one-man scissor lift',
   'Above-ceiling hindrances', 'greater risk than not using it', 'Variance Form', 'jhaLadderObstacle', 'jhaLadderSafe']) {
   assert.ok(!formHtml.includes(gone), `Retired ladder variance content must not be in the JHA form: "${gone}"`);

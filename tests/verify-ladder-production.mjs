@@ -278,16 +278,20 @@ try {
     await p.close();
   });
 
-  await check('Production default: ladder use is asked and recorded, but never blocks and shows no picker', async () => {
+  await check('Production default: ladder use asks only who will inspect the ladders; no ladder ID picker, records never block', async () => {
     reset();
     STATE.units.forEach((u) => { if (/ladder/i.test(u.equipment_type)) u.job_id = null; });   // no ladders on the job
     const p = await open('ngform=jha', 390, { laddersLive: false });
     await p.check('input[name=jhaLadderUse][value=yes]');
     await p.waitForTimeout(150);
-    assert.equal(await p.$eval('#jhaLadderPanel', (e) => e.style.display), 'none', 'no ladder picker in production yet');
+    assert.equal(await p.$eval('#jhaLadderPanel', (e) => e.style.display), '', 'the ladder inspector question shows');
+    assert.equal(await p.$eval('#jhaLadderIdPanel', (e) => e.style.display), 'none', 'no ladder ID picker in production yet');
+    assert.equal(await p.$('[data-ladder-opt]:visible'), null);
     assert.ok(!/No ladders are assigned|not connected/.test(await text(p, 'body')), 'no ladder warning');
+    assert.equal(await p.evaluate(() => window.NG.jhaSubmitCheck()), 'Select at least one person who will inspect the ladders prior to use.');
+    await p.click('[data-ladder-person="Crew Two (Test)"]');
     const msg = await p.evaluate(() => window.NG.jhaSubmitCheck());
-    assert.ok(!/ladder/i.test(msg || ''), 'ladder use does not block submit: ' + msg);
+    assert.ok(!/ladder/i.test(msg || ''), 'with an inspector picked, ladder records never block submit: ' + msg);
     await p.close();
   });
 
