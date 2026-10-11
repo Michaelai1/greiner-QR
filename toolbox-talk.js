@@ -21,6 +21,7 @@
  *     roster: [{n: name, g: group}] (who the leader can mark present), groups: [names],
  *     chooseMethod: bool (preview only: start on Greiner's Choose Method step),
  *     defaultFormat: 'doc' | 'guided' | 'both', preview: bool,
+ *     guidedOnly: bool (the Guided Talk only: no format choice, no original pages),
  *     pinRequired: bool, verifyPin(pin) -> Promise<{verified, locked, locked_until, attempts_remaining}>,
  *     submit({format, activeMs, sectionsViewed, sectionsTotal, role}) -> Promise<{submitted_at, active_ms} | null>,
  *     progress({activeMs, sectionsViewed, format}), onLocked(until)
@@ -79,6 +80,11 @@
     var talk = o.talk || {};
     var pages = talk.pages || [];
     var sections = normalizeSections(talk.sections);
+    /* Guided-only delivery (the week's format is 'guided'): the employee gets the
+       Guided Talk and nothing else. No format choice, no original pages, no file
+       name. The original stays on record for the office. */
+    var guidedOnly = !!o.guidedOnly && sections.length > 0;
+    if (guidedOnly) pages = [];
     var leader = o.role === 'leader';
     var roster = (o.roster || []).map(function (p) { return typeof p === 'string' ? { n: p, g: '' } : p; });
     var groups = (o.groups && o.groups.length) ? o.groups
@@ -182,6 +188,7 @@
 
     /* ---------------- STEP 1: review the talk ---------------- */
     function formatBar() {
+      if (guidedOnly) return '';
       return '<div class="tbt-fmt">' +
         '<button type="button" class="tbt-fmtbtn' + (S.format === 'doc' ? ' is-on' : '') +
           '" data-tbt-format="doc">View Original Document</button>' +
@@ -256,13 +263,14 @@
       body = formatBar() +
         '<div class="tbt-doc">' +
           '<h3 class="tbt-doc-title">' + esc(talk.title) + '</h3>' +
-          '<div class="tbt-doc-sub">' + esc(talk.filename || '') + (s.src ? ' · ' + esc(s.src) : '') +
-            (o.company ? ' · ' + esc(o.company) : '') + '</div>' +
+          '<div class="tbt-doc-sub">' + (guidedOnly ? esc(o.company || '')
+            : esc(talk.filename || '') + (s.src ? ' · ' + esc(s.src) : '') +
+              (o.company ? ' · ' + esc(o.company) : '')) + '</div>' +
           '<div class="tbt-sec"><h4 class="tbt-sec-h">' + esc(s.h) + '</h4>' +
             s.paras.map(function (p) {
               return '<p class="tbt-sec-b' + (p.bullet ? ' tbt-sec-bullet' : '') + '">' + esc(p.text) + '</p>';
             }).join('') +
-            (s.src ? '<div class="tbt-sec-src">From ' + esc(talk.filename || talk.title) + ', ' + esc(s.src) + '</div>' : '') +
+            (s.src && !guidedOnly ? '<div class="tbt-sec-src">From ' + esc(talk.filename || talk.title) + ', ' + esc(s.src) + '</div>' : '') +
           '</div>' +
           '<label class="tbt-sec-check' + (done ? ' is-on' : '') + '" for="tbtSecDone">' +
             '<input type="checkbox" id="tbtSecDone"' + (done ? ' checked' : '') + '>' +

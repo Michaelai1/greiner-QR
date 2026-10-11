@@ -6,14 +6,14 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <title>Toolbox Talk</title>
-<link rel="stylesheet" href="toolbox-talk.css?v=1">
+<link rel="stylesheet" href="toolbox-talk.css?v=2">
 </head>
 <body class="tbt-app">
 <div class="tbt-wrap" id="root">
   <p class="tbt-week">Loading…</p>
 </div>
-<script src="talks/library.js?v=1"></script>
-<script src="toolbox-talk.js?v=1"></script>
+<script src="talks/library.js?v=2"></script>
+<script src="toolbox-talk.js?v=2"></script>
 <script>
 (function () {
   'use strict';
@@ -25,7 +25,11 @@
      personal link is the credential. */
   var URL_ = 'https://gvfolfzseqwhhimbxgjv.supabase.co';
   var ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2Zm9sZnpzZXF3aGhpbWJ4Z2p2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMzQzOTcsImV4cCI6MjA5OTcxMDM5N30.ZpJWG4a0evolcjxr36IDaA4o0pjRjw1cCGOWV9ofDE0';
-  var TALKS = { 'fall-protection': 'Fall Protection.pdf' };   // talk_key -> talk library entry
+  var TALKS = {                                                 // talk_key -> talk library entry
+    'fall-protection': 'Fall Protection.pdf',
+    'osha-ladder-safety-2026': 'OSHA Ladder Safety Requirements 2026.docx',
+    'falls-from-ladder': 'Falls from Ladder.docx'
+  };
   var root = document.getElementById('root');
   var token = (location.hash || '').replace(/^#/, '').trim();
   var tt = null, A = null;
@@ -64,6 +68,8 @@
       A = rows[0];
       var lib = (window.TBT_LIBRARY || {})[TALKS[A.talk_key]] || null;
       if (!lib) { refuse(); return; }
+      // A Guided Talk only entry has no pages: no format choice, no original.
+      var guidedOnly = !!lib.guidedOnly;
       var talk = { title: A.talk_title, filename: lib.filename, weekStart: A.week_start,
         pages: lib.pages.map(function (p) { return { src: 'talks/' + p.src, w: p.w, h: p.h }; }),
         sections: lib.sections };
@@ -80,7 +86,7 @@
         talk: talk, company: company, employeeName: A.recipient_name, role: leader ? 'leader' : 'participant',
         groups: leader && group ? [group] : [],
         roster: leader ? (A.roster || []).map(function (n) { return { n: n, g: group }; }) : [],
-        defaultFormat: 'doc', pinRequired: false,
+        defaultFormat: guidedOnly ? 'guided' : 'doc', guidedOnly: guidedOnly, pinRequired: false,
         submit: function (args) {
           var body = { p_token: token, p_active_ms: Math.min(args.activeMs, 86400000),
             p_format: args.format === 'doc' ? 'doc' : 'guided' };
