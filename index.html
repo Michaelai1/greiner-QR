@@ -2581,6 +2581,10 @@
                                 <label><input type="radio" name="fl_chk_operator_manual" value="defect" data-display="No"> No</label>
                             </div>
                         </div>
+                        <!-- Greiner, October 12: a missing manual is recorded and flagged for supervisor review, and the inspector raises it with their foreman. -->
+                        <div class="fl-manual-note" id="flManualNote" hidden role="status" style="margin:-4px 0 14px; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.45); border-radius:10px; padding:10px 14px; font-size:13px; line-height:1.5; color:#92400e;">
+                            <strong>Operator's manual missing or unreadable.</strong> It is recorded and flagged for supervisor review. Tell your foreman so it can be replaced.
+                        </div>
                     </div>
                     <div class="form-section">
                         <div class="form-group">
@@ -3943,6 +3947,14 @@
             return fields;
         }
 
+        // The forklift's operator's-manual note shows while "No" is chosen.
+        function syncFlManualNote() {
+            var n = document.getElementById('flManualNote'); if (!n) return;
+            n.hidden = !document.querySelector('input[name="fl_chk_operator_manual"][value="defect"]:checked');
+        }
+        document.addEventListener('change', function (e) { if (e.target && e.target.name === 'fl_chk_operator_manual') syncFlManualNote(); });
+        document.addEventListener('reset', function (e) { if (e.target && e.target.id === 'forkliftInspectionForm') setTimeout(syncFlManualNote, 0); }, true);
+
         function enhanceInspectionChecklistRow(row) {
             if (!row || row.querySelector('.inspection-defect-detail')) return;
             var firstRadio = row.querySelector('input[type="radio"][name]');
@@ -4917,6 +4929,17 @@ ${photoUrls}`;
                         if (notice) notice.style.display = 'none';
                         if (st) st.textContent = 'Inspection Passed';
                         if (sm) sm.textContent = 'All items checked. Submission received.';
+                    }
+                    // Forklift (Greiner, October 12): a missing or unreadable operator's manual is recorded and
+                    // flagged for supervisor review, and the inspector is told to raise it with their foreman.
+                    // When it is the only defect, that replaces the do-not-operate notice.
+                    var manualMissing = form.id === 'forkliftInspectionForm' && !!form.querySelector('input[name="fl_chk_operator_manual"][value="defect"]:checked');
+                    if (notice) {
+                        if (!notice.dataset.defaultHtml) notice.dataset.defaultHtml = notice.innerHTML;
+                        var manualHtml = "<strong>Operator's manual missing or unreadable.</strong> It is recorded and flagged for supervisor review. Tell your foreman so it can be replaced.";
+                        notice.innerHTML = !manualMissing ? notice.dataset.defaultHtml
+                            : defectCount === 1 ? '\u26a0\ufe0f ' + manualHtml
+                            : notice.dataset.defaultHtml + '<br><br>' + manualHtml;
                     }
 
                     form.querySelectorAll('.form-group.error').forEach(function(g) { g.classList.remove('error'); });
