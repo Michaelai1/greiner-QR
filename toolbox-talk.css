@@ -200,3 +200,6 @@
 .tbt-choice { align-items: flex-start; }
 .tbt-choice .go { align-self: center; }
 .tbt-choice-lead { font-size: 15px; }
+
+/* Video talk: the progress line sits on the white document panel, so it needs dark text. */
+.tbt-doc #tbtVideoProg { color: #374151; font-size: 13px; font-weight: 700; }

@@ -195,5 +195,14 @@ window.TBT_LIBRARY = {
         ]
       }
     ]
+  },
+  /* Video Toolbox Talk: the public YouTube video Tony Sweet supplied (Oct 19 test).
+     A video entry has no pages and no sections: the link plays the video on the page. */
+  "Driver Safety: Proper Positioning": {
+    "title": "Driver Safety: Proper Positioning",
+    "filename": "Driver Safety: Proper Positioning (video)",
+    "video": { "provider": "youtube", "id": "94wWLo0IEjw", "seconds": 112 },
+    "pages": [],
+    "sections": []
   }
 };

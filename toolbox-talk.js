@@ -16,7 +16,8 @@
  * show both workflows side by side while Peine decides which one it uses.
  *
  *   var talk = ToolboxTalk.mount(el, {
- *     talk: { title, filename, weekStart: 'YYYY-MM-DD', pages: [{src,w,h}], sections },
+ *     talk: { title, filename, weekStart: 'YYYY-MM-DD', pages: [{src,w,h}], sections,
+ *             video: { provider: 'youtube', id, seconds } (a video talk: no pages, no sections) },
  *     company, employeeName, role: 'participant' | 'leader',
  *     roster: [{n: name, g: group}] (who the leader can mark present), groups: [names],
  *     chooseMethod: bool (preview only: start on Greiner's Choose Method step),
@@ -85,6 +86,13 @@
        name. The original stays on record for the office. */
     var guidedOnly = !!o.guidedOnly && sections.length > 0;
     if (guidedOnly) pages = [];
+    /* A video talk (talk.video: { provider: 'youtube', id, seconds }) is played on
+       this page, which counts each second actually played once (skipping ahead
+       does not count). There is no minimum: Continue works at once, even when the
+       player cannot load. Play time is shown and recorded as play time, never as
+       proof that anyone watched. A video talk has no pages and no sections. */
+    var video = talk.video && talk.video.id && talk.video.seconds > 0 ? talk.video : null;
+    if (video) { pages = []; sections = []; }
     var leader = o.role === 'leader';
     var roster = (o.roster || []).map(function (p) { return typeof p === 'string' ? { n: p, g: '' } : p; });
     var groups = (o.groups && o.groups.length) ? o.groups
@@ -97,6 +105,8 @@
       ack: false, presented: false, pinOk: !o.pinRequired, finished: false
     };
     if (!sections.length && pages.length) S.format = 'doc';
+    if (video) S.format = 'video';
+    S.video = { seen: {}, count: 0, failed: false };
 
     /* ---------------- active time: counted only while visible ---------------- */
     var eng = { ms: 0, t0: null, timer: null };
@@ -110,7 +120,7 @@
       if (eng.timer) { clearInterval(eng.timer); eng.timer = null; }
     }
     function activeMs() { return eng.ms + (eng.t0 === null ? 0 : Date.now() - eng.t0); }
-    function sectionsDone() { return S.done.filter(Boolean).length; }
+    function sectionsDone() { return video ? S.video.count : S.done.filter(Boolean).length; }
     function ping() {
       if (S.finished || typeof o.progress !== 'function') return;
       o.progress({ activeMs: Math.min(activeMs(), 86400000), sectionsViewed: sectionsDone(), format: S.format });
@@ -126,7 +136,10 @@
       for (var i = 0; i < sections.length; i++) if (!S.done[i]) return false;
       return true;
     }
-    function reviewed() { return S.format === 'guided' ? allSectionsDone() : (pages.length > 0 && S.read); }
+    function reviewed() {
+      if (S.format === 'video') return true;     // no minimum playback
+      return S.format === 'guided' ? allSectionsDone() : (pages.length > 0 && S.read);
+    }
 
     /* ---------------- shell ---------------- */
     function shell(bodyHtml) {
@@ -245,6 +258,92 @@
       $('tbtPrev').onclick = function () { if (S.page > 0) { S.page--; render(); } };
       $('tbtNext').onclick = function () { if (S.page < total - 1) { S.page++; render(); } };
       wireReview();
+    }
+
+    /* ---------------- video talk ---------------- */
+    var player = null, tick = null, lastT = null;
+    function mmss(sec) { sec = Math.max(0, Math.round(sec)); return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); }
+    function videoProgressText() {
+      return 'Played ' + mmss(S.video.count) + ' of ' + mmss(video.seconds) + ' on this page';
+    }
+    function stopVideoTracking() { if (tick) { clearInterval(tick); tick = null; } lastT = null; }
+    function markPlayed() {
+      if (!player || typeof player.getCurrentTime !== 'function') return;
+      var t = player.getCurrentTime();
+      if (typeof t !== 'number' || !isFinite(t)) return;
+      // Only steady forward play counts: a jump (seek) is not watching.
+      if (lastT !== null && t >= lastT && t - lastT < 1.6) {
+        for (var s = Math.floor(lastT); s < Math.floor(t); s++) {
+          if (s >= 0 && s < video.seconds && !S.video.seen[s]) { S.video.seen[s] = 1; S.video.count++; }
+        }
+      }
+      lastT = t;
+      var pr = $('tbtVideoProg'); if (pr) pr.textContent = videoProgressText();
+    }
+    function videoFailed(msg) {
+      S.video.failed = true;
+      stopVideoTracking();
+      var box = $('tbtVideoErr');
+      if (box) {
+        box.hidden = false;
+        box.innerHTML = esc(msg || 'The video could not play on this page.') + ' ' +
+          '<a href="https://www.youtube.com/watch?v=' + encodeURIComponent(video.id) + '" target="_blank" rel="noopener">Open it on YouTube</a> ' +
+          'to watch it. You can still continue and record your completion.';
+      }
+    }
+    function loadYouTubeApi() {
+      if (root.YT && root.YT.Player) return Promise.resolve(root.YT);
+      if (root.__tbtYtPromise) return root.__tbtYtPromise;
+      root.__tbtYtPromise = new Promise(function (resolve, reject) {
+        var prev = root.onYouTubeIframeAPIReady;
+        root.onYouTubeIframeAPIReady = function () { if (typeof prev === 'function') prev(); resolve(root.YT); };
+        var sc = document.createElement('script');
+        sc.src = 'https://www.youtube.com/iframe_api';
+        sc.onerror = function () { root.__tbtYtPromise = null; reject(new Error('The video player could not load.')); };
+        document.head.appendChild(sc);
+        setTimeout(function () { if (!(root.YT && root.YT.Player)) reject(new Error('The video player did not load.')); }, 15000);
+      });
+      return root.__tbtYtPromise;
+    }
+    function renderVideo() {
+      var origin = location.origin && location.origin !== 'null' ? location.origin : '';
+      var src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(video.id) +
+        '?enablejsapi=1&playsinline=1&rel=0&modestbranding=1' + (origin ? '&origin=' + encodeURIComponent(origin) : '');
+      var body =
+        '<div class="tbt-doc">' +
+          '<h3 class="tbt-doc-title">' + esc(talk.title) + '</h3>' +
+          '<div class="tbt-doc-sub">Video · ' + mmss(video.seconds) + (o.company ? ' · ' + esc(o.company) : '') + '</div>' +
+          '<div class="tbt-video" style="position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden">' +
+            // The page itself sends no referrer; the player needs its origin, so this one frame sends it.
+            '<iframe id="tbtVideo" title="' + esc(talk.title) + '" src="' + esc(src) + '" referrerpolicy="strict-origin-when-cross-origin" ' +
+              'allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen ' +
+              'style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>' +
+          '</div>' +
+          '<div class="count" id="tbtVideoProg" role="status" style="margin-top:8px">' + esc(videoProgressText()) + '</div>' +
+          '<p class="tbt-err" id="tbtVideoErr" role="alert" hidden></p>' +
+        '</div>' +
+        continueHtml();
+      shell(body);
+      wireReview();
+      if (S.video.failed) { videoFailed(); return; }
+      stopVideoTracking();
+      loadYouTubeApi().then(function (YT) {
+        if (!$('tbtVideo')) return;
+        player = new YT.Player('tbtVideo', { events: {
+          onStateChange: function (e) {
+            if (e.data === YT.PlayerState.PLAYING) {
+              lastT = player.getCurrentTime();
+              if (!tick) tick = setInterval(markPlayed, 500);
+            } else {
+              markPlayed();
+              if (tick) { clearInterval(tick); tick = null; }
+              lastT = null;
+              if (e.data === YT.PlayerState.ENDED || e.data === YT.PlayerState.PAUSED) ping();
+            }
+          },
+          onError: function () { videoFailed('The video could not play on this page.'); }
+        } });
+      }).catch(function (e) { videoFailed(e && e.message); });
     }
     function renderGuided() {
       var total = sections.length, body;
@@ -475,7 +574,7 @@
       var kv = function (k, v, id) {
         return '<div class="kv"' + (id ? ' id="' + id + '"' : '') + '><span class="k">' + esc(k) + '</span><span class="v">' + esc(v) + '</span></div>';
       };
-      var fmtName = rec.format === 'doc' ? 'Original document' : rec.format === 'guided' ? 'Guided Talk' : '';
+      var fmtName = rec.format === 'doc' ? 'Original document' : rec.format === 'guided' ? 'Guided Talk' : rec.format === 'video' ? 'Video' : '';
       var body =
         '<div class="tbt-notice is-ok tbt-done" id="tbtDoneNotice">' +
           '<div class="big">' + (o.preview ? 'Preview complete' : 'Toolbox Talk recorded') + '</div>' +
@@ -491,6 +590,7 @@
             : kv('Completed by', o.employeeName || '')) +
           (fmtName ? kv('Format', fmtName) : '') +
           (rec.format === 'guided' && sections.length ? kv('Sections reviewed', rec.sectionsViewed + ' of ' + sections.length) : '') +
+          (rec.format === 'video' && video ? kv('Video played', mmss(rec.sectionsViewed) + ' of ' + mmss(video.seconds) + ' on this page') : '') +
           (rec.active_ms != null ? kv('Active time', fmtDuration(rec.active_ms)) : '') +
           kv('Recorded at', o.preview ? 'Not recorded (preview)' : fmtWhen(rec.submitted_at), 'tbtRecordedAt') +
           (leader ? kv('Statement', LEADER_STATEMENT) : kv('Statement', PARTICIPANT_STATEMENT)) +
@@ -505,12 +605,15 @@
     }
 
     function render() {
+      if (S.step !== 'review') stopVideoTracking();
       if (S.step === 'method') return renderMethod();
       if (S.step === 'complete') return renderComplete();
+      if (S.format === 'video') return renderVideo();
       if (S.format === 'guided') return renderGuided();
       return renderDoc();
     }
     function stop() {
+      stopVideoTracking();
       stopEng();
       document.removeEventListener('visibilitychange', onVis);
       window.removeEventListener('pagehide', onHide);

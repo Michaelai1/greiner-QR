@@ -6,14 +6,14 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <title>Toolbox Talk</title>
-<link rel="stylesheet" href="toolbox-talk.css?v=2">
+<link rel="stylesheet" href="toolbox-talk.css?v=3">
 </head>
 <body class="tbt-app">
 <div class="tbt-wrap" id="root">
   <p class="tbt-week">Loading…</p>
 </div>
-<script src="talks/library.js?v=2"></script>
-<script src="toolbox-talk.js?v=2"></script>
+<script src="talks/library.js?v=3"></script>
+<script src="toolbox-talk.js?v=3"></script>
 <script>
 (function () {
   'use strict';
@@ -28,8 +28,11 @@
   var TALKS = {                                                 // talk_key -> talk library entry
     'fall-protection': 'Fall Protection.pdf',
     'osha-ladder-safety-2026': 'OSHA Ladder Safety Requirements 2026.docx',
-    'falls-from-ladder': 'Falls from Ladder.docx'
+    'falls-from-ladder': 'Falls from Ladder.docx',
+    'driver-safety-proper-positioning': 'Driver Safety: Proper Positioning'
   };
+  // A video talk is recorded as 'video'; anything else that is not 'doc' is 'guided'.
+  function fmt(f) { return f === 'doc' ? 'doc' : f === 'video' ? 'video' : 'guided'; }
   var root = document.getElementById('root');
   var token = (location.hash || '').replace(/^#/, '').trim();
   var tt = null, A = null;
@@ -70,9 +73,10 @@
       if (!lib) { refuse(); return; }
       // A Guided Talk only entry has no pages: no format choice, no original.
       var guidedOnly = !!lib.guidedOnly;
+      // A video entry ({ provider, id, seconds }) is played on this page instead.
       var talk = { title: A.talk_title, filename: lib.filename, weekStart: A.week_start,
-        pages: lib.pages.map(function (p) { return { src: 'talks/' + p.src, w: p.w, h: p.h }; }),
-        sections: lib.sections };
+        pages: (lib.pages || []).map(function (p) { return { src: 'talks/' + p.src, w: p.w, h: p.h }; }),
+        sections: lib.sections || [], video: lib.video || null };
       var company = A.company || 'Greiner Brothers';
       if (A.already_done) {
         window.ToolboxTalk.renderRecorded(root, { talk: talk, company: company, submittedAt: A.submitted_at });
@@ -89,9 +93,15 @@
         defaultFormat: guidedOnly ? 'guided' : 'doc', guidedOnly: guidedOnly, pinRequired: false,
         submit: function (args) {
           var body = { p_token: token, p_active_ms: Math.min(args.activeMs, 86400000),
-            p_format: args.format === 'doc' ? 'doc' : 'guided' };
+            p_format: fmt(args.format) };
           if (leader) body.p_group = { presenter: args.presenter, attendees: args.attendees, manual: args.manual };
-          return rpc('cs_tbt_link_submit', body).then(function (rows) {
+          // A video talk reports its seconds played once more first, so the last few
+          // seconds are not lost; if that fails, the submit still goes ahead.
+          var first = args.format === 'video'
+            ? rpc('cs_tbt_link_progress', { p_token: token, p_active_ms: body.p_active_ms,
+                p_sections_viewed: args.sectionsViewed || 0, p_format: 'video' }).catch(function () { return null; })
+            : Promise.resolve();
+          return first.then(function () { return rpc('cs_tbt_link_submit', body); }).then(function (rows) {
             if (!Array.isArray(rows) || !rows.length) return null;
             A.already_done = true;
             return rows[0];
@@ -100,7 +110,7 @@
         progress: function (args) {
           if (!A || A.already_done) return;
           rpc('cs_tbt_link_progress', { p_token: token, p_active_ms: Math.min(args.activeMs, 86400000),
-            p_sections_viewed: args.sectionsViewed, p_format: args.format === 'doc' ? 'doc' : 'guided' })
+            p_sections_viewed: args.sectionsViewed, p_format: fmt(args.format) })
             .catch(function () {});
         }
       });
