@@ -134,7 +134,7 @@ try {
         await p.fill('#tbtManual', 'Walk In (Test)'); await p.click('#tbtManualAdd');
         await p.click('#tbtPresented'); await p.click('#tbtSubmitGroup'); await p.waitForTimeout(500);
         const d = await text(p);
-        assert.ok(/Toolbox Talk recorded/.test(d) && /Guided Talk/.test(d) && /Walk In \(Test\)/.test(d), d.slice(0, 400));
+        assert.ok(/Toolbox Talk recorded/.test(d) && /Attendees\s*2/.test(d) && /Walk In \(Test\)/.test(d), d.slice(0, 400));
         const sub = state.submits[t.key];
         assert.equal(sub.p_format, 'guided');
         assert.deepEqual(sub.p_group, { presenter: 'Foreman One (Test)', attendees: ['Crew Alpha (Test)'], manual: ['Walk In (Test)'] });

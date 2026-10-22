@@ -221,6 +221,81 @@ window.TBT_LIBRARY = {
       }
     ]
   },
+  /* Cold Stress series, Talk 3 (Greiner Brothers document, Oct 22). Original document (4 pages rendered from the
+     Word file) and Guided Talk; Guided words verbatim from the document body, in its order, under its own headings. */
+  "Cold Stress - Talk 3 - Slips on Ice.docx": {
+    "title": "Cold Stress Talk 3: Slips on Ice",
+    "filename": "Cold Stress - Talk 3 - Slips on Ice.docx",
+    "sourceSha256": "a155ae5bad2e69708095c624b20279c197e70bdbb85f864a51b43619fdb592e1",
+    "pages": [
+      { "src": "slips-on-ice/page-01.jpg", "w": 1200, "h": 927 },
+      { "src": "slips-on-ice/page-02.jpg", "w": 1200, "h": 927 },
+      { "src": "slips-on-ice/page-03.jpg", "w": 1200, "h": 927 },
+      { "src": "slips-on-ice/page-04.jpg", "w": 1200, "h": 927 }
+    ],
+    "sections": [
+      {
+        "h": "Winter Slips on Ice: Awareness and Prevention",
+        "p": [
+          "Winter falls do not usually happen doing something dangerous. They happen walking. On January 20, 2022, an employee parked, got out, and started walking to the building. She slipped on black ice in the parking lot and died of a head injury — before the shift even started (OSHA Accident Search, Summary Nr 143547.015).",
+          "A slip does not have to be spectacular to be fatal either. On January 7, 2019, a worker directing traffic slipped on ice and broke her leg. She developed a blood clot in the hospital and died two days later (Summary Nr 112637.015)"
+        ]
+      },
+      {
+        "h": "Key points",
+        "p": [
+          "* Ice is a code issue, not bad luck. 1910.22(a)(3) names snow and ice among the hazards walking working surfaces must be kept free of; in construction the duty runs through 1926.25.",
+          "* Black ice hides in shade and low spots and anywhere water drips and refreezes overnight. Treat those stretches as ice until proven otherwise.",
+          "* Short steps, slower pace, flat feet. That is OSHA's own advice for unavoidable ice: you can react to a change in traction only if you have not already committed your weight.",
+          "* Treads decide. Insulated, water-resistant boots with good rubber treads, plus over-shoes on the truck. Worn-smooth soles are the worst winter PPE on any site.",
+          "* Clear and salt early, not at 9 a.m. The lot and the walkways get used before daylight. Deicer spreading after the first shift arrives is spread too late.",
+          "* Hands free and report every slip. Nothing carried in both hands across ice; knock ice off rungs before climbing. The near miss tells us where to salt tomorrow"
+        ]
+      },
+      {
+        "h": "Do / Don't on Ice",
+        "p": [
+          "Do:",
+          "* Park and walk on the routes that get cleared and salted",
+          "* Test a surface with your lead foot before shifting your weight",
+          "* Keep spare dry gloves and over-shoes in the truck",
+          "* Tell the foreman about a slick spot the moment you find it",
+          "Don't:",
+          "* Cut across an unsalted lot or a snowbank to save thirty seconds",
+          "* Carry a load you cannot see over on an icy walkway",
+          "* Jump down from a truck bed, tailgate or step onto frozen ground",
+          "* Climb a ladder with iced or slush-packed boots"
+        ]
+      },
+      {
+        "h": "Quick site check",
+        "p": [
+          "* Are the lot, the walkway to the gate and the trailer steps cleared and salted right now?",
+          "* Is there deicer on site, and does everyone know where it is kept?",
+          "* Any spot where water is dripping or running off and will refreeze tonight?",
+          "* Boots and treads: check your own and your buddy's before we start.",
+          "* Do ladders, stair treads and scaffold planks have ice or packed snow on them?"
+        ]
+      },
+      {
+        "h": "What to think about while on the job",
+        "p": [
+          "* Where on this site does black ice form first in the morning — and who walks across it before daylight?",
+          "* Who is responsible for salting the lot and the walkways here, and what time do they get to it?",
+          "* What are you wearing on your feet today, and how are the treads?",
+          "* Where does water run off or drip and refreeze overnight on this job?",
+          "* If you fell in the parking lot before clocking in, would anyone know? Would you report it?"
+        ]
+      },
+      {
+        "h": "Personal Safety Responsibility",
+        "p": [
+          "This Toolbox Talk supports Greiner Brother’s Safety and Compliance priorities by promoting safe work practices and regulatory compliance. The company provides training, resources, and guidance; however, you are ultimately responsible for your own safety.",
+          "Before starting any task, you are responsible for: Identifying hazards, Understanding the associated risks, and developing and following a safe work plan. For questions about Greiner Brothers Safety and Compliance Program, contact Safety Program Director Tony Sweet."
+        ]
+      }
+    ]
+  },
   /* Video Toolbox Talk: the public YouTube video Tony Sweet supplied (Oct 19 test).
      A video entry has no pages and no sections: the link plays the video on the page. */
   "Driver Safety: Proper Positioning": {

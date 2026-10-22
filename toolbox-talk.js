@@ -568,13 +568,14 @@
       });
     }
 
-    /* ---------------- confirmation: exactly what was recorded ---------------- */
+    /* ---------------- confirmation: the essentials of what was recorded ----------------
+       The crew sees who, when and (for a group talk) who attended. Format, sections, play and active time
+       stay in the stored record for the office; they are not repeated here. */
     function renderDone(rec) {
       S.step = 'done';
       var kv = function (k, v, id) {
         return '<div class="kv"' + (id ? ' id="' + id + '"' : '') + '><span class="k">' + esc(k) + '</span><span class="v">' + esc(v) + '</span></div>';
       };
-      var fmtName = rec.format === 'doc' ? 'Original document' : rec.format === 'guided' ? 'Guided Talk' : rec.format === 'video' ? 'Video' : '';
       var body =
         '<div class="tbt-notice is-ok tbt-done" id="tbtDoneNotice">' +
           '<div class="big">' + (o.preview ? 'Preview complete' : 'Toolbox Talk recorded') + '</div>' +
@@ -582,25 +583,17 @@
           (o.preview ? '<div style="margin-top:6px">Preview — nothing was recorded and nothing was sent.</div>' : '') +
         '</div>' +
         '<div class="tbt-rec">' +
-          kv('Talk', talk.title) +
-          (talk.weekStart ? kv('Week of', fmtWeek(talk.weekStart)) : '') +
           (leader ? kv('Group', rec.group || '') + kv('Presented by', rec.presenter || '') +
-            kv('Attendees', (rec.attendees.length + rec.manual.length) + ' (' + rec.attendees.length + ' from the list' +
-              (rec.manual.length ? ' + ' + rec.manual.length + ' added by name' : '') + ')')
+            kv('Attendees', String(rec.attendees.length + rec.manual.length))
             : kv('Completed by', o.employeeName || '')) +
-          (fmtName ? kv('Format', fmtName) : '') +
-          (rec.format === 'guided' && sections.length ? kv('Sections reviewed', rec.sectionsViewed + ' of ' + sections.length) : '') +
-          (rec.format === 'video' && video ? kv('Video played', mmss(rec.sectionsViewed) + ' of ' + mmss(video.seconds) + ' on this page') : '') +
-          (rec.active_ms != null ? kv('Active time', fmtDuration(rec.active_ms)) : '') +
           kv('Recorded at', o.preview ? 'Not recorded (preview)' : fmtWhen(rec.submitted_at), 'tbtRecordedAt') +
-          (leader ? kv('Statement', LEADER_STATEMENT) : kv('Statement', PARTICIPANT_STATEMENT)) +
         '</div>' +
         (leader ? '<div class="tbt-field"><label>Who attended</label><ul class="tbt-people" id="tbtAttendeeList">' +
           rec.attendees.concat(rec.manual).map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul></div>' +
           (o.preview || rec.attendeesStored ? '' : '<p class="tbt-note">The attendee list is confirmed on this phone; ' +
             'the server does not store it yet.</p>') : '') +
         '<p class="tbt-note">' + (o.preview ? 'This was a preview. Employees receive their own link by text.'
-          : 'Nothing else is needed. You can close this page.') + '</p>';
+          : 'You’re all set. You can close this page.') + '</p>';
       shell(body);
     }
 
@@ -638,11 +631,9 @@
       '<div class="tbt-notice is-ok tbt-done"><div class="big">Toolbox Talk recorded</div>' +
         '<div style="margin-top:6px">' + esc(t.title) + '</div></div>' +
       '<div class="tbt-rec">' +
-        '<div class="kv"><span class="k">Talk</span><span class="v">' + esc(t.title) + '</span></div>' +
-        (t.weekStart ? '<div class="kv"><span class="k">Week of</span><span class="v">' + esc(fmtWeek(t.weekStart)) + '</span></div>' : '') +
         '<div class="kv"><span class="k">Recorded at</span><span class="v">' + esc(fmtWhen(o.submittedAt)) + '</span></div>' +
       '</div>' +
-      '<p class="tbt-note">This talk is already recorded. Nothing else is needed.</p>';
+      '<p class="tbt-note">This talk is already recorded. You’re all set.</p>';
   }
 
   root.ToolboxTalk = { mount: mount, renderRecorded: renderRecorded,

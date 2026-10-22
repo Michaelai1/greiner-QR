@@ -178,7 +178,7 @@ try {
   });
   await shot(v, '02-video-talk-progress-shown.png');
 
-  await check('submit: one last progress as video, then the submission as video; the confirmation says Video and play time', async () => {
+  await check('submit: one last progress as video, then the submission as video; the confirmation shows who and when only', async () => {
     const played = await v.evaluate(() => Number(document.getElementById('tbtVideoProg').textContent.match(/Played 0:(\d\d)/)[1]));
     await v.click('#tbtToComplete');
     const t = await text(v);
@@ -190,9 +190,9 @@ try {
     const fin = state.progress.slice(before).pop();
     assert.ok(fin && fin.p_format === 'video' && fin.p_sections_viewed === played, JSON.stringify(fin));
     const d = await text(v);
-    assert.ok(/Toolbox Talk recorded/.test(d) && /Format\s*Video/.test(d), d.slice(0, 400));
-    assert.match(d, new RegExp('Video played\\s*0:' + String(played).padStart(2, '0') + ' of 1:52 on this page'));
-    assert.ok(/Recorded at/.test(d) && /Active time/.test(d));
+    assert.ok(/Toolbox Talk recorded/.test(d) && /Completed by\s*Tester J \(fictional\)/.test(d) && /Recorded at/.test(d), d.slice(0, 400));
+    assert.ok(!/Format|Video played|Active time|Statement|Sections reviewed/.test(d), 'office details stay off the crew confirmation');
+    assert.match(d, /You\u2019re all set\. You can close this page\./);
     assert.ok(await overflow(v) <= 1);
   });
   await shot(v, '03-video-talk-submitted-confirmation.png');
@@ -238,7 +238,7 @@ try {
     await p.click('#tbtToComplete'); await p.click('#tbtAck'); await p.click('#tbtSubmit'); await p.waitForTimeout(500);
     assert.equal(state.submits[state.submits.length - 1].p_format, 'doc');
     const d = await text(p);
-    assert.ok(/Format\s*Original document/.test(d) && !/Video played/.test(d), d.slice(0, 300));
+    assert.ok(/Toolbox Talk recorded/.test(d) && /Recorded at/.test(d) && !/Format|Video played|Active time/.test(d), d.slice(0, 300));
     await p.close();
   });
 

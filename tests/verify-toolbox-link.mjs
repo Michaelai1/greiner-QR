@@ -95,7 +95,7 @@ try {
     assert.match(t, /I reviewed the complete Toolbox Talk and understand it\./);
     await p.click('#tbtAck'); await p.click('#tbtSubmit'); await p.waitForTimeout(500);
     const d = await text(p);
-    assert.ok(/Toolbox Talk recorded/.test(d) && /Recorded at/.test(d) && /Guided Talk/.test(d), d.slice(0, 300));
+    assert.ok(/Toolbox Talk recorded/.test(d) && /Recorded at/.test(d) && /Completed by\s*Recipient One \(Test\)/.test(d), d.slice(0, 300));
     assert.equal(await p.$('.pin input'), null);
     assert.ok(state.calls.includes('cs_tbt_link_submit'));
   });
