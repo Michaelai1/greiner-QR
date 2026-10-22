@@ -19,7 +19,7 @@ const TALKS = [
   { key: 'osha-ladder-safety-2026', file: 'OSHA Ladder Safety Requirements 2026.docx', title: 'OSHA Ladder Safety Requirements 2026',
     week: '2026-10-12', sections: 6, first: 'OSHA Ladder Safety Requirements: The Rules Crews Actually Break' },
   { key: 'falls-from-ladder', file: 'Falls from Ladder.docx', title: 'Falls from Ladder',
-    week: '2026-10-12', sections: 2, first: 'Fatal Ladders Falls' }
+    week: '2026-10-12', sections: 7, first: 'Fatal Ladders Falls' }
 ];
 
 let checks = 0, failures = 0;

@@ -162,23 +162,48 @@ window.TBT_LIBRARY = {
         "h": "Fatal Ladders Falls",
         "p": [
           "On March 3, 1996, a 29-year-old service worker was using a three-foot stepladder to reach the overhead work area. He fell only three feet to the plywood floor below. However, the force of the fall caused his aorta to rupture killing him instantly.",
-          "* Falls from ladders are the leading cause of injury among mechanical service workers. Stepladders are involved in a large percentage of these falls.",
+          "* Falls from ladders are the leading cause of injury among mechanical service workers. Stepladders are involved in a large percentage of these falls."
+        ]
+      },
+      {
+        "h": "Inspect Your Stepladder",
+        "p": [
           "* Inspect your stepladder before you use it. If there is any damage, such as cracks, missing rungs, missing rivets, bending, warping, etc., take it out of service immediately.",
           "* Check each step for ice, mud, Snow, grease, oil or anything else that could cause a slip. If one of these slip hazards is present, clean the ladder off thoroughly before using it.",
-          "* Check the bottom of your work shoes or boots before using the ladder. There may be mud or grease on them as well.",
+          "* Check the bottom of your work shoes or boots before using the ladder. There may be mud or grease on them as well."
+        ]
+      },
+      {
+        "h": "Use a Stepladder the Right Way",
+        "p": [
           "* Never use any stepladder as a straight ladder. They are designed to support your weight only in a fully open position.",
           "* Never use the top platform and the first rung from the top as steps.",
           "* Don't use the supports on the back of the ladder as steps. They are not made to support your weight.",
           "* Never use stepladders as scaffold or platform supports. They are not made to support or balance the weight that would be placed upon them.",
-          "* Make sure the ground is level under all four feet and that the ladder is locked in a fully Open position before starting to climb.",
+          "* Make sure the ground is level under all four feet and that the ladder is locked in a fully Open position before starting to climb."
+        ]
+      },
+      {
+        "h": "A Second Fatal Fall",
+        "p": [
           "On December 5, 1996, a 34 -year- old service worker was descending a ladder from a rooftop. His weight on the ladder caused the rain gutter to break and the ladder to fall. He fell 18 feet to his death.",
           "* Falls from ladders are the leading cause of injury among service workers.",
-          "* Reaching out from ladders and carrying tools, equipment and materials by hand are the leading causes of falls from ladders. Keep your hands free to climb and pull other items up by rope after you are safely off the ladder.",
+          "* Reaching out from ladders and carrying tools, equipment and materials by hand are the leading causes of falls from ladders. Keep your hands free to climb and pull other items up by rope after you are safely off the ladder."
+        ]
+      },
+      {
+        "h": "Ladder Weight Ratings",
+        "p": [
           "* Ladders are classified by the weight they are designed to hold safely. Make Sure your ladder is designed to hold your weight plus the weight of your tool belt. Look for the ladder rating on the rails.",
           "* Type IA - ladders are rated up to 300 pounds.",
           "* Type I - ladders are rated up to 250 pounds.",
           "* Type II - ladders are rated up to 225 pounds.",
-          "* Type III - ladders are rated up to 200 pounds.",
+          "* Type III - ladders are rated up to 200 pounds."
+        ]
+      },
+      {
+        "h": "Set Up and Climb Safely",
+        "p": [
           "* Inspect the ladder each time you are going to use it. If there is any damage to the ladder such as cracked, broken or missing rungs, cracked side rails, missing feet or any other damage, remove it from service.",
           "* Set the ladder at the proper pitch. For each four feet of height the ladder should be one foot out from vertical. For example, a ladder accessing a 24-foot-high landing from a level surface should be pitched out six feet from vertical.",
           "* Set the ladder up on a level, non-slippery surface and secure it in p by bracing it at the bottom and/or tying it at the top.",
