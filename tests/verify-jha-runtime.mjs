@@ -69,6 +69,15 @@ async function open(query, width = 390) {
 const text = (page, sel) => page.locator(sel).innerText();
 const val = (page, sel) => page.$eval(sel, (e) => e.value);
 
+/* Set Hot Work "Time Started" to N minutes from the page's own clock (datetime-local, local time). */
+async function setHotWorkStart(page, minutesAhead) {
+  await page.evaluate((m) => {
+    const el = document.getElementById('hotWorkTimeStarted'); const t = new Date(Date.now() + m * 60e3);
+    t.setMinutes(t.getMinutes() - t.getTimezoneOffset()); el.value = t.toISOString().slice(0, 16);
+    el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true }));
+  }, minutesAhead);
+}
+
 /* Fill every visible required field that is still empty (JHA, Hot Work, Forklift).
    Repeats, because some answers reveal further required fields. */
 async function fillRequired(page, formSel) {
@@ -408,12 +417,11 @@ try {
     assert.equal(await page.$('[data-revise-root="demo-jha-e"]'), null);
   });
 
-  await check('20. A JHA with three revisions routes to Complete New JHA', async () => {
-    const row = await text(page, '[data-capped-root="demo-jha-c"]');
-    assert.ok(row.includes('This JHA already has 3 revisions. Start a new JHA to document additional changes.'));
-    await page.click('[data-capped-root="demo-jha-c"]');
-    assert.ok((await text(page, '#jhaSheet')).includes('Complete New JHA'));
-    await page.click('#jhaSheet [data-sheet="close"]');
+  await check('20. (Tony, Oct 21) A JHA with three revisions can still be revised until 6:00 PM Friday', async () => {
+    const row = await text(page, '[data-revise-root="demo-jha-c"]');
+    assert.ok(row.includes('Revise until Fri, Oct 2, 6:00 PM'), row);
+    assert.ok(!row.includes('3 revisions'));
+    assert.equal(await page.$('[data-capped-root]'), null, 'no capped rows');
   });
 
   await check('19-23. Tapping a JHA opens the populated editor; revision stores an automatic diff', async () => {
@@ -540,7 +548,7 @@ try {
     await p.click('[data-demoform="revisejha"]');
     await p.waitForSelector('#reviseJhaList [data-new-jha]');
     const v = await text(p, '#reviseJhaView');
-    assert.ok(v.includes('JHAs can be revised Monday through Friday.'));
+    assert.ok(v.includes('JHAs can be revised until 6:00 PM Friday of the week they were first submitted.'));
     assert.equal(await p.$('[data-revise-root]'), null);
     await p.click('#reviseJhaList [data-new-jha]');
     assert.equal(await text(p, '#jhaSubmitBtn'), 'Submit JHA');
@@ -554,11 +562,38 @@ try {
     assert.ok(ti > -1 && di === ti + 1, 'Type must sit immediately above Description');
     await p.fill('#hotWorkType', 'Welding');
     await fillRequired(p, '#hotWorkForm');
+    // Time Started defaults to the minute the form opened, and the live rule refuses a start earlier than the
+    // current minute. Pick a start 30 minutes ahead, as a crew member would, so this check never depends on the
+    // clock crossing a minute while the form is filled (the cause of the intermittent failure found Oct 22).
+    await setHotWorkStart(p, 30);
     await p.click('#hotWorkSubmitBtn');
     await p.waitForSelector('#demoSubmitNotice', { timeout: 5000 });
     const items = await p.evaluate(() => NG.demoLastDoc.sections.flatMap((s) => s.items.map((i) => i.label + ' = ' + i.response)));
     assert.ok(items.includes('Type of Hot Work Being Performed = Welding'));
     if (JSPDF) assert.ok((await pdfText(p)).includes('Type of Hot Work Being Performed'));
+    await p.close();
+  });
+
+  await check('26b. Hot Work: a default start that has fallen behind the current minute is refused (frozen clock)', async () => {
+    const p = await browser.newPage({ viewport: { width: 390, height: 900 } });
+    await p.route('**/*', (r) => { const u = r.request().url();
+      if (u.startsWith(BASE) || u.startsWith('data:') || u.startsWith('blob:')) return r.continue();
+      if (JSPDF && /cdnjs\.cloudflare\.com\/ajax\/libs\/jspdf\//.test(u)) return r.fulfill({ body: JSPDF, contentType: 'application/javascript' });
+      offMachine.push(u); return r.abort(); });
+    await p.clock.install({ time: new Date('2026-09-30T19:14:58.500Z') });     // 3:14:58.5 PM Indianapolis
+    await p.goto(BASE + '?demo=1&ngform=hotwork&demonow=' + WED);
+    await p.clock.runFor(400);
+    await p.fill('#hotWorkType', 'Welding');
+    await fillRequired(p, '#hotWorkForm');
+    await p.clock.runFor(3000);                                                  // now 3:15:01.9: the default 3:14 is stale
+    await p.click('#hotWorkSubmitBtn');
+    await p.clock.runFor(500);
+    assert.equal(await p.$eval('#hotWorkTimeStarted', (e) => e.validationMessage), 'Time Started cannot be earlier than the current time.');
+    assert.equal(await p.$('#demoSubmitNotice'), null, 'nothing submitted');
+    await setHotWorkStart(p, 30);
+    await p.click('#hotWorkSubmitBtn');
+    for (let i = 0; i < 40 && !(await p.$('#demoSubmitNotice')); i++) { await p.clock.runFor(250); await p.waitForTimeout(25); }
+    assert.ok(await p.$('#demoSubmitNotice'), 'a valid start submits');
     await p.close();
   });
 

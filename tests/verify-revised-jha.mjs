@@ -14,13 +14,16 @@ includes('>Complete New JHA<', 'Landing must offer "Complete New JHA"');
 includes('>Revise Submitted JHA<', 'Landing must offer "Revise Submitted JHA"');
 excludes('JHA — Coming next', 'JHA must no longer be marked "Coming next"');
 
-/* ---------------- current job + current WORKWEEK (Tony, Oct 2) --------
-   Superseded the same-day rule: up to three revisions per JHA within the
-   Monday-Friday Indianapolis workweek. The rule lives in the shared model;
-   tests/verify-jha-model.mjs proves the behavior. */
-includes('workdays: [1, 2, 3, 4, 5]', 'The revision window must be Monday to Friday');
+/* ---------------- current job + revision DEADLINE (Tony, Oct 21) --------
+   Superseded the Oct 2 rule (three revisions within the workweek): any number
+   of revisions until 6:00 PM Indianapolis on the Friday of the week the
+   ORIGINAL was submitted. The rule lives in the shared model;
+   tests/verify-jha-model.mjs and tests/verify-jha-revision-window.mjs prove it. */
+includes('workdays: [1, 2, 3, 4, 5]', 'The week is still labelled Monday to Friday');
 includes("timeZone: TZ,", 'The revision window must use the Indianapolis time zone');
-includes('maxRevisions: 3', 'Three revisions per JHA family');
+includes('maxRevisions: null', 'No revision count limit (Tony, Oct 21)');
+includes('deadline: { isoWeekday: 5, hour: 18, minute: 0 }', 'Revisions close 6:00 PM Friday (Tony, Oct 21)');
+excludes('This JHA already has 3 revisions', 'The three-revision cap message must be gone');
 includes("return no('other-job', 'Only JHAs from this job can be revised here.');",
   'Revision list must filter to the current job');
 includes('function jhaTodayISO()', 'A single source for "today" is required');
@@ -32,7 +35,7 @@ for (const bit of ["'<span class=\"jha-rev-row-meta\">Submitted '", "' \\u00b7 l
   'Choose a JHA to revise', '>Today<', '>Earlier this workweek<']) {
   includes(bit, `Revision picker must show "${bit}"`);
 }
-includes("'<button type=\"button\" class=\"jha-rev-row'", 'the whole row must be the button');
+includes("'<button type=\"button\" class=\"jha-rev-row\" '", 'the whole row must be the button');
 excludes('>Create revision<', 'no separate Create revision button');
 includes('Choose a JHA from this job. Your changes will create a new time-stamped version. The original will not change.',
   'Picker helper text must match the approved copy');
@@ -209,6 +212,20 @@ assert.ok(transport.includes("if (DEMO || !ticket) return Promise.resolve(null);
 assert.ok(transport.includes("if (DEMO || !ticket) return Promise.reject(new Error('no session'));"), 'ladder writes are off in demo');
 assert.ok(transport.includes("fn !== 'cs_portal_field_ladder_safe' && fn !== 'cs_portal_field_ladder_defect'"), 'only the two ladder writes are allowed');
 assert.equal((transport.match(/rpc\(/g) || []).length, 2, 'one read and one write call');
+// Release 2026-10-22: production JHA revisions reach the server through ONE
+// boundary outside the JHA module too. Closed in demo mode, and it can call only
+// the four revision RPCs and the existing PDF upload.
+const jhaTransport = html.slice(html.indexOf('var JHA_REVISION_RPCS = ['), html.indexOf('REVISED JHA — demo (local only)'));
+assert.ok(jhaTransport.includes("var JHA_REVISION_RPCS = ['cs_jha_revisable', 'cs_jha_current', 'cs_jha_revise', 'cs_jha_revision_attach_pdf'];"),
+  'only the four revision RPCs');
+assert.equal((jhaTransport.match(/if \(DEMO \|\| !NG\.ticket\) return Promise\.reject\(new Error\('no session'\)\);/g) || []).length, 2,
+  'both JHA calls are off in demo and without a session');
+assert.ok(jhaTransport.includes("if (JHA_REVISION_RPCS.indexOf(fn) === -1) return Promise.reject(new Error('not a JHA revision call'));"),
+  'no other RPC can go through it');
+assert.equal((jhaTransport.match(/rpc\(/g) || []).length, 1, 'one RPC call site');
+assert.equal((jhaTransport.match(/edge\(/g) || []).length, 1, 'one upload call site');
+assert.ok(jhaTransport.includes("edge({ action: 'upload', ticket: NG.ticket, id: id, pdf_base64: base64 })"), 'the existing upload action only');
+assert.ok(html.includes('var JHA_SOURCE = DEMO ? demoJhaSource : productionJhaSource;'), 'demo never uses the production source');
 includes('Demo submission completed. No data was saved.', 'Generic demo notice must remain');
 includes('No production data was saved.', 'JHA completion must say no production data was saved');
 includes("(revised ? 'Revised JHA submitted' : 'JHA submitted')",

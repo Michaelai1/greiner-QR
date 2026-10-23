@@ -5628,15 +5628,21 @@ ${photoUrls}`;
 
   var TZ = 'America/Indiana/Indianapolis';
 
-  /* Revision window. Tony (Oct 2): up to three revisions to one JHA within a
-     Monday-to-Friday week; the original never changes. Tony has NOT confirmed
-     weekend behavior — this demo treats Saturday and Sunday as outside the
-     window. Change `workdays` (ISO weekday numbers, Mon=1 ... Sun=7) once he
-     decides; nothing else needs to move. */
+  /* Revision window. Tony (Oct 21) replaced the Oct 2 rule (three revisions
+     within the workweek): a submitted JHA can be revised any number of times
+     until 6:00 PM Indianapolis time on the Friday of the week it was ORIGINALLY
+     submitted. "Original JHA sent on Monday: revisions on that same JHA until
+     6 PM Friday. Original submitted on Wednesday: still only until that
+     Friday." Weeks are ISO weeks (Monday to Sunday), so a JHA first submitted
+     on Friday after 6 PM, Saturday or Sunday is already past its window. The
+     revision count no longer limits anything. The original never changes.
+     `workdays` only labels the week (demo placement, Today/Earlier grouping);
+     `deadline` is what decides. */
   var JHA_REVISION_RULES = {
-    maxRevisions: 3,
+    maxRevisions: null,
     timeZone: TZ,
-    workdays: [1, 2, 3, 4, 5]
+    workdays: [1, 2, 3, 4, 5],
+    deadline: { isoWeekday: 5, hour: 18, minute: 0 }
   };
 
   /* Ladder inspection cadence. Tony mentioned weekly ladder inspections but
@@ -5685,6 +5691,41 @@ ${photoUrls}`;
     return d.toLocaleString('en-US', { timeZone: TZ, month: 'short', day: 'numeric',
       year: 'numeric', hour: 'numeric', minute: '2-digit' });
   }
+  /* An Indianapolis wall-clock time on a calendar date, as a UTC ISO instant.
+     Tries EDT (UTC-4) then EST (UTC-5) and keeps the offset that reads back as
+     the same local date and time, so it is right on both sides of a
+     daylight-saving change. */
+  var _hmFmt = null;
+  function indyWallTime(isoDate, hour, minute) {
+    if (!_hmFmt) {
+      _hmFmt = new Intl.DateTimeFormat('en-US', { timeZone: TZ, year: 'numeric', month: '2-digit',
+        day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+    }
+    var wall = Date.UTC(+isoDate.slice(0, 4), +isoDate.slice(5, 7) - 1, +isoDate.slice(8, 10), hour, minute || 0);
+    for (var off = 4; off <= 5; off++) {
+      var d = new Date(wall + off * 3600000), p = {};
+      _hmFmt.formatToParts(d).forEach(function (x) { p[x.type] = x.value; });
+      if (p.year + '-' + p.month + '-' + p.day === isoDate && +p.hour === hour && +p.minute === (minute || 0)) {
+        return d.toISOString();
+      }
+    }
+    return new Date(wall + 5 * 3600000).toISOString();
+  }
+  /* The revision deadline for a JHA: 6:00 PM Indianapolis on the Friday of the
+     ISO week (Monday to Sunday) of its ORIGINAL submission. */
+  function revisionDeadline(originalSubmittedAt) {
+    var p = indyParts(originalSubmittedAt), dl = JHA_REVISION_RULES.deadline;
+    return indyWallTime(isoAddDays(p.iso, dl.isoWeekday - p.dow), dl.hour, dl.minute);
+  }
+  // "Fri, Oct 23, 6:00 PM", assembled from parts so every browser prints the same.
+  function fmtDeadline(iso) {
+    if (!iso) return '';
+    var p = {};
+    new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'short', month: 'short', day: 'numeric',
+      hour: 'numeric', minute: '2-digit', hour12: true }).formatToParts(new Date(iso))
+      .forEach(function (x) { p[x.type] = x.value; });
+    return p.weekday + ', ' + p.month + ' ' + p.day + ', ' + p.hour + ':' + p.minute + ' ' + String(p.dayPeriod || '').toUpperCase();
+  }
 
   /* ---------------- JHA families and revisions ---------------- */
   // A family is one original JHA plus every revision of it. revision_number is
@@ -5703,14 +5744,16 @@ ${photoUrls}`;
   function revisionLabel(n) { return n <= 1 ? 'Original' : 'Revision ' + (n - 1); }
 
   /* Can this family take another revision right now?
-     code: ok | not-found | other-job | other-company | cap | weekend-now |
-           weekend-original | outside-week */
+     code: ok | not-found | other-job | other-company | after-deadline |
+           window-closed
+     There is no count limit (Tony, Oct 21): `remaining` is null. */
   function reviseEligibility(store, rootId, ctx) {
     var versions = familyVersions(store, rootId);
     if (!versions.length) return { ok: false, code: 'not-found', message: 'This JHA was not found.' };
     var orig = versions[0], head = versions[versions.length - 1];
-    var used = versions.length - 1, max = JHA_REVISION_RULES.maxRevisions;
-    var base = { used: used, remaining: Math.max(0, max - used),
+    var used = versions.length - 1;
+    var deadline = revisionDeadline(orig.original_submitted_at);
+    var base = { used: used, remaining: null, deadline: deadline,
                  nextNumber: used + 1, head: head, original: orig };
     function no(code, message) { return Object.assign({ ok: false, code: code, message: message }, base); }
     if (ctx.companyId && orig.company_id && orig.company_id !== ctx.companyId) {
@@ -5719,25 +5762,21 @@ ${photoUrls}`;
     if (ctx.jobId && orig.job_id !== ctx.jobId) {
       return no('other-job', 'Only JHAs from this job can be revised here.');
     }
-    var now = workweekOf(ctx.now), was = workweekOf(orig.original_submitted_at);
-    if (!now.isWorkday) {
-      return no('weekend-now', 'JHAs can be revised Monday through Friday. Start a new JHA to document today’s work.');
+    var dl = Date.parse(deadline);
+    if (Date.parse(orig.original_submitted_at) >= dl) {
+      return no('after-deadline', 'This JHA was submitted after 6:00 PM Friday of its week, so it can’t be revised. Start a new JHA instead.');
     }
-    if (!was.isWorkday) {
-      return no('weekend-original', 'This JHA was submitted on a weekend and can’t be revised. Start a new JHA instead.');
-    }
-    if (was.weekStart !== now.weekStart) {
-      return no('outside-week', 'This JHA is from an earlier workweek and can no longer be revised. You can view its history or start a new JHA.');
-    }
-    if (used >= max) {
-      return no('cap', 'This JHA already has ' + max + ' revisions. Start a new JHA to document additional changes.');
+    if (new Date(ctx.now).getTime() >= dl) {
+      return no('window-closed', 'This JHA could be revised until ' + fmtDeadline(deadline) +
+        ' (6:00 PM Friday of the week it was submitted). That time has passed. You can view it or start a new JHA.');
     }
     return Object.assign({ ok: true, code: 'ok', message: '' }, base);
   }
 
-  /* The picker: this job's families from the current workweek, grouped into
-     Today and Earlier this workweek, newest activity first. Capped families
-     stay listed so the foreman sees why, with a Complete New JHA action. */
+  /* The picker: this job's families still inside their revision window,
+     grouped into Today and Earlier this workweek, newest activity first.
+     windowOpen is false once this week's Friday 6:00 PM has passed (and all
+     weekend), when nothing can be revised. */
   function revisionCandidates(store, ctx) {
     var roots = {};
     (store || []).forEach(function (r) { roots[r.root_jha_id] = 1; });
@@ -5745,14 +5784,14 @@ ${photoUrls}`;
     Object.keys(roots).forEach(function (rootId) {
       var e = reviseEligibility(store, rootId, ctx);
       if (e.code === 'not-found' || e.code === 'other-job' || e.code === 'other-company') return;
-      if (e.code === 'outside-week' || e.code === 'weekend-original' || e.code === 'weekend-now') { hidden++; return; }
+      if (e.code === 'window-closed' || e.code === 'after-deadline') { hidden++; return; }
       var card = { rootId: rootId, eligibility: e, original: e.original, head: e.head,
         lastActivity: e.head.revised_at || e.original.original_submitted_at };
       (workweekOf(e.original.original_submitted_at).date === now.date ? today : earlier).push(card);
     });
     var newest = function (a, b) { return String(b.lastActivity).localeCompare(String(a.lastActivity)); };
     return { today: today.sort(newest), earlier: earlier.sort(newest), hiddenCount: hidden,
-             windowOpen: now.isWorkday };
+             windowOpen: new Date(ctx.now).getTime() < Date.parse(revisionDeadline(ctx.now)) };
   }
 
   function freezeDeep(o) {
@@ -5783,8 +5822,8 @@ ${photoUrls}`;
   }
 
   /* Append the next revision. Refuses (never overwrites) when the JHA moved on
-     since the form opened (stale), when the cap is reached, or when the window
-     is closed. What changed is computed, field by field — the foreman is never
+     since the form opened (stale) or when its revision window (6:00 PM Friday
+     of the original's week) has closed. What changed is computed, field by field — the foreman is never
      asked to explain each change; an optional note can add context. */
   function submitRevision(store, req, serverNow) {
     var e = reviseEligibility(store, req.rootId, { now: serverNow, jobId: req.jobId, companyId: req.companyId });
@@ -6274,6 +6313,7 @@ ${photoUrls}`;
     indyParts: indyParts, workweekOf: workweekOf, fmtIndy: fmtIndy, isoAddDays: isoAddDays,
     familyVersions: familyVersions, familyHead: familyHead, revisionsUsed: revisionsUsed,
     revisionLabel: revisionLabel, reviseEligibility: reviseEligibility,
+    revisionDeadline: revisionDeadline, fmtDeadline: fmtDeadline, indyWallTime: indyWallTime,
     revisionCandidates: revisionCandidates, createOriginal: createOriginal,
     submitRevision: submitRevision, dailyJhaCount: dailyJhaCount,
     revisionEventCount: revisionEventCount, freezeDeep: freezeDeep,
@@ -6310,7 +6350,7 @@ ${photoUrls}`;
         return fetch(CREEKSIDE_URL + '/rest/v1/rpc/' + fn, {
           method: 'POST', headers: { apikey: ANON, Authorization: 'Bearer ' + ANON, 'Content-Type': 'application/json' },
           body: JSON.stringify(body)
-        }).then(function (r) { return r.text().then(function (t) { var j = null; try { j = t ? JSON.parse(t) : null; } catch (e) {} if (!r.ok) throw new Error((j && (j.message || j.error)) || ('request failed (' + r.status + ')')); return j; }); });
+        }).then(function (r) { return r.text().then(function (t) { var j = null; try { j = t ? JSON.parse(t) : null; } catch (e) {} if (!r.ok) { var se = new Error((j && (j.message || j.error)) || ('request failed (' + r.status + ')')); se.server = true; se.status = r.status; throw se; } return j; }); });
       }
       function edge(body) {
         return fetch(EDGE, { method: 'POST', headers: { apikey: ANON, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
@@ -6544,6 +6584,15 @@ ${photoUrls}`;
         if (/inspectionJha$/i.test(v)) setTimeout(function () { try { jhaInit(); } catch (e) {} }, 0);
       };
 
+      // Production: opening the JHA form from the inspections list, or leaving
+      // it, always ends a revision in progress, so a new JHA is never filed as
+      // a revision (and a revision is never filed as a new JHA).
+      document.addEventListener('click', function (e) {
+        if (DEMO || !JHA_CTX || !JHA_CTX.prod) return;
+        var t = e.target && e.target.closest && e.target.closest('#openJhaFormBtn,#inspectionJhaBackBtn,#closeInspectionJhaBtn');
+        if (t) JHA_CTX = null;
+      }, true);
+
       // route inspection submissions to NextGen; everything else unchanged
       var _handleSaveData = window.handleSaveData;
       window.handleSaveData = function (url, payload, submitBtn, label) {
@@ -6562,6 +6611,15 @@ ${photoUrls}`;
         // DEMO short-circuit, first and unconditional: every submit in demo
         // mode — inspection or legacy — ends here. Nothing is sent anywhere.
         if (DEMO) return ngDemoSubmit(payload, submitBtn, label);
+        // Production JHA revision (opened from "Revise a JHA from this week").
+        if (payload && payload.inspection_subtype === 'jha' && JHA_CTX && JHA_CTX.prod) {
+          if (!NG.ticket) {
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = jhaSubmitLabel(); }
+            toast('error', 'Sign in required', 'Open this form from your Greiner dashboard.');
+            return Promise.reject(new Error('no field session'));
+          }
+          return jhaProdReviseSubmit(payload, submitBtn);
+        }
         if (payload && payload.form_type === 'inspection') {
           if (!NG.ticket) {
             if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = label || 'Submit'; }
@@ -7470,16 +7528,34 @@ ${photoUrls}`;
         window.showView('success');
       }
 
+      /* Revised JHA, production (release 2026-10-22): the ONLY network boundary
+         the JHA revise flow uses, kept outside the JHA module like the ladder
+         transport. Closed in demo mode and without a field session; it can call
+         only the four revision RPCs and the existing PDF upload. */
+      var JHA_REVISION_RPCS = ['cs_jha_revisable', 'cs_jha_current', 'cs_jha_revise', 'cs_jha_revision_attach_pdf'];
+      var JHA_TRANSPORT = {
+        call: function (fn, body) {
+          if (DEMO || !NG.ticket) return Promise.reject(new Error('no session'));
+          if (JHA_REVISION_RPCS.indexOf(fn) === -1) return Promise.reject(new Error('not a JHA revision call'));
+          return rpc(fn, Object.assign({ p_token: NG.ticket }, body));
+        },
+        uploadPdf: function (id, base64) {
+          if (DEMO || !NG.ticket) return Promise.reject(new Error('no session'));
+          return edge({ action: 'upload', ticket: NG.ticket, id: id, pdf_base64: base64 });
+        }
+      };
+
       /* ================= REVISED JHA — demo (local only) =================
          Two mobile actions:
            Complete New JHA     -> the guided JHA form, fresh
-           Revise Submitted JHA -> choose a JHA from THIS job in the current
-                                   Indianapolis workweek, load its LATEST
-                                   version, edit, and submit a new linked
-                                   revision.
-         The rules live in the shared JHA model (JHA_REVISION_RULES): up to three
-         revisions per original, Monday 12:00 AM to Friday 11:59 PM, the original
-         and every earlier version immutable. There are deliberately no drafts,
+           Revise Submitted JHA -> choose a JHA from THIS job that is still
+                                   inside its revision window, load its
+                                   LATEST version, edit, and submit a new
+                                   linked revision.
+         The rules live in the shared JHA model (JHA_REVISION_RULES). Tony,
+         Oct 21: any number of revisions until 6:00 PM Indianapolis on the
+         Friday of the week the ORIGINAL was submitted; the original and every
+         earlier version immutable. There are deliberately no drafts,
          no autosave and no resume; nothing survives a reload.
          =================================================================== */
       var JHA_MAX_EMPLOYEES = 30;
@@ -7625,7 +7701,8 @@ ${photoUrls}`;
           { employees: ['Demo Foreman', 'Casey Nolan (Demo)', 'Taylor Reed (Demo)', 'Morgan Ellis (Demo)'],
             groups: [{ task: 'Hoisting & Rigging', activity: 'Setting pumps on the pad', members: ['Casey Nolan (Demo)', 'Morgan Ellis (Demo)'] }] });
 
-        // A JHA already at the three-revision cap (earlier this week, or today on a Monday).
+        // A JHA with three revisions already (earlier this week, or today on a Monday).
+        // Since Tony's Oct 21 change it can still be revised until 6:00 PM Friday.
         var capDay = earlier || lastWorkday;
         orig('demo-jha-c', indyAt(capDay, 6, 55), Object.assign({}, base, {
           jhaDate: capDay, jhaDescriptionOfWork: 'Demo existing ductwork, Level 1 north',
@@ -7723,7 +7800,9 @@ ${photoUrls}`;
           '<p class="jha-row-hint" id="reviseJhaSub">Choose a JHA from this job. Your changes will create a new time-stamped version. The original will not change.</p>' +
           '<div id="reviseJhaList"></div></div>';
         (document.querySelector('.app-container') || document.body).appendChild(v);
-        v.querySelector('#reviseJhaBack').addEventListener('click', function () { window.showView('landing'); });
+        v.querySelector('#reviseJhaBack').addEventListener('click', function () {
+          if (JHA_PROD) openFreshJha(); else window.showView('landing');
+        });
         return v;
       }
       /* Where revisable JHAs come from. Demo mode reads the in-page fixtures;
@@ -7738,31 +7817,292 @@ ${photoUrls}`;
         },
         submitRevision: function (req) { return Promise.resolve(window.JhaModel.submitRevision(DEMO_JHA_STORE, req, jhaClock())); }
       };
+      /* Production: Greiner's records, through the field RPCs (release
+         2026-10-22). The server owns the rule (6:00 PM Indianapolis on the
+         Friday of the original's week, judged on its own clock), the job and
+         company checks, and the duplicate check by client key. The phone only
+         shows what the server answers. The original is never changed. */
       var productionJhaSource = {
-        candidates: function () { return Promise.reject(new Error('Revising a submitted JHA is not connected to Greiner\u2019s records in this build.')); },
-        latest: function () { return Promise.reject(new Error('Revising a submitted JHA is not connected to Greiner\u2019s records in this build.')); },
-        submitRevision: function () { return Promise.reject(new Error('Revising a submitted JHA is not connected to Greiner\u2019s records in this build.')); }
+        candidates: function () { return JHA_TRANSPORT.call('cs_jha_revisable', {}); },
+        latest: function (rootId) { return JHA_TRANSPORT.call('cs_jha_current', { p_original: rootId }); },
+        submitRevision: function (req) {
+          return JHA_TRANSPORT.call('cs_jha_revise', { p_original: req.original, p_fields: req.fields,
+            p_photos: req.photos || [], p_has_defects: !!req.has_defects, p_defect_count: req.defect_count || 0,
+            p_client_key: req.client_key });
+        },
+        uploadPdf: function (revisionId, base64) { return JHA_TRANSPORT.uploadPdf(revisionId, base64); },
+        attachPdf: function (revisionId, path) {
+          return JHA_TRANSPORT.call('cs_jha_revision_attach_pdf', { p_revision_id: revisionId, p_pdf_path: path });
+        }
       };
       var JHA_SOURCE = DEMO ? demoJhaSource : productionJhaSource;
+      var JHA_PROD = !DEMO;   // the production revise flow (a field ticket is still required to reach it)
 
-      // One full-width row per JHA. The whole row is the action.
+      /* ---------------- production: Revise a JHA from this week ---------- */
+      function jhaUuid() {
+        try { if (window.crypto && typeof crypto.randomUUID === 'function') return crypto.randomUUID(); } catch (e) {}
+        var b = new Uint8Array(16);
+        try { crypto.getRandomValues(b); } catch (e) { for (var i = 0; i < 16; i++) b[i] = Math.floor(Math.random() * 256); }
+        b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+        var h = Array.prototype.map.call(b, function (x) { return (x + 256).toString(16).slice(1); }).join('');
+        return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' + h.slice(16, 20) + '-' + h.slice(20);
+      }
+      function jhaFieldsCrew(fields) {
+        var c = fields && (fields.crew || fields.jhaCrewData);
+        if (typeof c === 'string') { try { c = JSON.parse(c); } catch (e) { c = null; } }
+        return { employees: ((c && c.employees) || []).slice(), groups: JSON.parse(JSON.stringify((c && c.groups) || [])) };
+      }
+      // Stored fields minus the server-built extras, ready for the editor.
+      function jhaEditorData(fields) {
+        var d = {};
+        Object.keys(fields || {}).forEach(function (k) { if (k !== 'doc' && k !== 'crew') d[k] = fields[k]; });
+        return d;
+      }
+      function jhaServerMessage(err) {
+        var m = String((err && err.message) || err || '').trim();
+        if (/revision window closed/i.test(m)) {
+          var at = m.replace(/^.*revision window closed at\s*/i, '').trim();
+          return 'This JHA can no longer be revised: the revision window closed' + (at ? ' at ' + at : '') + '.';
+        }
+        if (/no revision window/i.test(m)) return 'This JHA can\u2019t be revised: there is no revision window for it (it was submitted on a weekend or after 6 PM Friday).';
+        if (/not found or not permitted/i.test(m)) return 'This JHA can\u2019t be revised from this sign-in: it was not found on your job, or you are not permitted to revise it.';
+        if (/insufficient scope|invalid token|not a field user/i.test(m)) return 'Your sign-in has expired. Open this form again from your Greiner dashboard.';
+        if (/empty/i.test(m) && /field/i.test(m)) return 'The revision has no answers, so it was not saved.';
+        if (/could not find the function|schema cache/i.test(m)) return 'Revising a JHA is not switched on for Greiner’s records yet. Complete a new JHA instead.';
+        return m || 'The revision was not saved.';
+      }
+      function jhaWindowReason(cur) {
+        var M = window.JhaModel;
+        if (cur.window_reason === 'no-window') return 'No revision window for this JHA (weekend or after 6 PM Friday). You can view it, but it can\u2019t be revised.';
+        return 'The revision window closed' + (cur.deadline_at ? ' at ' + M.fmtDeadline(cur.deadline_at) : '') + '. You can view this JHA, but it can\u2019t be revised.';
+      }
+      function openFreshJha() {
+        JHA_CTX = null;
+        JHA_CREW = { employees: [], groups: [] };
+        ladderReset();
+        if (typeof window.openJhaForm === 'function') { window.openJhaForm(); applyLocks(); }
+      }
+      function prodReviseRowHtml(r) {
+        var M = window.JhaModel, h = +r.head_revision || 0;
+        if (r.window_open === false) {
+          return '<button type="button" class="jha-rev-view" data-view-orig="' + esc(r.id) + '">' +
+            '<b>JHA submitted ' + esc(M.fmtIndy(r.submitted_at)) + '</b>' +
+            '<span>' + esc(r.inspector_name || '') + ' \u00b7 ' + (h ? 'Latest: Revision ' + h : 'Original') + ' \u00b7 view only</span></button>';
+        }
+        return '<button type="button" class="jha-rev-row" data-revise-root="' + esc(r.id) + '" data-revise-card="' + esc(r.id) + '">' +
+          '<span class="jha-rev-row-title">JHA submitted ' + esc(M.fmtIndy(r.submitted_at)) + '</span>' +
+          '<span class="jha-rev-row-meta" data-revise-who="1">' + esc(r.inspector_name || '') + ' \u00b7 ' +
+            '<span data-revise-head="' + h + '">' + (h ? 'Latest: Revision ' + h : 'Original, not revised yet') + '</span></span>' +
+          '<span class="jha-rev-row-cta" data-revise-deadline="' + esc(r.deadline_at || '') + '">Revise until ' +
+            esc(M.fmtDeadline(r.deadline_at)) + ' \u00b7 Tap to revise</span>' +
+          '</button>';
+      }
+      function renderProdReviseList() {
+        var v = ensureReviseView(), list = v.querySelector('#reviseJhaList');
+        var title = v.querySelector('.form-title'); if (title) title.textContent = 'Revise a JHA from this week';
+        var sub = v.querySelector('#reviseJhaSub');
+        if (sub) sub.textContent = 'JHAs from this job can be revised until 6:00 PM Friday of the week they were first submitted. Each revision is saved as a new version; the original is kept.';
+        list.innerHTML = '<div class="jha-row-hint" id="reviseJhaLoading">Loading this week\u2019s JHAs\u2026</div>';
+        window.showView('reviseJha');
+        if (!NG.ticket) {
+          list.innerHTML = '<div class="jha-rev-notice" role="alert">Sign in required. Open this form from your Greiner dashboard.</div>';
+          return Promise.resolve();
+        }
+        return JHA_SOURCE.candidates().then(function (rows) {
+          rows = Array.isArray(rows) ? rows : [];
+          var html = rows.length ? rows.map(prodReviseRowHtml).join('')
+            : '<div class="jha-rev-notice" id="reviseJhaEmpty">No JHAs from this job can be revised right now. A JHA can be revised until 6:00 PM Friday of the week it was first submitted.</div>';
+          html += '<button type="button" class="action-button action-button--primary" data-new-jha="1" style="width:100%;margin:6px 0 14px">Complete New JHA</button>';
+          list.innerHTML = html;
+          Array.prototype.forEach.call(list.querySelectorAll('[data-revise-root]'), function (b) {
+            b.addEventListener('click', function () { startRevision(b.getAttribute('data-revise-root')); });
+          });
+          Array.prototype.forEach.call(list.querySelectorAll('[data-view-orig]'), function (b) {
+            b.addEventListener('click', function () { startRevision(b.getAttribute('data-view-orig')); });
+          });
+          Array.prototype.forEach.call(list.querySelectorAll('[data-new-jha]'), function (b) {
+            b.addEventListener('click', openFreshJha);
+          });
+        }).catch(function (err) {
+          list.innerHTML = '<div class="jha-rev-notice" role="alert" id="reviseJhaError">Could not load this week\u2019s JHAs. ' +
+            esc(err && err.server ? jhaServerMessage(err) : 'Check your connection and try again.') + '</div>' +
+            '<button type="button" class="action-button action-button--primary" id="reviseJhaRetry" style="width:100%;margin:6px 0 14px">Try again</button>';
+          var rb = document.getElementById('reviseJhaRetry'); if (rb) rb.onclick = renderProdReviseList;
+        });
+      }
+      // View-only: the answers of the latest version and why it can't be revised.
+      function viewJhaReadOnly(cur, src) {
+        jhaSheet('JHA submitted ' + window.JhaModel.fmtIndy(cur.original.submitted_at),
+          '<p class="jha-sheet-lede" id="jhaViewOnlyReason">' + esc(jhaWindowReason(cur)) + '</p>' +
+          jhaReviewHtml(window.JhaModel.normalizeJhaData(jhaEditorData(src)), jhaFieldsCrew(src)),
+          [{ id: 'new', label: 'Complete New JHA', primary: true }, { id: 'close', label: 'Close' }]
+        ).then(function (c) { if (c === 'new') openFreshJha(); });
+      }
+      function startProdRevision(rootId) {
+        return JHA_SOURCE.latest(rootId).then(function (cur) {
+          if (!cur || !cur.original) throw Object.assign(new Error('JHA not found or not permitted'), { server: true });
+          var head = (cur.head && cur.head.fields) ? cur.head : null;
+          var src = head ? head.fields : (cur.original.fields || {});
+          var headNumber = head ? (+head.revision_number || 0) : 0;
+          if (!cur.window_open) { viewJhaReadOnly(cur, src); return; }
+          var data = jhaEditorData(src), crew = jhaFieldsCrew(src);
+          JHA_CTX = {
+            prod: true,
+            rootId: cur.original.id,
+            nextNumber: headNumber + 1,
+            deadline: cur.deadline_at || null,
+            original_submitted_at: cur.original.submitted_at,
+            original_by: cur.original.inspector_name || '',
+            job_id: (NG.job && NG.job.id) || null,
+            head: { data: data, crew: crew, revision_number: headNumber + 1,
+                    submitted_at: head ? head.submitted_at : cur.original.submitted_at,
+                    submitted_by: head ? (head.submitted_by || '') : (cur.original.inspector_name || '') },
+            headFields: src,
+            clientKey: jhaUuid(),   // one per editor session: double taps and retries reuse it
+            saved: null, inflight: null,
+            carriedPhotos: []
+          };
+          JHA_CREW = { employees: [], groups: [] };
+          ladderReset();
+          if (typeof window.openJhaForm === 'function') window.openJhaForm();
+          applyLocks();
+          fillJhaForm({ data: data, crew: crew });
+          renderJhaBanner();
+        }).catch(function (err) {
+          var msg = err && err.server ? jhaServerMessage(err) : 'Could not open the JHA. Check your connection and try again.';
+          jhaSheet('JHA not opened', '<p class="jha-sheet-lede" id="jhaOpenError">' + esc(msg) + '</p>',
+            [{ id: 'close', label: 'Close', primary: true }]);
+        });
+      }
+      // Photos already on the version being revised are carried forward and new
+      // ones are appended, per photo field. Nothing is dropped.
+      function mergeCarriedPhotos(headFields, fields) {
+        Object.keys(headFields || {}).forEach(function (k) {
+          if (!/_photos$/.test(k) || !Array.isArray(headFields[k]) || !headFields[k].length) return;
+          var add = Array.isArray(fields[k]) ? fields[k] : [];
+          fields[k] = headFields[k].concat(add.filter(function (p) { return headFields[k].indexOf(p) === -1; }));
+        });
+        return fields;
+      }
+      function jhaRevError(msg) {
+        var btn = document.getElementById('jhaSubmitBtn'); if (!btn) return;
+        var box = document.getElementById('jhaRevError');
+        if (!msg) { if (box) box.remove(); return; }
+        if (!box) {
+          box = document.createElement('div'); box.id = 'jhaRevError'; box.className = 'jha-rev-notice'; box.setAttribute('role', 'alert');
+          btn.parentNode.insertBefore(box, btn);
+        }
+        box.textContent = msg;
+      }
+      /* Submit a production revision: cs_jha_revise (the server stores it and
+         stamps its own time), then the revised PDF through the existing upload
+         (id = the revision id), then cs_jha_revision_attach_pdf. A retry after
+         any failure reuses the same client key, so the server hands back the
+         same revision instead of making a second one. */
+      function jhaProdReviseSubmit(payload, submitBtn) {
+        var ctx = JHA_CTX;
+        if (ctx.inflight) return ctx.inflight;
+        var M = window.JhaModel, n = ctx.nextNumber;
+        var form = document.getElementById('jhaForm');
+        function restore() { if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = jhaSubmitLabel(); } }
+        jhaRevError('');
+        var fields, storeFields, crew;
+        try {
+          fields = mergeCarriedPhotos(ctx.headFields, Object.assign({}, payload.fields || {}));
+          storeFields = Object.assign({}, fields, { doc: extractDoc(form, 'jha', Object.assign({}, payload, { fields: fields })) });
+          crew = JSON.parse(JSON.stringify(JHA_CREW));
+        } catch (e) {
+          restore(); jhaRevError('The revision could not be prepared on this phone. Nothing was sent. ' + (e && e.message ? e.message : ''));
+          return Promise.reject(e);
+        }
+        var stage = 'revise';
+        ctx.inflight = JHA_SOURCE.submitRevision({ original: ctx.rootId, fields: storeFields, photos: [],
+          has_defects: payload.has_defects, defect_count: payload.defect_count, client_key: ctx.clientKey
+        }).then(function (res) {
+          if (!res || res.ok !== true || !res.revision_id) {
+            throw Object.assign(new Error((res && (res.error || res.message)) || 'The revision was not saved.'), { server: true });
+          }
+          // A duplicate answer carries no times: keep the first answer's.
+          var saved = ctx.saved = Object.assign({}, ctx.saved || {}, res,
+            res.duplicate && ctx.saved ? { submitted_at: ctx.saved.submitted_at, deadline_at: ctx.saved.deadline_at } : {});
+          var num = +saved.revision_number || n;
+          var at = saved.submitted_at || new Date().toISOString();
+          stage = 'pdf';
+          var pdfModel = jhaDocFromModel(form, { fields: fields }, M.normalizeJhaData(jhaEditorData(fields)), crew, at);
+          decorateJhaDoc(pdfModel, {
+            revision_number: num + 1, original_submitted_at: ctx.original_submitted_at, revised_at: at,
+            data: fields, photos: [],
+            history: [{ revision_number: 1, original_submitted_at: ctx.original_submitted_at, revised_by: ctx.original_by }]
+              .concat(ctx.head.revision_number > 1 ? [{ revision_number: ctx.head.revision_number, revised_at: ctx.head.submitted_at,
+                revised_by: ctx.head.submitted_by, summary: 'Latest version before this revision' }] : [])
+              .concat([{ revision_number: num + 1, revised_at: at, revised_by: NG.user || '',
+                revision_diff: M.diffJhaData(ctx.head.data, M.normalizeJhaData(jhaEditorData(fields)), ctx.head.crew, crew) }])
+          });
+          pdfModel.meta['Revision'] = 'Revision ' + num;
+          var pdf = renderDetailedPdf(pdfModel);
+          NG.lastRevisionDoc = pdfModel;   // local review checks only
+          stage = 'upload';
+          return JHA_SOURCE.uploadPdf(saved.revision_id, pdf.base64).then(function (up) {
+            var path = (up && typeof up.path === 'string' && up.path) || ('greiner/' + saved.revision_id + '.pdf');
+            return JHA_SOURCE.attachPdf(saved.revision_id, path);
+          }).then(function (att) {
+            if (att && att.ok === false) throw new Error(att.error || 'The PDF could not be attached.');
+            NG.last = { blob: pdf.blob, filename: pdf.filename, id: saved.revision_id, title: 'JHA \u2014 Revision ' + num, when: new Date(at) };
+            JHA_CTX = null;
+            renderCompletion();
+            renderJhaRevisionSaved(num, ctx.original_submitted_at, at);
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = 'Submit JHA'; }
+          });
+        }).catch(function (e) {
+          restore();
+          var msg;
+          if (stage === 'revise' && e && e.server) {
+            msg = jhaServerMessage(e);
+            if (/insufficient scope|invalid token|not a field user/i.test(e.message || '')) { try { localStorage.removeItem(TICKET_KEY); } catch (_) {} }
+            jhaSheet('Revision not saved', '<p class="jha-sheet-lede" id="jhaRevRefused">' + esc(msg) + '</p>',
+              [{ id: 'close', label: 'Close', primary: true }]);
+          } else if (stage === 'revise') {
+            msg = 'Could not reach Greiner\u2019s records, so Revision ' + n + ' was not confirmed. Your answers are still here. Tap Submit Revision ' + n + ' again; it will not make a second copy.';
+          } else {
+            msg = 'Revision ' + (+(ctx.saved && ctx.saved.revision_number) || n) + ' is saved, but its PDF did not finish uploading. Tap Submit Revision ' + n + ' again to finish; it will not make another revision.';
+          }
+          jhaRevError(msg);
+          // A refusal is already shown in its own sheet; the other cases also get a toast.
+          if (!(stage === 'revise' && e && e.server)) toast('error', stage === 'revise' ? 'Revision not confirmed' : 'PDF not finished', msg);
+          throw e;
+        }).then(function (v) { ctx.inflight = null; return v; }, function (e) { ctx.inflight = null; throw e; });
+        return ctx.inflight;
+      }
+      function renderJhaRevisionSaved(num, originalAt, at) {
+        var box = document.getElementById('ngActions'); if (!box) return;
+        var old = document.getElementById('jhaRevSaved'); if (old) old.remove();
+        var d = document.createElement('div');
+        d.id = 'jhaRevSaved';
+        d.style.cssText = 'background:#ecfdf5;border:1px solid #6ee7b7;color:#064e3b;border-radius:10px;padding:14px;text-align:center';
+        d.innerHTML = '<div style="font-weight:800;font-size:16px">Revision ' + num + ' saved. The original and earlier revisions are kept.</div>' +
+          '<div style="font-size:13.5px;margin-top:6px">Original JHA submitted ' + esc(window.JhaModel.fmtIndy(originalAt)) +
+          ' \u00b7 Revision ' + num + ' saved ' + esc(window.JhaModel.fmtIndy(at)) + '</div>';
+        box.insertBefore(d, box.firstChild);
+      }
+
+      // One full-width row per JHA. The whole row is the action. No count
+      // limit (Tony, Oct 21): the row shows the revision deadline instead.
       function reviseRowHtml(card) {
         var M = window.JhaModel, e = card.eligibility, head = card.head, orig = card.original;
         var crewN = (head.crew && head.crew.employees && head.crew.employees.length) || 0;
-        var capped = e.code === 'cap';
-        return '<button type="button" class="jha-rev-row' + (capped ? ' is-capped' : '') + '" ' +
-          (capped ? 'data-capped-root' : 'data-revise-root') + '="' + esc(card.rootId) + '" data-revise-card="' + esc(card.rootId) + '">' +
+        return '<button type="button" class="jha-rev-row" ' +
+          'data-revise-root="' + esc(card.rootId) + '" data-revise-card="' + esc(card.rootId) + '">' +
           '<span class="jha-rev-row-title">' + esc(head.data.jhaDescriptionOfWork || 'JHA') + '</span>' +
           '<span class="jha-rev-row-meta">Submitted ' + esc(M.fmtIndy(orig.original_submitted_at)) +
             (head.revised_at ? ' \u00b7 last revised ' + esc(M.fmtIndy(head.revised_at)) : '') + '</span>' +
           '<span class="jha-rev-row-meta">' + esc(orig.submitted_by || '') + ' \u00b7 ' + crewN + ' employee' + (crewN === 1 ? '' : 's') +
             ' \u00b7 ' + esc(M.revisionLabel(head.revision_number)) + '</span>' +
-          '<span class="jha-rev-row-cta">' + (capped
-            ? 'This JHA already has 3 revisions. Start a new JHA to document additional changes.'
-            : e.remaining + ' revision' + (e.remaining === 1 ? '' : 's') + ' left \u00b7 Tap to revise') + '</span>' +
+          '<span class="jha-rev-row-cta" data-revise-deadline="' + esc(e.deadline) + '">Revise until ' +
+            esc(M.fmtDeadline(e.deadline)) + ' \u00b7 Tap to revise</span>' +
           '</button>';
       }
       function renderReviseList() {
+        if (JHA_PROD) return renderProdReviseList();
         var M = window.JhaModel;
         var v = ensureReviseView();
         var ctx = jhaPickerCtx(), list = v.querySelector('#reviseJhaList');
@@ -7770,7 +8110,7 @@ ${photoUrls}`;
         return JHA_SOURCE.candidates(ctx).then(function (c) {
           var html = '';
           if (!c.windowOpen) {
-            html += '<div class="jha-rev-notice">JHAs can be revised Monday through Friday. Start a new JHA to document today\u2019s work.</div>' +
+            html += '<div class="jha-rev-notice">JHAs can be revised until 6:00 PM Friday of the week they were first submitted. Start a new JHA to document today\u2019s work.</div>' +
               '<button type="button" class="action-button action-button--primary" data-new-jha="1" style="width:100%;margin-bottom:14px">Complete New JHA</button>';
           } else if (!c.today.length && !c.earlier.length) {
             html += '<div class="jha-rev-notice">No JHAs from this job can be revised this workweek.</div>' +
@@ -7784,11 +8124,11 @@ ${photoUrls}`;
             if (r.job_id !== ctx.jobId || seen[r.root_jha_id]) return;
             seen[r.root_jha_id] = 1;
             var code = M.reviseEligibility(DEMO_JHA_STORE, r.root_jha_id, ctx).code;
-            if (code === 'outside-week' || code === 'weekend-original' || code === 'weekend-now') pastIds.push(r.root_jha_id);
+            if (code === 'window-closed' || code === 'after-deadline') pastIds.push(r.root_jha_id);
           });
           if (pastIds.length) {
             html += '<h3 class="jha-rev-group" data-group="past">View only</h3>' +
-              '<p class="jha-row-hint">These JHAs are outside the revision window. You can view them, or start a new JHA.</p>' +
+              '<p class="jha-row-hint">These JHAs are past their revision deadline (6:00 PM Friday of the week they were submitted). You can view them, or start a new JHA.</p>' +
               pastIds.map(function (id) {
                 var h = M.familyHead(DEMO_JHA_STORE, id);
                 return '<button type="button" class="jha-rev-view" data-view-root="' + esc(id) + '">' +
@@ -7799,14 +8139,6 @@ ${photoUrls}`;
           list.innerHTML = html;
           Array.prototype.forEach.call(list.querySelectorAll('[data-revise-root]'), function (b) {
             b.addEventListener('click', function () { startRevision(b.getAttribute('data-revise-root')); });
-          });
-          Array.prototype.forEach.call(list.querySelectorAll('[data-capped-root]'), function (b) {
-            b.addEventListener('click', function () {
-              jhaSheet('Revision limit reached',
-                '<p class="jha-sheet-lede">This JHA already has 3 revisions. Start a new JHA to document additional changes.</p>',
-                [{ id: 'new', label: 'Complete New JHA', primary: true }, { id: 'close', label: 'Close' }]
-              ).then(function (ch) { if (ch === 'new') openDemoForm('jha'); });
-            });
           });
           Array.prototype.forEach.call(list.querySelectorAll('[data-new-jha]'), function (b) {
             b.addEventListener('click', function () { openDemoForm('jha'); });
@@ -7830,6 +8162,7 @@ ${photoUrls}`;
 
       /* ---------------- tap a JHA: open it, populated, straight away ------ */
       function startRevision(rootId) {
+        if (JHA_PROD) return startProdRevision(rootId);
         return JHA_SOURCE.latest(rootId, jhaPickerCtx()).then(function (e) {
           if (!e.ok) { jhaRefused(e); return; }
           var latest = e.head;   // always the latest submitted version — never an older one
@@ -7838,6 +8171,7 @@ ${photoUrls}`;
             baseVersionId: latest.id,
             nextNumber: e.nextNumber,
             remaining: e.remaining,
+            deadline: e.deadline,
             original_submitted_at: latest.original_submitted_at,
             job_id: latest.job_id,
             head: latest,
@@ -7852,6 +8186,17 @@ ${photoUrls}`;
       function fillJhaForm(rec) {
         var form = document.getElementById('jhaForm'); if (!form || !rec) return;
         var data = window.JhaModel.normalizeJhaData(rec.data || {});
+        var rowsNeeded = 0;
+        Object.keys(data).forEach(function (k) {
+          var m = /^jha(?:Task|Hazard|Action)(\d+)$/.exec(k);
+          if (m && String(data[k] || '').trim()) rowsNeeded = Math.max(rowsNeeded, +m[1]);
+        });
+        var rowsBox = document.getElementById('jhaTaskRows');
+        if (rowsBox && typeof window.appendJhaTaskRow === 'function') {
+          var guard = 0;
+          while (rowsBox.children.length < rowsNeeded && guard++ < 10) window.appendJhaTaskRow(rowsBox.children.length + 1);
+          if (typeof window.updateJhaAddRowButton === 'function') window.updateJhaAddRowButton();
+        }
         // A JHA stored before the ladder inspector question has no answer to
         // it: start empty rather than keep picks left from an earlier form.
         ['jhaLadderInspectors', 'jhaLadderInspectorsAt'].forEach(function (k) {
@@ -7885,13 +8230,43 @@ ${photoUrls}`;
         var oldNote = document.getElementById('jhaRevNoteWrap'); if (oldNote) oldNote.remove();
         var btn = document.getElementById('jhaSubmitBtn');
         if (btn) btn.innerHTML = jhaSubmitLabel();
+        var oldEntry = document.getElementById('jhaReviseEntry'); if (oldEntry) oldEntry.remove();
+        var oldErr = document.getElementById('jhaRevError'); if (oldErr) oldErr.remove();
+        if (!JHA_CTX && JHA_PROD && NG.ticket) {
+          // Production entry: revise one of this week's JHAs instead of starting a new one.
+          var en = document.createElement('div');
+          en.id = 'jhaReviseEntry'; en.className = 'jha-rev-entry';
+          en.style.cssText = 'margin:0 0 14px';
+          en.innerHTML = '<button type="button" class="action-button" id="jhaReviseEntryBtn" ' +
+            'style="width:100%;background:#fff;color:#0f172a;border:1px solid #d1d5db">Revise a JHA from this week</button>';
+          var hostE = view.querySelector('.form-container') || view;
+          var backE = hostE.querySelector('.inspection-back-btn');
+          hostE.insertBefore(en, backE ? backE.nextSibling : hostE.firstChild);
+          en.querySelector('button').addEventListener('click', function () { renderReviseList(); });
+        }
         if (!JHA_CTX) return;
+        if (JHA_CTX.prod) {
+          var pb = document.createElement('div');
+          pb.id = 'jhaRevisionBanner';
+          pb.className = 'jha-rev-banner';
+          pb.innerHTML = '<div class="jha-rev-banner-head">Revision ' + JHA_CTX.nextNumber + ' of the JHA submitted ' +
+              esc(jhaTime(JHA_CTX.original_submitted_at)) + '</div>' +
+            '<div class="jha-rev-banner-sub">Submitting saves Revision ' + JHA_CTX.nextNumber +
+              '. The original and earlier revisions are kept unchanged.' +
+              (JHA_CTX.deadline ? ' You can revise this JHA until ' + esc(window.JhaModel.fmtDeadline(JHA_CTX.deadline)) + '.' : '') +
+            '</div>';
+          var hostP = view.querySelector('.form-container') || view;
+          hostP.insertBefore(pb, hostP.firstChild);
+          return;
+        }
         var b = document.createElement('div');
         b.id = 'jhaRevisionBanner';
         b.className = 'jha-rev-banner';
         b.innerHTML = '<div class="jha-rev-banner-head">Revising JHA submitted ' + esc(jhaTime(JHA_CTX.original_submitted_at)) + '</div>' +
           '<div class="jha-rev-banner-sub">Your submission will create Revision ' + JHA_CTX.nextNumber +
-            '. The earlier versions will remain unchanged.</div>';
+            '. The earlier versions will remain unchanged.' +
+            (JHA_CTX.deadline ? ' This JHA can be revised until ' + esc(window.JhaModel.fmtDeadline(JHA_CTX.deadline)) + '.' : '') +
+            '</div>';
         var host = view.querySelector('.form-container') || view;
         host.insertBefore(b, host.firstChild);
         if (btn) {
@@ -8529,10 +8904,11 @@ ${photoUrls}`;
         if (carried.length) {
           dmodel.sections.push({ title: 'Photos', aux: true, items: [it('Attached photos (' + carried.length + ')', '', carried)] });
         }
-        var hist = jhaHistory(rec.root_jha_id);
+        var hist = rec.history || jhaHistory(rec.root_jha_id);
         dmodel.sections.push({ title: 'Revision History', aux: true, items: hist.map(function (h) {
           return it(M.revisionLabel(h.revision_number), (h.revision_number === 1
             ? 'Original submitted ' + M.fmtIndy(h.original_submitted_at)
+            : h.summary ? 'Revised ' + M.fmtIndy(h.revised_at) + ' \u2014 ' + h.summary
             : 'Revised ' + M.fmtIndy(h.revised_at) + ' \u00b7 ' + ((h.revision_diff || []).length) + ' field' +
               ((h.revision_diff || []).length === 1 ? '' : 's') + ' changed' +
               (h.revision_note ? ' \u2014 ' + h.revision_note : '')) + ' \u00b7 ' + h.revised_by);
@@ -9356,6 +9732,7 @@ ${photoUrls}`;
           applyLocks();
           var opener = OPENERS[ngform];
           if (opener && typeof window[opener] === 'function') { window[opener](); applyLocks(); }
+          else if (ngform === 'revisejha' || ngform === 'revise_jha') renderReviseList();
           if (asset) prefillAsset(asset);
         }).catch(function () {
           try { localStorage.removeItem(TICKET_KEY); } catch (e) {}

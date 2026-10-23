@@ -337,7 +337,7 @@ t('16. Picker groups into Today and Earlier this workweek, newest first', () => 
   assert.ok(![...c.today, ...c.earlier].some((x) => x.rootId === 'other'), 'other jobs are never offered');
 });
 
-t('17. Monday 12:00 AM to Friday 11:59 PM Indianapolis is the window', () => {
+t('17. The workweek is labelled Monday 12:00 AM to Sunday; revisions close Friday 6:00 PM (Tony, Oct 21)', () => {
   const ww = (iso) => json(M.workweekOf(iso));
   assert.deepEqual(ww('2026-09-28T04:00:00Z'), { date: MON, dow: 1, weekStart: MON, isWorkday: true }, 'Mon 12:00 AM');
   assert.deepEqual(ww('2026-09-28T03:59:59Z'), { date: '2026-09-27', dow: 7, weekStart: '2026-09-21', isWorkday: false }, 'Sun 11:59 PM');
@@ -347,13 +347,14 @@ t('17. Monday 12:00 AM to Friday 11:59 PM Indianapolis is the window', () => {
   assert.deepEqual(ww('2026-11-02T05:30:00Z'), { date: '2026-11-02', dow: 1, weekStart: '2026-11-02', isWorkday: true });
   const store = [];
   family(store, 'f', at(`${MON}T07:00:00-04:00`), []);
-  assert.equal(M.reviseEligibility(store, 'f', { now: '2026-10-03T03:59:59Z', jobId: 'j1' }).ok, true, 'Friday 11:59 PM is open');
-  assert.equal(M.reviseEligibility(store, 'f', { now: '2026-10-03T04:00:00Z', jobId: 'j1' }).code, 'weekend-now', 'Saturday 12:00 AM is closed');
+  assert.equal(M.reviseEligibility(store, 'f', { now: at(`${FRI}T17:59:59-04:00`), jobId: 'j1' }).ok, true, 'Friday 5:59:59 PM is open');
+  assert.equal(M.reviseEligibility(store, 'f', { now: at(`${FRI}T18:00:00-04:00`), jobId: 'j1' }).code, 'window-closed', 'Friday 6:00 PM is closed');
+  assert.equal(M.reviseEligibility(store, 'f', { now: '2026-10-03T04:00:00Z', jobId: 'j1' }).code, 'window-closed', 'Saturday 12:00 AM is closed');
   const wk = [];
   M.createOriginal(wk, { rootId: 'sat', jobId: 'j1', by: 'F', data: base }, '2026-10-03T14:00:00Z');
-  assert.equal(M.reviseEligibility(wk, 'sat', { now: '2026-10-05T14:00:00Z', jobId: 'j1' }).code, 'weekend-original',
-    'a JHA submitted on a weekend is never revisable');
-  assert.equal(M.reviseEligibility(wk, 'sat', { now: '2026-10-03T15:00:00Z', jobId: 'j1' }).code, 'weekend-now',
+  assert.equal(M.reviseEligibility(wk, 'sat', { now: '2026-10-05T14:00:00Z', jobId: 'j1' }).code, 'after-deadline',
+    'a JHA first submitted on a weekend is past its window (its Friday 6 PM came first)');
+  assert.equal(M.reviseEligibility(wk, 'sat', { now: '2026-10-03T15:00:00Z', jobId: 'j1' }).code, 'after-deadline',
     'weekend records route to Complete New JHA');
 });
 
@@ -361,25 +362,24 @@ t('18. A prior-week JHA cannot be revised', () => {
   const store = [];
   family(store, 'old', at('2026-09-25T07:00:00-04:00'), []);
   const e = M.reviseEligibility(store, 'old', { now: WED_3PM, jobId: 'j1' });
-  assert.equal(e.code, 'outside-week');
-  assert.match(e.message, /earlier workweek and can no longer be revised/);
+  assert.equal(e.code, 'window-closed');
+  assert.match(e.message, /could be revised until Fri, Sep 25, 6:00 PM .*That time has passed/);
   const s = M.submitRevision(store, { rootId: 'old', baseVersionId: 'old-v1', jobId: 'j1', by: 'F', data: base }, WED_3PM);
   assert.equal(s.ok, false); assert.equal(store.length, 1, 'nothing was written');
 });
 
-t('19-20. Original plus three revisions succeeds; the fourth is refused', () => {
+t('19-20. (Tony, Oct 21) The revision count no longer limits: a fourth and later revisions succeed', () => {
   const store = [];
   family(store, 'f', at(`${MON}T07:00:00-04:00`), [at(`${MON}T09:00:00-04:00`), at('2026-09-29T09:00:00-04:00'), at(`${WED}T09:00:00-04:00`)]);
   assert.deepEqual(json(M.familyVersions(store, 'f').map((v) => v.revision_number)), [1, 2, 3, 4]);
   const head = M.familyHead(store, 'f');
   const fourth = M.submitRevision(store, { rootId: 'f', baseVersionId: head.id, jobId: 'j1', by: 'F', data: base }, WED_3PM);
-  assert.equal(fourth.ok, false); assert.equal(fourth.code, 'cap');
-  assert.equal(fourth.message, 'This JHA already has 3 revisions. Start a new JHA to document additional changes.');
-  assert.equal(store.length, 4);
+  assert.equal(fourth.ok, true, 'the fourth revision is accepted'); assert.equal(fourth.record.revision_number, 5);
+  assert.equal(store.length, 5);
   const card = M.revisionCandidates(store, { now: WED_3PM, jobId: 'j1' }).earlier.find((x) => x.rootId === 'f');
-  assert.equal(card.eligibility.code, 'cap', 'a capped JHA stays listed with the cap message');
-  assert.ok(html.includes("[{ id: 'new', label: 'Complete New JHA', primary: true }, { id: 'close', label: 'Close' }]") &&
-    html.includes("(capped ? 'data-capped-root' : 'data-revise-root')"), 'tapping a capped JHA offers Complete New JHA');
+  assert.equal(card.eligibility.code, 'ok', 'still listed as revisable');
+  assert.equal(card.eligibility.remaining, null, 'no count is tracked as a limit');
+  assert.ok(!html.includes('data-capped-root'), 'no capped row exists any more');
 });
 
 t('21. A revision always starts from the latest submitted version', () => {
