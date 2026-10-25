@@ -296,6 +296,89 @@ window.TBT_LIBRARY = {
       }
     ]
   },
+  /* Hot Work series, Talk 1 (Greiner Brothers document from Tony Sweet's Oct 24 email). Original document (4 pages
+     rendered from the Word file) and Guided Talk; Guided words verbatim from the document body, in its order, under its
+     own headings. The five questions keep the document's numbers 1-5. */
+  "Hot Work - Talk 1 - General Awareness and Tips.docx": {
+    "title": "Hot Work Talk 1: General Awareness and Tips",
+    "filename": "Hot Work - Talk 1 - General Awareness and Tips.docx",
+    "sourceSha256": "c31a24ec02d8c3781fa1b3ad2f68949222e69ca92a88158eafd8b01091c32df6",
+    "pages": [
+      { "src": "hot-work-talk1/page-01.jpg", "w": 1200, "h": 927 },
+      { "src": "hot-work-talk1/page-02.jpg", "w": 1200, "h": 927 },
+      { "src": "hot-work-talk1/page-03.jpg", "w": 1200, "h": 927 },
+      { "src": "hot-work-talk1/page-04.jpg", "w": 1200, "h": 927 }
+    ],
+    "sections": [
+      {
+        "h": "Brazing & Hot Work: Awareness and Tips",
+        "p": [
+          "Understand the hazards and what you can do to make the workplace safer",
+          "Take a few minutes before the task to think about what Brazing & Hot Work you will be doing and the associated hazards. One concern could be flames, sparks and ignition inside concealed spaces. Make sure everyone doing work in the area sees the exposure and knows the plan before work begins. Hot work creates more than a burn hazard. Sparks and heat can travel through openings, ignite hidden combustibles and start fires after the crew has moved on. Gas cylinders, hoses, ventilation and fire-watch coverage all matter."
+        ]
+      },
+      {
+        "h": "Before work starts",
+        "p": [
+          "* Remove or protect combustibles and inspect the area on both sides of walls/floors where sparks or heat can travel.",
+          "* Verify permits, ventilation, fire extinguishers and fire-watch responsibilities before ignition.",
+          "* Inspect cylinders, regulators, hoses/leads, torches and connections before use.",
+          "* Use the site hot-work procedure and protect combustibles around penetrations.",
+          "* Purge/prepare piping according to the work procedure and manufacturer requirements."
+        ]
+      },
+      {
+        "h": "Common failure points",
+        "p": [
+          "* Missing combustibles hidden on the other side of a wall, floor or penetration.",
+          "* Allowing sparks/heat to travel beyond the fire-watch area.",
+          "* Working with damaged hoses/leads or inadequate ventilation because the weld/cut is short."
+        ]
+      },
+      {
+        "h": "Safe work sequence / controls",
+        "p": [
+          "* Use the site hot-work procedure and protect combustibles around penetrations.",
+          "* Purge/prepare piping according to the work procedure and manufacturer requirements.",
+          "* Keep a fire extinguisher within immediate reach.",
+          "* Inspect wall, floor and ceiling cavities after brazing for heat transfer or smoldering.",
+          "* When the planned control for flame, sparks and ignition inside concealed spaces is not in place or stops working, stop the task and correct it before the crew continues."
+        ]
+      },
+      {
+        "h": "Stop and reassess the plan if...",
+        "p": [
+          "* Combustibles cannot be removed or protected, or required fire-watch coverage is not available.",
+          "* Ventilation is inadequate or fumes/coatings create an exposure not covered by the plan.",
+          "* Torches, leads, hoses, regulators, cylinders or hot-work equipment are damaged or improperly set up."
+        ]
+      },
+      {
+        "h": "Questions worth asking yourself or the crew",
+        "p": [
+          "1. What combustibles, coatings, penetrations, or hidden spaces can sparks/heat reach from this exact work position?",
+          "2. What fire protection/fire-watch coverage is required, and who is responsible for the post-work check?",
+          "3. What metal, coating, ventilation, or enclosure condition could change the fume-control/PPE plan?",
+          "4. What defect in the torch, hose, lead, regulator, cylinder, grounding, or hot-work setup stops the job before ignition?",
+          "5. Has anyone found hidden combustibles, coatings or poor ventilation only after hot work began? What check would find it earlier here?",
+          "Before doing any Hot Work always try to trace where sparks/heat can travel and physically inspect the fire-watch area and extinguisher location."
+        ]
+      },
+      {
+        "h": "Related authoritative reference",
+        "p": [
+          "29 CFR 1926.350 - Gas Welding and Cutting"
+        ]
+      },
+      {
+        "h": "Personal Safety Responsibility",
+        "p": [
+          "This Toolbox Talk supports Greiner Brother’s Safety and Compliance priorities by promoting safe work practices and regulatory compliance. The company provides training, resources, and guidance; however, you are ultimately responsible for your own safety.",
+          "Before starting any task, you are responsible for: Identifying hazards, Understanding the associated risks, and developing and following a safe work plan. For questions about Greiner Brothers Safety and Compliance Program, contact Safety Program Director Tony Sweet."
+        ]
+      }
+    ]
+  },
   /* Video Toolbox Talk: the public YouTube video Tony Sweet supplied (Oct 19 test).
      A video entry has no pages and no sections: the link plays the video on the page. */
   "Driver Safety: Proper Positioning": {
