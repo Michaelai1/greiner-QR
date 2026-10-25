@@ -24,6 +24,9 @@
  *     defaultFormat: 'doc' | 'guided' | 'both', preview: bool,
  *     guidedOnly: bool (the Guided Talk only: no format choice, no original pages),
  *     pinRequired: bool, verifyPin(pin) -> Promise<{verified, locked, locked_until, attempts_remaining}>,
+ *     viewOnly: bool (a view-only copy, e.g. a company owner: the talk only, no completion step, nothing to record),
+ *     viewOnlyNote: text shown instead of the completion button, leadLabel: text for the group form (default
+ *     'Foreman-led group talk'),
  *     submit({format, activeMs, sectionsViewed, sectionsTotal, role}) -> Promise<{submitted_at, active_ms} | null>,
  *     progress({activeMs, sectionsViewed, format}), onLocked(until)
  *   });
@@ -93,7 +96,8 @@
        proof that anyone watched. A video talk has no pages and no sections. */
     var video = talk.video && talk.video.id && talk.video.seconds > 0 ? talk.video : null;
     if (video) { pages = []; sections = []; }
-    var leader = o.role === 'leader';
+    var viewOnly = !!o.viewOnly;
+    var leader = !viewOnly && o.role === 'leader';
     var roster = (o.roster || []).map(function (p) { return typeof p === 'string' ? { n: p, g: '' } : p; });
     var groups = (o.groups && o.groups.length) ? o.groups
       : roster.reduce(function (a, p) { if (p.g && a.indexOf(p.g) === -1) a.push(p.g); return a; }, []);
@@ -143,7 +147,7 @@
 
     /* ---------------- shell ---------------- */
     function shell(bodyHtml) {
-      var steps = [['review', 'Review Talk'], ['complete', 'Record Completion']];
+      var steps = viewOnly ? [['review', 'Your Copy (View Only)']] : [['review', 'Review Talk'], ['complete', 'Record Completion']];
       if (o.chooseMethod) steps.unshift(['method', 'Choose Method']);
       var order = steps.map(function (x) { return x[0]; });
       var at = S.step === 'done' ? steps.length : order.indexOf(S.step);
@@ -209,6 +213,7 @@
           '" data-tbt-format="guided">Guided Talk</button></div>';
     }
     function continueHtml(hint) {
+      if (viewOnly) return '<p class="tbt-note" id="tbtViewOnly">' + esc(o.viewOnlyNote || 'View only. Nothing is recorded from this page.') + '</p>';
       var ready = reviewed();
       return (ready || !hint ? '' : '<p class="tbt-hint" id="tbtHint">' + esc(hint) + '</p>') +
         '<button type="button" class="submit-button" id="tbtToComplete"' + (ready ? '' : ' disabled') +
@@ -371,20 +376,20 @@
             }).join('') +
             (s.src && !guidedOnly ? '<div class="tbt-sec-src">From ' + esc(talk.filename || talk.title) + ', ' + esc(s.src) + '</div>' : '') +
           '</div>' +
-          '<label class="tbt-sec-check' + (done ? ' is-on' : '') + '" for="tbtSecDone">' +
+          (viewOnly ? '' : '<label class="tbt-sec-check' + (done ? ' is-on' : '') + '" for="tbtSecDone">' +
             '<input type="checkbox" id="tbtSecDone"' + (done ? ' checked' : '') + '>' +
-            '<span>' + esc(checkLabel) + '</span></label>' +
+            '<span>' + esc(checkLabel) + '</span></label>') +
           '<div class="tbt-pager">' +
             '<button type="button" class="tbt-pagebtn" id="tbtSecPrev"' + (S.sec === 0 ? ' disabled' : '') + '>&larr; Previous</button>' +
             '<div class="count" id="tbtSecCount">Section ' + (S.sec + 1) + ' of ' + total + '</div>' +
             '<button type="button" class="tbt-pagebtn" id="tbtSecNext"' + (S.sec >= total - 1 ? ' disabled' : '') + '>Next &rarr;</button>' +
           '</div></div>' +
-        '<div class="tbt-secprog" id="tbtSecProg"><div class="bar"><span style="width:' +
+        (viewOnly ? '' : '<div class="tbt-secprog" id="tbtSecProg"><div class="bar"><span style="width:' +
           Math.round(n / total * 100) + '%"></span></div>' +
-          '<div class="lbl">' + n + ' of ' + total + ' sections checked</div></div>' +
+          '<div class="lbl">' + n + ' of ' + total + ' sections checked</div></div>') +
         continueHtml('Check every section before recording completion.');
       shell(body);
-      $('tbtSecDone').onchange = function () { S.done[S.sec] = this.checked; render(); ping(); };
+      if ($('tbtSecDone')) $('tbtSecDone').onchange = function () { S.done[S.sec] = this.checked; render(); ping(); };
       $('tbtSecPrev').onclick = function () { if (S.sec > 0) { S.sec--; render(); } };
       $('tbtSecNext').onclick = function () { if (S.sec < total - 1) { S.sec++; render(); } };
       wireReview();
@@ -427,7 +432,7 @@
         '<div class="tbt-doc" style="padding:12px 14px">' +
           '<div class="tbt-doc-title" style="font-size:16px">' + esc(talk.title) + '</div>' +
           '<div class="tbt-doc-sub" style="margin-bottom:0">' + esc(o.company || '') +
-            (o.company ? ' · ' : '') + 'Foreman-led group talk</div></div>' +
+            (o.company ? ' · ' : '') + esc(o.leadLabel || 'Foreman-led group talk') + '</div></div>' +
         (groups.length ? '<div class="tbt-field"><label for="tbtGroupSel">Crew or meeting group</label>' +
           '<select class="tbt-input" id="tbtGroupSel">' + groups.map(function (g) {
             return '<option' + (g === G.group ? ' selected' : '') + '>' + esc(g) + '</option>'; }).join('') + '</select></div>' : '') +
@@ -598,6 +603,7 @@
     }
 
     function render() {
+      if (viewOnly && S.step !== 'review') S.step = 'review';   // a view-only copy never reaches completion
       if (S.step !== 'review') stopVideoTracking();
       if (S.step === 'method') return renderMethod();
       if (S.step === 'complete') return renderComplete();

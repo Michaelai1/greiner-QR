@@ -387,5 +387,119 @@ window.TBT_LIBRARY = {
     "video": { "provider": "youtube", "id": "94wWLo0IEjw", "seconds": 112 },
     "pages": [],
     "sections": []
+  },
+  /* CHOICE (Choice Mechanical), Hot Work series, Talk 1: Tony Sweet's Choice document from his Oct 24 email
+     (sha256 ee7f1b2d4e3eabf8ae0e409640422b162f244ad90c743b632e557c4bbc839e77). The Guided Talk sections are the file's own words in order
+     (~/choice-materials/2026-10-25-hot-work-talk1/t1.json, 519/519 words); the 4 pages are its rendered pages.
+     Content flag F1, kept as supplied (Michael, Oct 25): its Personal Safety Responsibility box names Greiner Brothers.
+     Only a Choice link (company Choice, talk key choice-hot-work-talk1) opens this entry; a Choice link never opens
+     a Greiner entry (toolbox.html). Greiner's own Hot Work Talk 1 entry above is a different file. */
+  "Choice Toolbox Talk - Hot Work_Talk #1_General Awareness and Tips.docx": {
+    "title": "Hot Work Talk 1: General Awareness and Tips",
+    "filename": "Choice Toolbox Talk - Hot Work_Talk #1_General Awareness and Tips.docx",
+    "sourceSha256": "ee7f1b2d4e3eabf8ae0e409640422b162f244ad90c743b632e557c4bbc839e77",
+    "pages": [
+      {
+        "src": "choice-hot-work-talk1/page-01.png",
+        "w": 1320,
+        "h": 1020
+      },
+      {
+        "src": "choice-hot-work-talk1/page-02.png",
+        "w": 1320,
+        "h": 1020
+      },
+      {
+        "src": "choice-hot-work-talk1/page-03.png",
+        "w": 1320,
+        "h": 1020
+      },
+      {
+        "src": "choice-hot-work-talk1/page-04.png",
+        "w": 1320,
+        "h": 1020
+      }
+    ],
+    "sections": [
+      {
+        "h": "Brazing & Hot Work: Awareness and Tips",
+        "p": [
+          "Understand the hazards and what you can do to make the workplace safer",
+          "Take a few minutes before the task to think about what Brazing & Hot Work you will be doing and the associated hazards. One concern could be flames, sparks and ignition inside concealed spaces. Make sure everyone doing work in the area sees the exposure and knows the plan before work begins. Hot work creates more than a burn hazard. Sparks and heat can travel through openings, ignite hidden combustibles and start fires after the crew has moved on. Gas cylinders, hoses, ventilation and fire-watch coverage all matter."
+        ],
+        "pgl": "page 1"
+      },
+      {
+        "h": "Before work starts",
+        "p": [
+          "* Remove or protect combustibles and inspect the area on both sides of walls/floors where sparks or heat can travel.",
+          "* Verify permits, ventilation, fire extinguishers and fire-watch responsibilities before ignition.",
+          "* Inspect cylinders, regulators, hoses/leads, torches and connections before use.",
+          "* Use the site hot-work procedure and protect combustibles around penetrations.",
+          "* Purge/prepare piping according to the work procedure and manufacturer requirements."
+        ],
+        "pgl": "page 1"
+      },
+      {
+        "h": "Common failure points",
+        "p": [
+          "* Missing combustibles hidden on the other side of a wall, floor or penetration.",
+          "* Allowing sparks/heat to travel beyond the fire-watch area.",
+          "* Working with damaged hoses/leads or inadequate ventilation because the weld/cut is short."
+        ],
+        "pgl": "page 2"
+      },
+      {
+        "h": "Safe work sequence / controls",
+        "p": [
+          "* Use the site hot-work procedure and protect combustibles around penetrations.",
+          "* Purge/prepare piping according to the work procedure and manufacturer requirements.",
+          "* Keep a fire extinguisher within immediate reach.",
+          "* Inspect wall, floor and ceiling cavities after brazing for heat transfer or smoldering.",
+          "* When the planned control for flame, sparks and ignition inside concealed spaces is not in place or stops working, stop the task and correct it before the crew continues."
+        ],
+        "pgl": "page 2"
+      },
+      {
+        "h": "Stop and reassess the plan if...",
+        "p": [
+          "* Combustibles cannot be removed or protected, or required fire-watch coverage is not available.",
+          "* Ventilation is inadequate or fumes/coatings create an exposure not covered by the plan.",
+          "* Torches, leads, hoses, regulators, cylinders or hot-work equipment are damaged or improperly set up."
+        ],
+        "pgl": "page 3"
+      },
+      {
+        "h": "Questions worth asking yourself or the crew",
+        "p": [
+          "1. What combustibles, coatings, penetrations, or hidden spaces can sparks/heat reach from this exact work position?",
+          "2. What fire protection/fire-watch coverage is required, and who is responsible for the post-work check?",
+          "3. What metal, coating, ventilation, or enclosure condition could change the fume-control/PPE plan?",
+          "4. What defect in the torch, hose, lead, regulator, cylinder, grounding, or hot-work setup stops the job before ignition?",
+          "5. Has anyone found hidden combustibles, coatings or poor ventilation only after hot work began? What check would find it earlier here?"
+        ],
+        "pgl": "page 3"
+      },
+      {
+        "h": "Before doing any Hot Work always try to trace where sparks/heat can travel and physically inspect the fire-watch area and extinguisher location.",
+        "p": [],
+        "pgl": "page 3"
+      },
+      {
+        "h": "Related authoritative reference",
+        "p": [
+          "29 CFR 1926.350 - Gas Welding and Cutting"
+        ],
+        "pgl": "page 4"
+      },
+      {
+        "h": "Personal Safety Responsibility",
+        "p": [
+          "This Toolbox Talk supports Greiner Brother’s Safety and Compliance priorities by promoting safe work practices and regulatory compliance. The company provides training, resources, and guidance; however, you are ultimately responsible for your own safety.",
+          "Before starting any task, you are responsible for: Identifying hazards, Understanding the associated risks, and developing and following a safe work plan. For questions about Greiner Brothers Safety and Compliance Program, contact Safety Program Director Tony Sweet."
+        ],
+        "pgl": "page 4"
+      }
+    ]
   }
 };

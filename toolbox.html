@@ -12,8 +12,8 @@
 <div class="tbt-wrap" id="root">
   <p class="tbt-week">Loading…</p>
 </div>
-<script src="talks/library.js?v=3"></script>
-<script src="toolbox-talk.js?v=3"></script>
+<script src="talks/library.js?v=4"></script>
+<script src="toolbox-talk.js?v=4"></script>
 <script>
 (function () {
   'use strict';
@@ -31,8 +31,13 @@
     'falls-from-ladder': 'Falls from Ladder.docx',
     'driver-safety-proper-positioning': 'Driver Safety: Proper Positioning',
     'cold-stress-slips-on-ice': 'Cold Stress - Talk 3 - Slips on Ice.docx',
-    'hot-work-general-awareness': 'Hot Work - Talk 1 - General Awareness and Tips.docx'
+    'hot-work-general-awareness': 'Hot Work - Talk 1 - General Awareness and Tips.docx',
+    // Choice (Choice Mechanical) talks: keys start with "choice-" and open only on a Choice link.
+    'choice-hot-work-talk1': 'Choice Toolbox Talk - Hot Work_Talk #1_General Awareness and Tips.docx'
   };
+  /* Company isolation on the page as well as in the database: a Choice link only ever opens a Choice talk, and a
+     link of any other company never opens a Choice talk. Anything else gets the "not available" page. */
+  function talkAllowed(a) { return /^choice-/.test(a.talk_key || '') === (a.company === 'Choice'); }
   // A video talk is recorded as 'video'; anything else that is not 'doc' is 'guided'.
   function fmt(f) { return f === 'doc' ? 'doc' : f === 'video' ? 'video' : 'guided'; }
   var root = document.getElementById('root');
@@ -71,6 +76,7 @@
     rpc('cs_tbt_link_open', { p_token: token }).then(function (rows) {
       if (!Array.isArray(rows) || !rows.length) { refuse(); return; }
       A = rows[0];
+      if (!talkAllowed(A)) { refuse(); return; }
       var lib = (window.TBT_LIBRARY || {})[TALKS[A.talk_key]] || null;
       if (!lib) { refuse(); return; }
       // A Guided Talk only entry has no pages: no format choice, no original.
@@ -84,12 +90,29 @@
         window.ToolboxTalk.renderRecorded(root, { talk: talk, company: company, submittedAt: A.submitted_at });
         return;
       }
+      // A view-only copy (role 'observer', e.g. Choice's owner contact): the talk to read, nothing to record.
+      // Opening it is logged as opened, never as attendance; the server also refuses any submit from it.
+      if (A.role === 'observer') {
+        tt = window.ToolboxTalk.mount(root, {
+          talk: talk, company: company, employeeName: A.recipient_name, role: 'participant', viewOnly: true,
+          viewOnlyNote: 'This is your copy of today\u2019s talk to read. View only: a supervisor records attendance for the crew.',
+          defaultFormat: guidedOnly ? 'guided' : 'doc', guidedOnly: guidedOnly, pinRequired: false,
+          submit: function () { return Promise.resolve(null); },
+          progress: function (args) {
+            rpc('cs_tbt_link_progress', { p_token: token, p_active_ms: Math.min(args.activeMs, 86400000),
+              p_sections_viewed: args.sectionsViewed, p_format: fmt(args.format) }).catch(function () {});
+          }
+        });
+        window.__greinerToolbox = { activeMs: function () { return tt ? tt.activeMs() : 0; } };
+        return;
+      }
       // The office decides who leads: a foreman link carries role 'leader' and
       // that job's crew. A foreman marks who attended and types in anyone missing.
       var leader = A.role === 'leader';
       var group = A.group_label || '';
       tt = window.ToolboxTalk.mount(root, {
         talk: talk, company: company, employeeName: A.recipient_name, role: leader ? 'leader' : 'participant',
+        leadLabel: A.company === 'Choice' ? 'Supervisor-led group talk' : undefined,
         groups: leader && group ? [group] : [],
         roster: leader ? (A.roster || []).map(function (n) { return { n: n, g: group }; }) : [],
         defaultFormat: guidedOnly ? 'guided' : 'doc', guidedOnly: guidedOnly, pinRequired: false,
