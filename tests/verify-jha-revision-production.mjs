@@ -188,6 +188,17 @@ async function check(name, fn) {
   try { await fn(); checks++; console.log(`  ok  ${name}`); }
   catch (e) { failures++; console.log(`  FAIL ${name}\n       ${String(e.stack || e.message).split('\n').slice(0, 5).join('\n       ')}`); }
 }
+
+// Forklift build (Oct 23 rule: the trained question is always asked) supersedes the JHA-only release's
+// "forklift unchanged" checks below. Those are skipped ONLY on that build, and only while the forklift
+// rule's own suites are present to cover it (verify-forklift-manual-gate.mjs, verify-forklift-production-sql.mjs).
+const FORKLIFT_BUILD = /id="flCompetent"/.test(fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8'));
+if (FORKLIFT_BUILD) for (const t of ['verify-forklift-manual-gate.mjs', 'verify-forklift-production-sql.mjs']) {
+  if (!fs.existsSync(path.join(ROOT, 'tests', t))) { console.log(`FAILED: forklift build without tests/${t}`); process.exit(1); }
+}
+const forkliftUnchanged = (name, fn) => FORKLIFT_BUILD
+  ? (console.log(`  skip ${name} (forklift build: covered by verify-forklift-*.mjs)`), Promise.resolve())
+  : check(name, fn);
 const SUPA = /^https:\/\/gvfolfzseqwhhimbxgjv\.supabase\.co\//;
 const browser = await webkit.launch();
 async function open(query, { width = 390, laddersLive = false } = {}) {
@@ -649,7 +660,7 @@ try {
   });
 
   /* ---------- forklift: this JHA-only build leaves it exactly as live ---------- */
-  await check('Forklift is unchanged: no missing-manual questions; manual missing is sent straight to cs_portal_field_submit as today', async () => {
+  await forkliftUnchanged('Forklift is unchanged: no missing-manual questions; manual missing is sent straight to cs_portal_field_submit as today', async () => {
     reset();
     const p = await open(PROD + 'ngform=forklift');
     assert.equal(await p.$('#flManualGate'), null, 'no missing-manual questions in this build');

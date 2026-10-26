@@ -2585,6 +2585,44 @@
                         <div class="fl-manual-note" id="flManualNote" hidden role="status" style="margin:-4px 0 14px; background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.45); border-radius:10px; padding:10px 14px; font-size:13px; line-height:1.5; color:#92400e;">
                             <strong>Operator's manual missing or unreadable.</strong> It is recorded and flagged for supervisor review. Tell your foreman so it can be replaced.
                         </div>
+                        <!-- Greiner (Tony, October 21; Oct 23 meeting): every forklift inspection asks the trained /
+                             competent confirmation. "No", or no answer, stops the inspection. It is the inspector's own
+                             confirmation, recorded as answered; it is not proof of training. -->
+                        <div class="form-group fl-competent" id="flCompetent">
+                            <div class="inspection-checklist-label" data-doc-label="Inspector confirms they are a trained competent person for this equipment (self-reported)">Confirm you are a trained competent person for this equipment <span class="required">*</span></div>
+                            <div class="inspection-radio-row">
+                                <label><input type="radio" name="fl_competent_person" value="yes" data-display="Yes" required> Yes</label>
+                                <label><input type="radio" name="fl_competent_person" value="no" data-display="No"> No</label>
+                            </div>
+                            <div class="fl-gate-hint" style="font-size:12px; color:#6b7280; margin-top:4px;">Your own confirmation, recorded as you answer it. It is not proof of training.</div>
+                        </div>
+                        <!-- When the manual is missing (and only then), after a "Yes" above: three more steps in order.
+                             Each appears only after "Yes" to the one before; "No" stops the inspection. The supervisor's
+                             name is typed by the inspector and recorded exactly as typed; it is not a supervisor
+                             signature. Hidden steps are disabled, so they are neither required nor submitted. -->
+                        <div class="fl-manual-gate" id="flManualGate" hidden>
+                            <div class="form-group fl-gate-step" data-gate-step="1" hidden>
+                                <div class="inspection-checklist-label">Is your supervisor aware of the missing manual? <span class="required">*</span></div>
+                                <div class="inspection-radio-row">
+                                    <label><input type="radio" name="fl_manual_supervisor_aware" value="yes" data-display="Yes" required disabled> Yes</label>
+                                    <label><input type="radio" name="fl_manual_supervisor_aware" value="no" data-display="No" disabled> No</label>
+                                </div>
+                            </div>
+                            <div class="form-group fl-gate-step" data-gate-step="2" hidden>
+                                <div class="inspection-checklist-label">Is your supervisor still authorizing or recommending use of the equipment? <span class="required">*</span></div>
+                                <div class="inspection-radio-row">
+                                    <label><input type="radio" name="fl_manual_supervisor_authorizes" value="yes" data-display="Yes" required disabled> Yes</label>
+                                    <label><input type="radio" name="fl_manual_supervisor_authorizes" value="no" data-display="No" disabled> No</label>
+                                </div>
+                            </div>
+                            <div class="form-group fl-gate-step" data-gate-step="3" hidden>
+                                <label class="form-label" for="flManualSupervisorName" data-doc-label="Supervisor's name (typed by the inspector; not a supervisor signature)">What is the supervisor's name? <span class="required">*</span></label>
+                                <input type="text" class="form-input" id="flManualSupervisorName" name="fl_manual_supervisor_name" required disabled autocomplete="off" pattern=".*\S.*" placeholder="Supervisor's full name">
+                                <div class="fl-gate-hint" style="font-size:12px; color:#6b7280; margin-top:4px;">Recorded exactly as you type it. This is not the supervisor's signature.</div>
+                                <div class="form-error">Enter the supervisor's name</div>
+                            </div>
+                        </div>
+                        <div class="fl-manual-block" id="flManualBlock" hidden role="alert" style="margin:4px 0 14px; background:rgba(220,38,38,0.18); border:1px solid rgba(248,113,113,0.7); border-radius:10px; padding:10px 14px; font-size:14px; line-height:1.5; color:#fecaca;"></div>
                     </div>
                     <div class="form-section">
                         <div class="form-group">
@@ -3955,6 +3993,74 @@
         document.addEventListener('change', function (e) { if (e.target && e.target.name === 'fl_chk_operator_manual') syncFlManualNote(); });
         document.addEventListener('reset', function (e) { if (e.target && e.target.id === 'forkliftInspectionForm') setTimeout(syncFlManualNote, 0); }, true);
 
+        /* Forklift questions (Tony, October 21; Oct 23 meeting). Every inspection
+           asks the trained / competent confirmation. With the manual missing, the
+           supervisor questions follow a "Yes", each after "Yes" to the one before.
+           "No" to any of them, or a missing answer, stops the inspection: it cannot
+           be submitted. Hidden questions are disabled, so they are neither
+           required nor submitted. */
+        var FL_COMPETENT_Q = 'Confirm you are a trained competent person for this equipment';
+        var FL_GATE = [
+            { name: 'fl_manual_supervisor_aware', q: 'Is your supervisor aware of the missing manual?' },
+            { name: 'fl_manual_supervisor_authorizes', q: 'Is your supervisor still authorizing or recommending use of the equipment?' }
+        ];
+        function flGateState() {
+            var form = document.getElementById('forkliftInspectionForm');
+            var missing = !!(form && form.querySelector('input[name="fl_chk_operator_manual"][value="defect"]:checked'));
+            var st = { missing: missing, show: 0, blockedBy: null, nameMissing: false, competent: null };
+            var c = form && form.querySelector('input[name="fl_competent_person"]:checked');
+            st.competent = c ? c.value : null;
+            if (st.competent === 'no') { st.blockedBy = FL_COMPETENT_Q; return st; }
+            if (!missing || st.competent !== 'yes') return st;
+            st.show = 1;
+            for (var i = 0; i < FL_GATE.length; i++) {
+                var ck = form.querySelector('input[name="' + FL_GATE[i].name + '"]:checked');
+                if (!ck) return st;
+                if (ck.value !== 'yes') { st.blockedBy = FL_GATE[i].q; return st; }
+                st.show = i + 2;
+            }
+            var nm = form.querySelector('[name="fl_manual_supervisor_name"]');
+            st.nameMissing = !nm || !/\S/.test(nm.value || '');
+            return st;
+        }
+        // What stops this forklift inspection from being submitted, or '' when nothing does.
+        function flManualGateProblem() {
+            var st = flGateState();
+            if (st.blockedBy) return 'You answered No to “' + st.blockedBy + '”, so this inspection can’t be completed.';
+            if (st.competent !== 'yes') return 'Answer “' + FL_COMPETENT_Q + '” before submitting.';
+            if (!st.missing) return '';
+            if (st.show <= FL_GATE.length) return 'Answer the operator’s manual questions before submitting.';
+            if (st.nameMissing) return 'Enter the supervisor’s name before submitting.';
+            return '';
+        }
+        window.flManualGateProblem = flManualGateProblem;
+        function syncFlManualGate() {
+            var gate = document.getElementById('flManualGate'); if (!gate) return;
+            var st = flGateState();
+            gate.hidden = !(st.missing && st.competent === 'yes');
+            Array.prototype.forEach.call(gate.querySelectorAll('.fl-gate-step'), function (step) {
+                var n = +step.getAttribute('data-gate-step');
+                var on = st.missing && n <= st.show && !(st.blockedBy && n > st.show);
+                step.hidden = !on;
+                Array.prototype.forEach.call(step.querySelectorAll('input'), function (inp) { inp.disabled = !on; });
+            });
+            var block = document.getElementById('flManualBlock');
+            if (block) {
+                block.hidden = !st.blockedBy;
+                block.innerHTML = st.blockedBy
+                    ? '<strong>This inspection can’t be completed.</strong> You answered No to “' + st.blockedBy.replace(/</g, '&lt;') + '”.'
+                    : '';
+            }
+            var btn = document.getElementById('forkliftSubmitBtn');
+            if (btn && !/spinner/.test(btn.innerHTML)) btn.disabled = !!st.blockedBy;
+        }
+        window.syncFlManualGate = syncFlManualGate;
+        document.addEventListener('change', function (e) {
+            if (e.target && (e.target.name === 'fl_chk_operator_manual' || e.target.name === 'fl_competent_person' || /^fl_manual_/.test(e.target.name || ''))) syncFlManualGate();
+        });
+        document.addEventListener('input', function (e) { if (e.target && e.target.name === 'fl_manual_supervisor_name') syncFlManualGate(); });
+        document.addEventListener('reset', function (e) { if (e.target && e.target.id === 'forkliftInspectionForm') setTimeout(syncFlManualGate, 0); }, true);
+
         function enhanceInspectionChecklistRow(row) {
             if (!row || row.querySelector('.inspection-defect-detail')) return;
             var firstRadio = row.querySelector('input[type="radio"][name]');
@@ -4854,6 +4960,17 @@ ${photoUrls}`;
                 e.preventDefault();
                 document.querySelectorAll('#' + form.id + ' .form-group').forEach(function(g) { g.classList.remove('error'); });
                 if (form.id === 'hotWorkForm' && !validateHotWorkTiming()) return;
+                // Forklift, missing manual (Tony, October 21): a "No" stops the inspection.
+                var flStop = function () {
+                    var problem = form.id === 'forkliftInspectionForm' && typeof flManualGateProblem === 'function' ? flManualGateProblem() : '';
+                    if (!problem) return false;
+                    if (typeof syncFlManualGate === 'function') syncFlManualGate();
+                    showToast('error', 'Inspection can\u2019t be submitted', problem);
+                    var gate = document.getElementById('flManualGate');
+                    if (gate && gate.scrollIntoView) gate.scrollIntoView({ block: 'center' });
+                    return true;
+                };
+                if (form.id === 'forkliftInspectionForm' && flGateState().blockedBy && flStop()) return;
                 if (!form.checkValidity()) {
                     form.querySelectorAll(':invalid').forEach(function(inv) {
                         var g = inv.closest('.form-group');
@@ -4862,6 +4979,7 @@ ${photoUrls}`;
                     form.reportValidity();
                     return;
                 }
+                if (flStop()) return;
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<div class="spinner"></div> Submitting';
                 try {
@@ -4949,6 +5067,7 @@ ${photoUrls}`;
                     if (form.id === 'aerialInspectionForm' || form.id === 'forkliftInspectionForm') {
                         syncAllInspectionDefectPanels(form);
                     }
+                    if (form.id === 'forkliftInspectionForm' && typeof syncFlManualGate === 'function') syncFlManualGate();
                     if (typeof afterReset === 'function') afterReset(form);
                     showView('success');
                 } catch (err) {
@@ -6608,6 +6727,16 @@ ${photoUrls}`;
           stampLadderInspectorTime(payload.fields);
           payload.fields = window.JhaModel.normalizeJhaData(payload.fields || {});
         }
+        // Forklift, missing manual (Tony, October 21): never send an inspection
+        // that the missing-manual questions stopped.
+        if (payload && payload.inspection_subtype === 'forklift' && typeof window.flManualGateProblem === 'function') {
+          var flProblem = window.flManualGateProblem();
+          if (flProblem) {
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = label || 'Submit inspection'; }
+            toast('error', 'Inspection can\u2019t be submitted', flProblem);
+            return Promise.reject(new Error(flProblem));
+          }
+        }
         // DEMO short-circuit, first and unconditional: every submit in demo
         // mode — inspection or legacy — ends here. Nothing is sent anywhere.
         if (DEMO) return ngDemoSubmit(payload, submitBtn, label);
@@ -6694,6 +6823,7 @@ ${photoUrls}`;
 
       function ngSubmit(payload, submitBtn, label) {
         var subtype = payload.inspection_subtype || 'jha';
+        var flOld = document.getElementById('flServerRefusal'); if (flOld) flOld.remove();
         var title = TITLES[subtype] || 'Field Inspection';
         var form = document.getElementById(FORM_IDS[subtype]);
         var dmodel = !form
@@ -6718,6 +6848,24 @@ ${photoUrls}`;
           if (/insufficient scope|invalid token|not a field user/i.test(e.message || '')) {
             try { localStorage.removeItem(TICKET_KEY); } catch (_) {}
             toast('error', 'Session expired', 'Open this form again from your Greiner dashboard.');
+          } else if (subtype === 'forklift' && /forklift: (missing manual answers incomplete|answer the trained competent person question)/i.test(e.message || '')) {
+            // The server refuses a forklift inspection without a Yes to the trained / competent
+            // question, or a missing-manual one without the supervisor answers (an old copy of
+            // this page never asks them).
+            var flMsg = /missing manual/i.test(e.message || '')
+              ? 'Not saved. The operator\u2019s manual is marked missing, so Greiner\u2019s records need: trained competent person (Yes), ' +
+                'supervisor aware (Yes), supervisor authorizing or recommending use (Yes), and the supervisor\u2019s name. Check those answers and submit again.'
+              : 'Not saved. Every forklift inspection needs a Yes to \u201cConfirm you are a trained competent person for this equipment\u201d.';
+            flMsg += ' If the questions are not showing, reload this page.';
+            var flForm = document.getElementById('forkliftInspectionForm');
+            var flBox = document.getElementById('flServerRefusal');
+            if (!flBox && flForm && submitBtn && submitBtn.parentNode) {
+              flBox = document.createElement('div'); flBox.id = 'flServerRefusal'; flBox.setAttribute('role', 'alert');
+              flBox.style.cssText = 'background:#fef2f2;border:1px solid #fca5a5;color:#7f1d1d;border-radius:10px;padding:12px;margin:10px 0;font-size:14px;font-weight:600';
+              submitBtn.parentNode.insertBefore(flBox, submitBtn);
+            }
+            if (flBox) flBox.textContent = flMsg;
+            toast('error', 'Forklift inspection not saved', flMsg);
           } else {
             toast('error', 'Submit failed', e.message || 'Please try again.');
           }
@@ -6862,8 +7010,11 @@ ${photoUrls}`;
             // checklist row; skip them as standalone items — they attach to the
             // parent inspection check as its note + photo (§5/§6/§9).
             if (grp.closest('.inspection-defect-detail')) return;
+            // Forklift missing-manual questions: only the ones that were shown (Tony, October 21).
+            if (grp.closest('.fl-manual-gate') && (grp.hidden || grp.closest('[hidden]'))) return;
             var lEl = grp.querySelector('.inspection-checklist-label') || grp.querySelector('.form-label');
             var label = lEl ? lEl.textContent.replace(/\*/g, '').trim() : '';
+            if (lEl && lEl.getAttribute('data-doc-label')) label = lEl.getAttribute('data-doc-label');
             if (!label) return;
             var response = '', rtype = 'text', flagged = false, name = '';
             var radios = grp.querySelectorAll('input[type=radio]');

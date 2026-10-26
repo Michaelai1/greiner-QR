@@ -59,6 +59,17 @@ async function check(name, fn) {
   catch (e) { failures++; console.log(`  FAIL ${name}\n       ${String(e.stack || e.message).split('\n').slice(0, 5).join('\n       ')}`); }
 }
 
+// Forklift build (Oct 23 rule: the trained question is always asked) supersedes the JHA-only release's
+// "forklift unchanged" checks below. Those are skipped ONLY on that build, and only while the forklift
+// rule's own suites are present to cover it (verify-forklift-manual-gate.mjs, verify-forklift-production-sql.mjs).
+const FORKLIFT_BUILD = /id="flCompetent"/.test(fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8'));
+if (FORKLIFT_BUILD) for (const t of ['verify-forklift-manual-gate.mjs', 'verify-forklift-production-sql.mjs']) {
+  if (!fs.existsSync(path.join(ROOT, 'tests', t))) { console.log(`FAILED: forklift build without tests/${t}`); process.exit(1); }
+}
+const forkliftUnchanged = (name, fn) => FORKLIFT_BUILD
+  ? (console.log(`  skip ${name} (forklift build: covered by verify-forklift-*.mjs)`), Promise.resolve())
+  : check(name, fn);
+
 /* ---- the database: schema + live bodies + release files, unchanged ---- */
 const db = new PGlite({ extensions: { pgcrypto } });
 await db.exec(fs.readFileSync(SCHEMA, 'utf8'));
@@ -295,7 +306,7 @@ try {
     assert.equal(await submitMd5(), LIVE_SUBMIT_MD5);
   });
 
-  await check('01 only: a forklift with the manual missing and NO gate answers is accepted exactly like today (phone form)', async () => {
+  await forkliftUnchanged('01 only: a forklift with the manual missing and NO gate answers is accepted exactly like today (phone form)', async () => {
     await setClock('2026-10-22T16:00:00Z');
     const count = async () => (await q(`select count(*)::int as n from cs_field_submissions where form_type = 'forklift'`))[0].n;
     const n0 = await count();
@@ -317,7 +328,7 @@ try {
     await p.close();
   });
 
-  await check('01 only: an old-client forklift payload (manual missing, no answers) is accepted exactly like today', async () => {
+  await forkliftUnchanged('01 only: an old-client forklift payload (manual missing, no answers) is accepted exactly like today', async () => {
     const p = await open('ngform=forklift');
     const before = (await q(`select count(*)::int as n from cs_field_submissions where form_type = 'forklift'`))[0].n;
     const r = await p.evaluate(() => window.handleSaveData('', { form_type: 'inspection', inspection_subtype: 'forklift',
