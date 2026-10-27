@@ -1703,6 +1703,19 @@
             opacity: 0.85;
         }
         
+        /* JHA times on Android: three lists fill the (hidden) time field */
+        .jha-time-native-hidden { display: none !important; }
+        .jha-time-pick { display: grid; grid-template-columns: 1fr 1.15fr 1.15fr; gap: 8px; }
+        .jha-time-pick select.form-input {
+            min-height: 52px;
+            padding-right: 30px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%239db0c4' stroke-width='2'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+        }
+        .jha-time-set { margin-top: 6px; font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+        .jha-time-set.is-set { color: var(--color-success); font-weight: 600; }
+
         .jha-task-row {
             background: var(--color-bg-card);
             border: 1px solid var(--color-border);
@@ -4972,6 +4985,104 @@ ${photoUrls}`;
             });
         })();
         
+        /* JHA Start Time and Estimated Time of Completion on Android (Oct 27, 2026).
+           Android's clock dialog saves only through its OK button. On Tony's and
+           Clark's phones that button didn't show, so closing the dialog left the
+           field blank and Submit stopped on it. On Android the times are picked from
+           three lists (hour, minutes, AM/PM) that fill the same time field, so the
+           saved value (HH:MM), the PDF and revisions are unchanged. iPhones and
+           computers keep the time field as it was. */
+        function jhaTimeListsWanted() { return /Android/i.test(navigator.userAgent || ''); }
+        (function wireJhaTimeLists() {
+            var form = document.getElementById('jhaForm');
+            if (!form || !jhaTimeListsWanted()) return;
+            function pad(n) { return (n < 10 ? '0' : '') + n; }
+            function opt(value, text, placeholder) {
+                var o = document.createElement('option');
+                o.value = value; o.textContent = text;
+                if (placeholder) { o.disabled = true; o.defaultSelected = true; }
+                return o;
+            }
+            function to12(v) {
+                var h = +v.slice(0, 2);
+                return ((h % 12) || 12) + ':' + v.slice(3, 5) + ' ' + (h < 12 ? 'AM' : 'PM');
+            }
+            var pickers = ['jhaStartTime', 'jhaCompleteTime'].map(function(id) {
+                var input = document.getElementById(id);
+                if (!input) return null;
+                var label = ((form.querySelector('label[for="' + id + '"]') || {}).textContent || '').replace(/\*/g, '').trim();
+                var box = document.createElement('div');
+                box.className = 'jha-time-pick'; box.id = id + 'Pick';
+                function list(part, placeholder, values) {
+                    var s = document.createElement('select');
+                    s.className = 'form-input'; s.required = true;
+                    s.setAttribute('data-time-part', part);
+                    s.setAttribute('aria-label', label + ', ' + placeholder);
+                    s.appendChild(opt('', placeholder, true));
+                    values.forEach(function(v) { s.appendChild(opt(v, part === 'minute' ? ':' + v : v)); });
+                    box.appendChild(s);
+                    return s;
+                }
+                var hours = [], mins = [];
+                for (var h = 1; h <= 12; h++) hours.push(String(h));
+                for (var m = 0; m < 60; m += 5) mins.push(pad(m));
+                var p = { input: input, hour: list('hour', 'Hour', hours), minute: list('minute', 'Minutes', mins),
+                          ampm: list('ampm', 'AM / PM', ['AM', 'PM']), note: document.createElement('div') };
+                p.note.className = 'jha-time-set'; p.note.id = id + 'Set';
+                p.note.setAttribute('aria-live', 'polite');
+                // The lists come before the hidden field, so a missing time stops Submit on a list you can tap.
+                input.parentNode.insertBefore(box, input);
+                input.parentNode.insertBefore(p.note, input);
+                input.classList.add('jha-time-native-hidden');
+                return p;
+            }).filter(Boolean);
+            var writing = false;
+            function show(p) {
+                var v = p.input.value;
+                var missing = [p.hour.value ? '' : 'the hour', p.ampm.value ? '' : 'AM or PM'].filter(Boolean);
+                p.note.textContent = v ? '✓ Set to ' + to12(v)
+                    : (p.hour.value || p.ampm.value) ? 'Not set yet: choose ' + missing.join(' and ') : 'Not set yet';
+                p.note.classList.toggle('is-set', !!v);
+            }
+            // time field -> lists (a revision or the demo fills the field)
+            function fromField(p) {
+                var t = /^(\d{2}):(\d{2})/.exec(p.input.value || '');
+                if (!t) {
+                    p.hour.value = ''; p.minute.value = ''; p.ampm.value = '';
+                } else {
+                    // keep a minute like :38 from an earlier JHA
+                    if (![].some.call(p.minute.options, function(o) { return o.value === t[2]; })) {
+                        var after = [].filter.call(p.minute.options, function(o) { return o.value > t[2]; })[0] || null;
+                        p.minute.insertBefore(opt(t[2], ':' + t[2]), after);
+                    }
+                    p.hour.value = String((+t[1] % 12) || 12);
+                    p.minute.value = t[2];
+                    p.ampm.value = +t[1] < 12 ? 'AM' : 'PM';
+                }
+                show(p);
+            }
+            // lists -> time field (HH:MM, the same value the time field saves)
+            function toField(p) {
+                if (p.hour.value && !p.minute.value) p.minute.value = '00';
+                var v = p.hour.value && p.minute.value && p.ampm.value
+                    ? pad(+p.hour.value % 12 + (p.ampm.value === 'PM' ? 12 : 0)) + ':' + p.minute.value : '';
+                if (p.input.value !== v) {
+                    writing = true;
+                    p.input.value = v;
+                    p.input.dispatchEvent(new Event('input', { bubbles: true }));
+                    p.input.dispatchEvent(new Event('change', { bubbles: true }));
+                    writing = false;
+                }
+                show(p);
+            }
+            pickers.forEach(function(p) {
+                [p.hour, p.minute, p.ampm].forEach(function(s) { s.addEventListener('change', function() { toField(p); }); });
+                ['input', 'change'].forEach(function(ev) { p.input.addEventListener(ev, function() { if (!writing) fromField(p); }); });
+                fromField(p);
+            });
+            form.addEventListener('reset', function() { setTimeout(function() { pickers.forEach(fromField); }, 0); });
+        })();
+
         function handleInspectionSubmit(form, submitBtn, label, afterReset) {
             if (!form || !submitBtn) return;
             form.addEventListener('submit', async function(e) {
