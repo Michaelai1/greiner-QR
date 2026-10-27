@@ -2296,6 +2296,24 @@
             </div>
         </div>
         
+        <!-- Sign in first: shown instead of a crew form when this page has no field sign in -->
+        <div id="signInFirstView" class="view">
+            <div class="header-top-bar"></div>
+            <div class="header-bar">
+                <div class="header-left">
+                    <img class="header-logo app-chrome-logo" src="" alt="Greiner" width="120" height="36" decoding="async">
+                    <span class="header-title"><span class="title-bold">Sign in first</span></span>
+                </div>
+                <button class="close-button" id="closeSignInFirstBtn" title="Close" type="button">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <p id="signInFirstText" style="font-size: var(--font-size-base); margin-bottom: var(--spacing-md);">This page can't send a JHA or an inspection. Sign in on the Greiner Safety page with your own 4 digit code, then tap the form you need.</p>
+            <a id="signInFirstLink" href="https://greiner.creeksidesafety.com/index.html" class="submit-button" style="background:#b48c28;text-align:center;text-decoration:none;display:block">Go to Greiner Safety sign in</a>
+        </div>
+
         <!-- Aerial platform inspection -->
         <div id="inspectionAerialView" class="view">
             <div class="header-top-bar"></div>
@@ -6711,6 +6729,24 @@ ${photoUrls}`;
         var t = e.target && e.target.closest && e.target.closest('#openJhaFormBtn,#inspectionJhaBackBtn,#closeInspectionJhaBtn');
         if (t) JHA_CTX = null;
       }, true);
+
+      // No field sign in on this page (an old link, a saved bookmark, an equipment
+      // QR sticker, or a ticket that expired): a crew form opened here can never be
+      // sent (handleSaveData below refuses it). Send the person to sign in BEFORE
+      // they fill one in, not after. Until Oct 27 this page let anyone fill a whole
+      // JHA and only said "Sign in required" at Submit, with no way to sign in.
+      // ?review=1 (preview) and ?demo=1 keep their forms.
+      document.addEventListener('click', function (e) {
+        if (DEMO || NG.ticket || params.get('review') === '1') return;
+        var t = e.target && e.target.closest &&
+          e.target.closest('#inspectionsBtn,#openJhaFormBtn,#openAerialInspectionBtn,#openForkliftInspectionBtn,#openHotWorkPermitBtn');
+        if (!t) return;
+        e.preventDefault(); e.stopImmediatePropagation();
+        var link = document.getElementById('signInFirstLink'); if (link) link.href = DASH;
+        window.showView('signInFirst');
+      }, true);
+      var closeSignIn = document.getElementById('closeSignInFirstBtn');
+      if (closeSignIn) closeSignIn.addEventListener('click', function () { window.showView('landing'); });
 
       // route inspection submissions to NextGen; everything else unchanged
       var _handleSaveData = window.handleSaveData;
