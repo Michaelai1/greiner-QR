@@ -501,5 +501,18 @@ window.TBT_LIBRARY = {
         "pgl": "page 4"
       }
     ]
+  },
+  /* CHOICE (Choice Mechanical) video Toolbox Talk for Mon Nov 2, 2026: the public YouTube video Tony Sweet sent for
+     "Peine and Choice Toolbox Talk for Monday 02NOV 2026" (Gmail 1a18199c2a40f37f, Wed Oct 28 4:21 AM EDT, link file
+     "Toolbox Talk Video- Walking-Working Surfaces - Slopes, Ramps, and Dockboards.url"). Video 4WM6HSX2rJA (channel
+     eSafety, "2 Minute Toolbox Talk: Walking-Working Surfaces - Slopes, Ramps, and Dockboards"); 120 s as reported by the
+     YouTube player on Oct 30, 2026, which also confirmed it plays embedded. A video entry has no pages and no sections.
+     Only a Choice link (talk key choice-walking-working-surfaces-video) opens this entry (toolbox.html). */
+  "Choice Toolbox Talk Video - Walking-Working Surfaces - Slopes, Ramps, and Dockboards": {
+    "title": "Walking-Working Surfaces - Slopes, Ramps, and Dockboards",
+    "filename": "Toolbox Talk Video- Walking-Working Surfaces - Slopes, Ramps, and Dockboards (video)",
+    "video": { "provider": "youtube", "id": "4WM6HSX2rJA", "seconds": 120 },
+    "pages": [],
+    "sections": []
   }
 };

@@ -74,9 +74,10 @@ await check('the other talks in the library are unchanged in shape', () => {
   assert.equal(LIB['OSHA Ladder Safety Requirements 2026.docx'].sections.length, 6);
   assert.equal(LIB['Driver Safety: Proper Positioning'].video.id, '94wWLo0IEjw');
   assert.equal(LIB['Fall Protection.pdf'].guidedOnly, undefined);
-  // 6 Greiner talks + Choice's own entry (shared phone app, Oct 25 Choice plan)
-  assert.equal(Object.keys(LIB).length, 7);
+  // 6 Greiner talks + Choice's two entries (shared phone app: Oct 25 Hot Work Talk 1; Oct 30 the Nov 2 video talk)
+  assert.equal(Object.keys(LIB).length, 8);
   assert.ok(LIB['Choice Toolbox Talk - Hot Work_Talk #1_General Awareness and Tips.docx']);
+  assert.ok(LIB['Choice Toolbox Talk Video - Walking-Working Surfaces - Slopes, Ramps, and Dockboards']);
 });
 
 const req = createRequire(path.join(process.env.PLAYWRIGHT_NODE_MODULES || ROOT, 'noop.js'));
