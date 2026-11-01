@@ -89,11 +89,15 @@
        name. The original stays on record for the office. */
     var guidedOnly = !!o.guidedOnly && sections.length > 0;
     if (guidedOnly) pages = [];
-    /* A video talk (talk.video: { provider: 'youtube', id, seconds }) is played on
-       this page, which counts each second actually played once (skipping ahead
-       does not count). There is no minimum: Continue works at once, even when the
-       player cannot load. Play time is shown and recorded as play time, never as
-       proof that anyone watched. A video talk has no pages and no sections. */
+    /* A video talk (talk.video: { provider: 'youtube', id, seconds }) is watched on
+       YouTube first: "Watch on YouTube" is the main action, because YouTube can
+       refuse the embedded player on some networks (Nov 1: a real phone got the
+       embed error while YouTube itself played). Playing it on this page is an
+       option the person taps; only then does the player load, and it counts each
+       second actually played once (skipping ahead does not count). Opening YouTube
+       is never recorded. There is no minimum: Continue works at once. Play time is
+       shown and recorded as play time, never as proof that anyone watched. A video
+       talk has no pages and no sections. */
     var video = talk.video && talk.video.id && talk.video.seconds > 0 ? talk.video : null;
     if (video) { pages = []; sections = []; }
     var viewOnly = !!o.viewOnly;
@@ -110,7 +114,7 @@
     };
     if (!sections.length && pages.length) S.format = 'doc';
     if (video) S.format = 'video';
-    S.video = { seen: {}, count: 0, failed: false };
+    S.video = { seen: {}, count: 0, failed: false, embed: false };
 
     /* ---------------- active time: counted only while visible ---------------- */
     var eng = { ms: 0, t0: null, timer: null };
@@ -285,15 +289,21 @@
       lastT = t;
       var pr = $('tbtVideoProg'); if (pr) pr.textContent = videoProgressText();
     }
-    function videoFailed(msg) {
+    function videoFailed(msg, code) {
       S.video.failed = true;
+      if (code !== undefined && code !== null) S.video.code = code;
       stopVideoTracking();
+      // The broken player and its play counter go; the YouTube button above stays.
+      var frame = $('tbtVideo'), prog = $('tbtVideoProg');
+      if (frame && frame.parentNode) frame.parentNode.parentNode.removeChild(frame.parentNode);
+      if (prog) prog.parentNode.removeChild(prog);
       var box = $('tbtVideoErr');
       if (box) {
         box.hidden = false;
-        box.innerHTML = esc(msg || 'The video could not play on this page.') + ' ' +
-          '<a href="https://www.youtube.com/watch?v=' + encodeURIComponent(video.id) + '" target="_blank" rel="noopener">Open it on YouTube</a> ' +
-          'to watch it. You can still continue and record your completion.';
+        box.innerHTML = esc(msg || 'The video could not play on this page.') +
+          (S.video.code !== undefined ? ' (YouTube error ' + esc(String(S.video.code)) + ')' : '') + ' ' +
+          '<a href="https://www.youtube.com/watch?v=' + encodeURIComponent(video.id) + '" target="_blank" rel="noopener">Watch it on YouTube</a> instead.' +
+          (viewOnly ? '' : ' You can still continue and record ' + (leader ? 'who attended.' : 'your completion.'));
       }
     }
     function loadYouTubeApi() {
@@ -314,22 +324,34 @@
       var origin = location.origin && location.origin !== 'null' ? location.origin : '';
       var src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(video.id) +
         '?enablejsapi=1&playsinline=1&rel=0&modestbranding=1' + (origin ? '&origin=' + encodeURIComponent(origin) : '');
-      var body =
-        '<div class="tbt-doc">' +
-          '<h3 class="tbt-doc-title">' + esc(talk.title) + '</h3>' +
-          '<div class="tbt-doc-sub">Video · ' + mmss(video.seconds) + (o.company ? ' · ' + esc(o.company) : '') + '</div>' +
-          '<div class="tbt-video" style="position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden">' +
+      var watchUrl = 'https://www.youtube.com/watch?v=' + encodeURIComponent(video.id);
+      var how = viewOnly ? 'Watch the video on YouTube.'
+        : leader ? 'Play the video for your crew on YouTube. Then come back to this page and record who attended.'
+        : 'Watch the video on YouTube. Then come back to this page and record your completion.';
+      var embedHtml = S.video.failed ? ''
+        : !S.video.embed
+        ? '<button type="button" class="tbt-btn2 tbt-playhere" id="tbtPlayHere">Or play it on this page</button>'
+        : '<div class="tbt-video" style="position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden">' +
             // The page itself sends no referrer; the player needs its origin, so this one frame sends it.
             '<iframe id="tbtVideo" title="' + esc(talk.title) + '" src="' + esc(src) + '" referrerpolicy="strict-origin-when-cross-origin" ' +
               'allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen ' +
               'style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>' +
           '</div>' +
-          '<div class="count" id="tbtVideoProg" role="status" style="margin-top:8px">' + esc(videoProgressText()) + '</div>' +
+          '<div class="count" id="tbtVideoProg" role="status" style="margin-top:8px">' + esc(videoProgressText()) + '</div>';
+      var body =
+        '<div class="tbt-doc">' +
+          '<h3 class="tbt-doc-title">' + esc(talk.title) + '</h3>' +
+          '<div class="tbt-doc-sub">Video · ' + mmss(video.seconds) + (o.company ? ' · ' + esc(o.company) : '') + '</div>' +
+          '<a class="submit-button tbt-watch" id="tbtWatchYT" href="' + esc(watchUrl) + '" target="_blank" rel="noopener">Watch on YouTube</a>' +
+          '<p class="tbt-note tbt-watch-how" id="tbtVideoHow">' + esc(how) + '</p>' +
+          embedHtml +
           '<p class="tbt-err" id="tbtVideoErr" role="alert" hidden></p>' +
         '</div>' +
         continueHtml();
       shell(body);
       wireReview();
+      if ($('tbtPlayHere')) $('tbtPlayHere').onclick = function () { S.video.embed = true; render(); };
+      if (!S.video.embed) return;
       if (S.video.failed) { videoFailed(); return; }
       stopVideoTracking();
       loadYouTubeApi().then(function (YT) {
@@ -346,7 +368,7 @@
               if (e.data === YT.PlayerState.ENDED || e.data === YT.PlayerState.PAUSED) ping();
             }
           },
-          onError: function () { videoFailed('The video could not play on this page.'); }
+          onError: function (e) { videoFailed('The video could not play on this page.', e && e.data); }
         } });
       }).catch(function (e) { videoFailed(e && e.message); });
     }

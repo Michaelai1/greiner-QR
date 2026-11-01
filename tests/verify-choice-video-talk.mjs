@@ -76,7 +76,8 @@ const FAKE_YT = `(function () {
     function fire(d) { opts.events.onStateChange({ data: d, target: self }); }
     self.getCurrentTime = function () { return now(); };
     window.__fakeYT = { play: function () { if (since === null) { since = Date.now(); fire(S.PLAYING); } },
-      pause: function () { base = now(); since = null; fire(S.PAUSED); } };
+      pause: function () { base = now(); since = null; fire(S.PAUSED); },
+      error: function (code) { opts.events.onError({ data: code, target: self }); } };
   }
   window.YT = { Player: Player, PlayerState: S };
   if (typeof window.onYouTubeIframeAPIReady === 'function') window.onYouTubeIframeAPIReady();
@@ -129,6 +130,15 @@ try {
     const t = await text(lead);
     assert.ok(/Choice/.test(t) && t.includes(TITLE), t.slice(0, 200));
     assert.match(t, /Video · 2:00 · Choice/);
+    // Nov 1: YouTube first. A real phone got the embed error while YouTube itself played, so the main action is
+    // "Watch on YouTube"; the page player loads only when tapped. Opening YouTube records nothing.
+    assert.equal(await lead.$eval('#tbtWatchYT', (a) => [a.getAttribute('href'), a.getAttribute('target'), a.getAttribute('rel')].join(' ')),
+      `https://www.youtube.com/watch?v=${VID} _blank noopener`);
+    assert.match(t, /Play the video for your crew on YouTube\. Then come back to this page and record who attended\./);
+    assert.ok(!/proof|verified|watched/i.test(t), 'nothing on the page claims anyone watched');
+    assert.equal(await lead.$('#tbtVideo'), null, 'no page player until tapped');
+    assert.ok(!stubbed.length, 'YouTube is not contacted until the page player is tapped');
+    await lead.click('#tbtPlayHere'); await lead.waitForTimeout(300);
     const src = await lead.$eval('#tbtVideo', (f) => f.getAttribute('src'));
     assert.match(src, new RegExp(`^https://www\\.youtube-nocookie\\.com/embed/${VID}\\?enablejsapi=1&playsinline=1`));
     assert.equal(await lead.$('#tbtPageImg'), null); assert.equal(await lead.$('[data-tbt-format]'), null);
@@ -153,13 +163,31 @@ try {
   await check('Tony\'s Choice link: his own view-only copy of the video; no completion button and no submit, ever', async () => {
     const t = await text(own);
     assert.ok(t.includes(TITLE) && /Your Copy \(View Only\)/.test(t), t.slice(0, 300));
-    assert.ok(await own.$('#tbtVideo'), 'the video is there');
+    assert.ok(await own.$('#tbtWatchYT'), 'the YouTube button is there');
+    assert.match(t, /Watch the video on YouTube\./); assert.ok(!/record who attended|record your completion/.test(t));
+    await own.click('#tbtPlayHere'); await own.waitForTimeout(300);
+    assert.ok(await own.$('#tbtVideo'), 'the page player is there once tapped');
     assert.equal(await own.$('#tbtToComplete'), null);
     assert.equal(await own.$('#tbtSubmit'), null); assert.equal(await own.$('#tbtSubmitGroup'), null);
     assert.ok(!/Record Completion|Submit/.test(t));
     await own.evaluate(() => window.__fakeYT.play()); await own.waitForTimeout(800); await own.evaluate(() => window.__fakeYT.pause());
     await own.evaluate(() => window.dispatchEvent(new Event('pagehide'))); await own.waitForTimeout(300);
     assert.equal(calls.filter((c) => c.fn === 'submit' && c.key === 'owner').length, 0);
+  });
+
+  await check('if YouTube refuses the page player: it is removed, the error code shows, YouTube stays, attendance still works', async () => {
+    const e = await open('lead');
+    await e.click('#tbtPlayHere'); await e.waitForTimeout(300);
+    await e.evaluate(() => window.__fakeYT.error(152)); await e.waitForTimeout(200);
+    const t = await text(e);
+    assert.match(t, /The video could not play on this page\. \(YouTube error 152\) Watch it on YouTube instead\. You can still continue and record who attended\./, t.slice(0, 500));
+    assert.equal(await e.$('#tbtVideo'), null); assert.equal(await e.$('#tbtVideoProg'), null);
+    assert.ok(await e.$('#tbtWatchYT'));
+    assert.equal(await e.$eval('#tbtToComplete', (b) => b.disabled), false);
+    await e.click('#tbtToComplete');
+    assert.deepEqual(await e.$$eval('[data-tbt-att]', (b) => b.map((x) => x.getAttribute('data-tbt-att'))), CREW);
+    assert.deepEqual(e.errors, []);
+    await e.close();
   });
 
   for (const k of ['greinerWithChoiceVideo', 'choiceWithGreinerVideo']) {

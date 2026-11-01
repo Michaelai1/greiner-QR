@@ -203,3 +203,8 @@
 
 /* Video talk: the progress line sits on the white document panel, so it needs dark text. */
 .tbt-doc #tbtVideoProg { color: #374151; font-size: 13px; font-weight: 700; }
+
+/* Video talk (Nov 1): "Watch on YouTube" is the main action; playing on this page is an option. */
+.tbt-watch { text-decoration: none; margin-top: 12px; }
+.tbt-watch-how { margin: 10px 0 0; }
+.tbt-playhere { width: 100%; margin-top: 12px; }
