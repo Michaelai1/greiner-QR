@@ -514,5 +514,108 @@ window.TBT_LIBRARY = {
     "video": { "provider": "youtube", "id": "4WM6HSX2rJA", "seconds": 120, "pagePlayer": false },
     "pages": [],
     "sections": []
+  },
+  /* Greiner Brothers, OSHA Penalties, Talk #5: Tony Sweet's file from "Greiner Toolbox Talks 02 NOV and 09 NOV 2026"
+     (Gmail 1a1819be7f3a65e0, Wed Oct 28 4:23 AM EDT; his schedule: 09 NOV; used for the week of Nov 2 by Michael's decision, Nov 1 2026, because the file sent as
+     Compressed Air holds this talk), sha256 afd93d95d0162c071cd241599aa0ea3783594f3c813deb281a84eb97056ee8f7.
+     Original document: its 4 pages as rendered from the Word file (Pages export, every document word present in order).
+     Guided Talk: the document's words verbatim, in its order, under its own 7 headings plus the responsibility box
+     (834/834 words). Wording kept exactly as supplied (Michael, Oct 30): it names "Site Safety AI" and refers to "this
+     calculator", which the document does not include. Talk key osha-penalties-talk5. */
+  "Greiner Toolbox Talk - OSHA Penalties - Talk #5.docx": {
+    "title": "OSHA Penalties Talk 5: How OSHA Penalties are Calculated",
+    "filename": "Greiner Toolbox Talk - OSHA Penalties - Talk #5.docx",
+    "sourceSha256": "afd93d95d0162c071cd241599aa0ea3783594f3c813deb281a84eb97056ee8f7",
+    "pages": [
+      {
+        "src": "osha-penalties-talk5/page-01.jpg",
+        "w": 1200,
+        "h": 928
+      },
+      {
+        "src": "osha-penalties-talk5/page-02.jpg",
+        "w": 1200,
+        "h": 928
+      },
+      {
+        "src": "osha-penalties-talk5/page-03.jpg",
+        "w": 1200,
+        "h": 928
+      },
+      {
+        "src": "osha-penalties-talk5/page-04.jpg",
+        "w": 1200,
+        "h": 928
+      }
+    ],
+    "sections": [
+      {
+        "h": "How OSHA penalties are calculated",
+        "p": [
+          "Federal OSHA sets maximum penalties by violation type, adjusted for inflation every January: roughly $16,500+ for serious and other-than-serious violations, about $165,000+ for willful or repeat violations, and the serious-level maximum per day for failure to abate past the deadline. The area office starts from a gravity-based penalty (how severe and how probable the harm), then applies reductions from the Field Operations Manual:",
+          "* Company size — up to 70% off for employers with 10 or fewer employees",
+          "* Good faith — up to 25% off for a documented, working safety program (not available on willful or repeat citations)",
+          "* History — 10% off with no citations in the past five years",
+          "That's exactly what this calculator models. Note the flip side: a citation history removes reductions and turns the next violation into a “repeat” at ten times the money — which is how a $16,000 problem quietly becomes a six-figure one."
+        ],
+        "pgl": "page 1"
+      },
+      {
+        "h": "The cheapest fine is the one you never get",
+        "p": [
+          "Most citations come from hazards a supervisor could have spotted the same morning — a missing guardrail, a worker without fall protection, an uncovered floor hole. Site Safety AI turns that morning walk into a 30-second scan: point your phone at the work area and it flags the violations an inspector would, before the inspector does.",
+          "* Direct cost (claim) - $35,000",
+          "* Indirect cost - $38,500, Delays, retraining, overtime, morale, premiums",
+          "* True cost = $73,500",
+          "* Revenue needed to earn that back at a 5% margin - $1,470,000, That's the extra work your crews have to sell, bid, and build just to break even on this one injury.",
+          "* Direct costs are national average workers' comp claim figures; indirect costs use the sliding ratio from OSHA's $afety Pays program. Your premiums, state, and claim severity will vary — planning estimate, not an actuarial quote."
+        ],
+        "pgl": "page 1"
+      },
+      {
+        "h": "Where the invisible money goes",
+        "p": [
+          "Insurance covers the claim. Nobody covers the rest: the crew standing around the morning of the incident, the OSHA paperwork and possible inspection, hiring and training a replacement, overtime to hold the schedule, equipment damage, the experience-mod hit that raises your premiums for three years, and the superintendent's week that disappears into incident management. OSHA's $afety Pays research puts these indirect costs at 1.1× to 4.5× the direct claim — and unlike the claim, they come straight out of profit.",
+          "That's why the “revenue to break even” number is the one worth showing the owner: at a typical construction margin, a single fracture claim can take over $2 million in new work to pay back. And if the hazard behind it draws a citation, add the OSHA fine on top."
+        ],
+        "pgl": "page 2"
+      },
+      {
+        "h": "The cheapest incident is the one you spot first",
+        "p": [
+          "Almost every one of these injuries starts as a visible hazard — a missing guardrail, an unprotected trench edge, a bad ladder setup. Site Safety AI turns any iPhone into a 30-second site scan that flags those hazards with a severity rating and a fix, so the money above stays theoretical."
+        ],
+        "pgl": "page 2"
+      },
+      {
+        "h": "How TRIR is calculated",
+        "p": [
+          "TRIR = (recordable incidents × 200,000) ÷ total hours worked. The 200,000 is 100 full-time workers × 2,000 hours each, so the result reads as “recordables per 100 workers per year” no matter how big your company is. DART uses the same formula but counts only the serious subset — cases with days away, restricted duty, or job transfer. Both come straight off your OSHA 300 log, which is why keeping that log accurate matters twice."
+        ],
+        "pgl": "page 3"
+      },
+      {
+        "h": "Why the number decides which bids you win",
+        "p": [
+          "TRIR is the safety credit score of construction. GCs and owners screen subcontractors on it during prequalification — a common cutoff is 3.0, and safety-driven owners screen at the industry average or better. It also feeds your workers' comp experience mod: a high TRIR means higher premiums for the next three years, and a single serious recordable at a 25-person company moves the rate by nearly half a point. That's the real math behind prevention — each recordable you avoid protects both the six-figure true cost of the injury and your seat at the bid table."
+        ],
+        "pgl": "page 3"
+      },
+      {
+        "h": "The only way to lower it is to catch hazards first",
+        "p": [
+          "TRIR is a lagging indicator — by the time it moves, people are already hurt. The leading indicator is how many hazards you find and fix before they become recordables. Site Safety AI turns that into a 30-second habit: point your iPhone at the work area, get every visible hazard with a severity rating and a fix, and keep a timestamped record that you were looking."
+        ],
+        "pgl": "page 3"
+      },
+      {
+        "h": "Personal Safety Responsibility",
+        "p": [
+          "This Toolbox Talk supports Greiner Brother’s Safety and Compliance priorities by promoting safe work practices and regulatory compliance. The company provides training, resources, and guidance; however, you are ultimately responsible for your own safety.",
+          "Before starting any task, you are responsible for: Identifying hazards, Understanding the associated risks, and developing and following a safe work plan. For questions about Greiner Brothers Safety and Compliance Program, contact Safety Program Director Tony Sweet."
+        ],
+        "pgl": "page 3"
+      }
+    ]
   }
 };

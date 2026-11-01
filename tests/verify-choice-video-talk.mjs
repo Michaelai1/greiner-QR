@@ -45,7 +45,8 @@ await check('library: every earlier entry is unchanged (same keys, same videos a
   const keys = Object.keys(LIB).filter((k) => k !== ENTRY);
   assert.deepEqual(keys, ['Fall Protection.pdf', 'OSHA Ladder Safety Requirements 2026.docx', 'Falls from Ladder.docx',
     'Cold Stress - Talk 3 - Slips on Ice.docx', 'Hot Work - Talk 1 - General Awareness and Tips.docx',
-    'Driver Safety: Proper Positioning', 'Choice Toolbox Talk - Hot Work_Talk #1_General Awareness and Tips.docx']);
+    'Driver Safety: Proper Positioning', 'Choice Toolbox Talk - Hot Work_Talk #1_General Awareness and Tips.docx',
+    'Greiner Toolbox Talk - OSHA Penalties - Talk #5.docx']);
   assert.equal(LIB['Driver Safety: Proper Positioning'].video.id, '94wWLo0IEjw');
   assert.equal(LIB['Choice Toolbox Talk - Hot Work_Talk #1_General Awareness and Tips.docx'].pages.length, 4);
 });
