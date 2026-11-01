@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Video check</title>
+<!-- Nov 1 2026: a one-tap check for Michael's phone. Which YouTube videos play inside a web page here, and if one
+     does not, YouTube's own error number. Public videos only; no personal link, no data sent anywhere. -->
+<style>
+  body { font: 16px/1.45 -apple-system, system-ui, sans-serif; margin: 0; padding: 16px; background: #f5f6f8; color: #14213d; }
+  h1 { font-size: 20px; margin: 0 0 6px; }
+  p { margin: 0 0 14px; color: #44506a; }
+  .card { background: #fff; border: 1px solid #dde2ea; border-radius: 12px; padding: 12px; margin: 0 0 16px; }
+  .card h2 { font-size: 16px; margin: 0 0 8px; }
+  .frame { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; }
+  .frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .st { margin-top: 8px; font-weight: 700; }
+  .ok { color: #0a7a3b; } .bad { color: #b42318; }
+</style>
+</head>
+<body>
+<h1>Video check</h1>
+<p>Tap play on each video. Then tell Claude what each line under the videos says.</p>
+<div id="list"></div>
+<script>
+var VIDEOS = [
+  { id: '4WM6HSX2rJA', host: 'www.youtube-nocookie.com', name: 'A. Choice talk video (as the talk page plays it)' },
+  { id: '4WM6HSX2rJA', host: 'www.youtube.com', name: 'B. Choice talk video (standard YouTube player)' },
+  { id: '94wWLo0IEjw', host: 'www.youtube-nocookie.com', name: 'C. Greiner Driver Safety video (played for foremen Oct 23)' }
+];
+var list = document.getElementById('list');
+VIDEOS.forEach(function (v, i) {
+  var src = 'https://' + v.host + '/embed/' + v.id + '?enablejsapi=1&playsinline=1&rel=0&origin=' + encodeURIComponent(location.origin);
+  var c = document.createElement('div'); c.className = 'card';
+  c.innerHTML = '<h2>' + v.name + '</h2><div class="frame"><iframe id="v' + i + '" src="' + src +
+    '" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>' +
+    '<div class="st" id="s' + i + '">Not played yet</div>';
+  list.appendChild(c);
+});
+function say(i, text, cls) { var s = document.getElementById('s' + i); s.textContent = text; s.className = 'st ' + (cls || ''); }
+window.onYouTubeIframeAPIReady = function () {
+  VIDEOS.forEach(function (v, i) {
+    new YT.Player('v' + i, { events: {
+      onReady: function () { say(i, 'Ready: tap play'); },
+      onStateChange: function (e) { if (e.data === 1) say(i, v.name.charAt(0) + ': PLAYING', 'ok'); },
+      onError: function (e) { say(i, v.name.charAt(0) + ': YouTube error ' + e.data, 'bad'); }
+    } });
+  });
+};
+var sc = document.createElement('script'); sc.src = 'https://www.youtube.com/iframe_api';
+sc.onerror = function () { VIDEOS.forEach(function (v, i) { say(i, 'The YouTube player script could not load', 'bad'); }); };
+document.head.appendChild(sc);
+</script>
+</body>
+</html>
