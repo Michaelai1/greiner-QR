@@ -208,3 +208,8 @@
 .tbt-watch { text-decoration: none; margin-top: 12px; }
 .tbt-watch-how { margin: 10px 0 0; }
 .tbt-playhere { width: 100%; margin-top: 12px; }
+/* Nov 1 (later): the "Copy video link" backup and its press-and-hold address. */
+.tbt-copylink { width: 100%; margin-top: 12px; }
+.tbt-copyout { margin-top: 8px; }
+.tbt-copyout .tbt-note { margin: 0 0 6px; }
+.tbt-copyurl { width: 100%; font-size: 14px; }

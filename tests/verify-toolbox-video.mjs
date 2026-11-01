@@ -142,7 +142,7 @@ try {
     const t = await text(v);
     assert.equal(await v.$eval('#tbtWatchYT', (a) => [a.getAttribute('href'), a.getAttribute('target'), a.getAttribute('rel')].join(' ')),
       'https://www.youtube.com/watch?v=94wWLo0IEjw _blank noopener');
-    assert.match(t, /Watch the video on YouTube\. Then come back to this page and record your completion\./);
+    assert.match(t, /After watching, return here to record your completion\./);
     assert.equal(await v.$('#tbtVideo'), null, 'no player until asked'); assert.ok(!stubbed.length, 'YouTube not contacted yet');
     assert.ok(await v.evaluate(() => {           // the YouTube button comes before the page player option
       const a = document.getElementById('tbtWatchYT'), b = document.getElementById('tbtPlayHere');

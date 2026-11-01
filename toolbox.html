@@ -6,14 +6,14 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <title>Toolbox Talk</title>
-<link rel="stylesheet" href="toolbox-talk.css?v=4">
+<link rel="stylesheet" href="toolbox-talk.css?v=5">
 </head>
 <body class="tbt-app">
 <div class="tbt-wrap" id="root">
   <p class="tbt-week">Loading…</p>
 </div>
-<script src="talks/library.js?v=4"></script>
-<script src="toolbox-talk.js?v=5"></script>
+<script src="talks/library.js?v=5"></script>
+<script src="toolbox-talk.js?v=6"></script>
 <script>
 (function () {
   'use strict';
@@ -114,6 +114,9 @@
       tt = window.ToolboxTalk.mount(root, {
         talk: talk, company: company, employeeName: A.recipient_name, role: leader ? 'leader' : 'participant',
         leadLabel: A.company === 'Choice' ? 'Supervisor-led group talk' : undefined,
+        // Video talks keep what was picked on this phone while people step out to YouTube (cleared once recorded).
+        // The key carries only the first 8 characters of the link, never the whole link.
+        draftKey: 'tbt-draft:' + token.slice(0, 8) + ':' + A.talk_key + ':' + A.week_start,
         groups: leader && group ? [group] : [],
         roster: leader ? (A.roster || []).map(function (n) { return { n: n, g: group }; }) : [],
         defaultFormat: guidedOnly ? 'guided' : 'doc', guidedOnly: guidedOnly, pinRequired: false,

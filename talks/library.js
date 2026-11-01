@@ -511,7 +511,7 @@ window.TBT_LIBRARY = {
   "Choice Toolbox Talk Video - Walking-Working Surfaces - Slopes, Ramps, and Dockboards": {
     "title": "Walking-Working Surfaces - Slopes, Ramps, and Dockboards",
     "filename": "Toolbox Talk Video- Walking-Working Surfaces - Slopes, Ramps, and Dockboards (video)",
-    "video": { "provider": "youtube", "id": "4WM6HSX2rJA", "seconds": 120 },
+    "video": { "provider": "youtube", "id": "4WM6HSX2rJA", "seconds": 120, "pagePlayer": false },
     "pages": [],
     "sections": []
   }

@@ -35,7 +35,7 @@ const html = fs.readFileSync(path.join(ROOT, 'toolbox.html'), 'utf8');
 await check('library: the Choice video entry is Tony\'s video (id, 120 s), has no pages or sections, and is mapped to its key', () => {
   const e = LIB[ENTRY];
   assert.ok(e && !e.placeholder);
-  assert.deepEqual(JSON.parse(JSON.stringify(e.video)), { provider: 'youtube', id: VID, seconds: 120 });
+  assert.deepEqual(JSON.parse(JSON.stringify(e.video)), { provider: 'youtube', id: VID, seconds: 120, pagePlayer: false });
   assert.equal(e.title, TITLE);
   assert.equal(e.pages.length, 0); assert.equal(e.sections.length, 0);
   assert.ok(html.includes(`'${KEY}': '${ENTRY}'`), 'toolbox.html maps the Choice video key');
@@ -125,82 +125,107 @@ async function open(key) {
 const text = (p) => p.evaluate(() => document.body.innerText);
 
 try {
+  // Nov 1 (final): YouTube refused the page player on Michael's phone (error 150, Choice and Greiner videos alike), so
+  // this talk has no page player: "Watch on YouTube" first, "Copy video link" as the backup, then record attendance.
   const lead = await open('lead');
-  await check('Choice supervisor link: Choice name, the video talk (2:00), Tony\'s video in the privacy-enhanced player, no document', async () => {
+  await check('Choice supervisor link: the video talk (2:00), "Watch on YouTube" first, the exact return sentence, no page player at all', async () => {
     const t = await text(lead);
     assert.ok(/Choice/.test(t) && t.includes(TITLE), t.slice(0, 200));
     assert.match(t, /Video · 2:00 · Choice/);
-    // Nov 1: YouTube first. A real phone got the embed error while YouTube itself played, so the main action is
-    // "Watch on YouTube"; the page player loads only when tapped. Opening YouTube records nothing.
     assert.equal(await lead.$eval('#tbtWatchYT', (a) => [a.getAttribute('href'), a.getAttribute('target'), a.getAttribute('rel')].join(' ')),
       `https://www.youtube.com/watch?v=${VID} _blank noopener`);
-    assert.match(t, /Play the video for your crew on YouTube\. Then come back to this page and record who attended\./);
-    assert.ok(!/proof|verified|watched/i.test(t), 'nothing on the page claims anyone watched');
-    assert.equal(await lead.$('#tbtVideo'), null, 'no page player until tapped');
-    assert.ok(!stubbed.length, 'YouTube is not contacted until the page player is tapped');
-    await lead.click('#tbtPlayHere'); await lead.waitForTimeout(300);
-    const src = await lead.$eval('#tbtVideo', (f) => f.getAttribute('src'));
-    assert.match(src, new RegExp(`^https://www\\.youtube-nocookie\\.com/embed/${VID}\\?enablejsapi=1&playsinline=1`));
+    assert.match(t, /After watching with your crew, return here to record attendance\./);
+    assert.equal(await lead.$('#tbtPlayHere'), null, 'no "play it on this page" option for this talk');
+    assert.equal(await lead.$('#tbtVideo'), null, 'no page player');
+    assert.ok(await lead.evaluate(() => {           // order: Watch on YouTube, then Copy video link, then Record attendance
+      const a = document.getElementById('tbtWatchYT'), b = document.getElementById('tbtCopyLink'), c = document.getElementById('tbtToComplete');
+      return !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) && !!(b.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING);
+    }));
+    assert.equal((await lead.$eval('#tbtToComplete', (b) => b.textContent)).trim(), 'Record attendance');
+    assert.ok(!/proof|verified|watched it|complete/i.test(t.replace(/After watching with your crew/, '')), 'nothing claims anyone watched or completed');
     assert.equal(await lead.$('#tbtPageImg'), null); assert.equal(await lead.$('[data-tbt-format]'), null);
     assert.ok(!/PIN|Greiner/.test(t));
+    assert.deepEqual(stubbed, [], 'YouTube is never contacted by this page');
   });
-  await check('Choice supervisor: "Supervisor-led group talk", the crew tick list, one submission as video with who attended', async () => {
-    await lead.evaluate(() => window.__fakeYT.play()); await lead.waitForTimeout(1200); await lead.evaluate(() => window.__fakeYT.pause());
+  await check('opening YouTube records nothing: no submit, no played seconds, the page stays where it was', async () => {
+    const before = calls.length;
+    await lead.evaluate(() => {                     // the tap, without leaving this test machine
+      document.addEventListener('click', (e) => { if (e.target.closest('#tbtWatchYT')) e.preventDefault(); }, true);
+      document.getElementById('tbtWatchYT').click();
+    });
+    await lead.waitForTimeout(300);
+    assert.ok(calls.slice(before).every((c) => c.fn !== 'submit'));
+    assert.ok(calls.filter((c) => c.key === 'lead' && c.fn === 'progress').every((c) => c.body.p_sections_viewed === 0), 'never any seconds played');
+    assert.ok(await lead.$('#tbtWatchYT') && await lead.$('#tbtToComplete'), 'still on the talk page');
+  });
+  await check('"Copy video link": copied → says so and shows the address; copying refused → the address shown to press and hold', async () => {
+    await lead.evaluate(() => { Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: (s) => { window.__copied = s; return Promise.resolve(); } } }); });
+    await lead.click('#tbtCopyLink'); await lead.waitForTimeout(150);
+    assert.equal(await lead.evaluate(() => window.__copied), `https://www.youtube.com/watch?v=${VID}`);
+    assert.match(await lead.$eval('#tbtCopyMsg', (e) => e.textContent), /^Link copied\. Paste it into Safari or any web browser\.$/);
+    await lead.evaluate(() => { Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: () => Promise.reject(new Error('denied')) } }); });
+    await lead.click('#tbtCopyLink'); await lead.waitForTimeout(150);
+    assert.match(await lead.$eval('#tbtCopyMsg', (e) => e.textContent), /Copying did not work on this phone\. Press and hold the link below to copy it:/);
+    assert.equal(await lead.$eval('#tbtCopyUrl', (i) => [i.value, i.readOnly].join(' ')), `https://www.youtube.com/watch?v=${VID} true`);
+    await lead.evaluate(() => { Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined }); });
+    await lead.click('#tbtCopyLink'); await lead.waitForTimeout(150);
+    assert.match(await lead.$eval('#tbtCopyMsg', (e) => e.textContent), /Copying did not work/);
+    assert.ok(calls.every((c) => c.fn !== 'submit'), 'copying records nothing');
+  });
+  await check('crew picks survive leaving for YouTube and the phone reloading the page; nothing is recorded until Submit', async () => {
     await lead.click('#tbtToComplete');
     const t = await text(lead);
     assert.ok(/Supervisor-led group talk/.test(t) && !/Foreman-led/.test(t), t.slice(0, 300));
     assert.deepEqual(await lead.$$eval('[data-tbt-att]', (b) => b.map((x) => x.getAttribute('data-tbt-att'))), CREW);
-    await lead.click('#tbtAll'); await lead.check('#tbtPresented'); await lead.click('#tbtSubmitGroup'); await lead.waitForTimeout(500);
+    await lead.click(`[data-tbt-att="${CREW[0]}"]`); await lead.click(`[data-tbt-att="${CREW[2]}"]`);
+    await lead.fill('#tbtManual', 'Walk In (fictional)'); await lead.click('#tbtManualAdd');
+    await lead.check('#tbtPresented');
+    await lead.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));   // stepping out to YouTube
+    await lead.reload(); await lead.waitForTimeout(900);                                 // the phone reloads the tab on return
+    // The reload cuts off the page's usual progress note sent on leaving (pagehide); WebKit reports that cut-off
+    // request as an error. It is the reload in this test, not the page, so only that exact message is set aside.
+    lead.errors = lead.errors.filter((m) => !/rpc\/cs_tbt_link_progress due to access control checks/.test(m));
+    assert.ok(/Supervisor-led group talk/.test(await text(lead)), 'back on the attendance step');
+    assert.deepEqual(await lead.$$eval('[data-tbt-att][aria-pressed="true"]', (b) => b.map((x) => x.getAttribute('data-tbt-att'))), [CREW[0], CREW[2]]);
+    assert.match(await text(lead), /Walk In \(fictional\)/);
+    assert.equal(await lead.$eval('#tbtPresented', (c) => c.checked), true);
+    assert.equal(calls.filter((c) => c.fn === 'submit').length, 0, 'nothing recorded by leaving or coming back');
+  });
+  await check('Submit: one submission as video with exactly who was picked; the kept picks are then cleared from the phone', async () => {
+    await lead.click('#tbtSubmitGroup'); await lead.waitForTimeout(500);
     const sub = calls.filter((c) => c.fn === 'submit' && c.key === 'lead');
     assert.equal(sub.length, 1);
     assert.equal(sub[0].body.p_format, 'video');
-    assert.deepEqual(sub[0].body.p_group.attendees, CREW);
-    assert.equal(sub[0].body.p_group.presenter, 'Sam Supervisor-A (fictional)');
+    assert.deepEqual(sub[0].body.p_group, { presenter: 'Sam Supervisor-A (fictional)', attendees: [CREW[0], CREW[2]], manual: ['Walk In (fictional)'] });
     assert.match(await text(lead), /Toolbox Talk recorded/);
+    assert.equal(await lead.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('tbt-draft:')).length), 0);
+    assert.ok(!(await lead.evaluate(() => JSON.stringify(localStorage))).includes(`${'lead'}Token`), 'the whole link is never stored');
   });
 
   const own = await open('owner');
-  await check('Tony\'s Choice link: his own view-only copy of the video; no completion button and no submit, ever', async () => {
+  await check('Tony\'s Choice link: view only; Watch on YouTube and Copy video link; no attendance step, no submit, nothing kept', async () => {
     const t = await text(own);
     assert.ok(t.includes(TITLE) && /Your Copy \(View Only\)/.test(t), t.slice(0, 300));
-    assert.ok(await own.$('#tbtWatchYT'), 'the YouTube button is there');
-    assert.match(t, /Watch the video on YouTube\./); assert.ok(!/record who attended|record your completion/.test(t));
-    await own.click('#tbtPlayHere'); await own.waitForTimeout(300);
-    assert.ok(await own.$('#tbtVideo'), 'the page player is there once tapped');
-    assert.equal(await own.$('#tbtToComplete'), null);
+    assert.ok(await own.$('#tbtWatchYT') && await own.$('#tbtCopyLink'));
+    assert.match(t, /Watch the video on YouTube\./); assert.ok(!/record attendance|record your completion/i.test(t));
+    assert.equal(await own.$('#tbtPlayHere'), null); assert.equal(await own.$('#tbtToComplete'), null);
     assert.equal(await own.$('#tbtSubmit'), null); assert.equal(await own.$('#tbtSubmitGroup'), null);
-    assert.ok(!/Record Completion|Submit/.test(t));
-    await own.evaluate(() => window.__fakeYT.play()); await own.waitForTimeout(800); await own.evaluate(() => window.__fakeYT.pause());
     await own.evaluate(() => window.dispatchEvent(new Event('pagehide'))); await own.waitForTimeout(300);
     assert.equal(calls.filter((c) => c.fn === 'submit' && c.key === 'owner').length, 0);
-  });
-
-  await check('if YouTube refuses the page player: it is removed, the error code shows, YouTube stays, attendance still works', async () => {
-    const e = await open('lead');
-    await e.click('#tbtPlayHere'); await e.waitForTimeout(300);
-    await e.evaluate(() => window.__fakeYT.error(152)); await e.waitForTimeout(200);
-    const t = await text(e);
-    assert.match(t, /The video could not play on this page\. \(YouTube error 152\) Watch it on YouTube instead\. You can still continue and record who attended\./, t.slice(0, 500));
-    assert.equal(await e.$('#tbtVideo'), null); assert.equal(await e.$('#tbtVideoProg'), null);
-    assert.ok(await e.$('#tbtWatchYT'));
-    assert.equal(await e.$eval('#tbtToComplete', (b) => b.disabled), false);
-    await e.click('#tbtToComplete');
-    assert.deepEqual(await e.$$eval('[data-tbt-att]', (b) => b.map((x) => x.getAttribute('data-tbt-att'))), CREW);
-    assert.deepEqual(e.errors, []);
-    await e.close();
+    assert.equal(await own.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('tbt-draft:')).length), 0);
   });
 
   for (const k of ['greinerWithChoiceVideo', 'choiceWithGreinerVideo']) {
     const p = await open(k);
     await check(`isolation: ${k === 'greinerWithChoiceVideo' ? 'a Greiner link naming the Choice video' : 'a Choice link naming the Greiner video'} gets "not available"`, async () => {
       assert.match(await text(p), /This link is not available/);
-      assert.equal(await p.$('#tbtVideo'), null);
+      assert.equal(await p.$('#tbtWatchYT'), null);
     });
     await p.close();
   }
-  await check('no page errors; the YouTube API and frame were answered locally; nothing else left the machine', async () => {
+  await check('no page errors; this talk never contacted YouTube; nothing else left the machine', async () => {
     for (const p of [lead, own]) assert.deepEqual(p.errors, []);
-    assert.ok(stubbed.some((u) => u === 'https://www.youtube.com/iframe_api'));
+    assert.deepEqual(stubbed, []);
     assert.deepEqual(offMachine, []);
   });
 } finally { await browser.close(); server.close(); }

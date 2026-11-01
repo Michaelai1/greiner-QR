@@ -116,6 +116,35 @@
     if (video) S.format = 'video';
     S.video = { seen: {}, count: 0, failed: false, embed: false };
 
+    /* A video talk sends people to YouTube and back, and a phone may reload this page when they return. What
+       has been picked so far (the step, the crew ticked, names typed in, the presenter, the tick boxes) is kept
+       on this phone for this link only (o.draftKey), and cleared once the talk is recorded. Keeping it sends
+       and records nothing; only names on this link's own crew list are ever put back. */
+    var DRAFT = video && !viewOnly && o.draftKey ? String(o.draftKey) : null;
+    function saveDraft() {
+      if (!DRAFT || S.finished) return;
+      try {
+        localStorage.setItem(DRAFT, JSON.stringify({ at: Date.now(), step: S.step === 'complete' ? 'complete' : 'review',
+          grp: { group: S.grp.group, presenter: S.grp.presenter, attendees: S.grp.attendees, manual: S.grp.manual,
+            presented: S.grp.presented }, ack: S.ack }));
+      } catch (e) { /* private browsing or storage off: nothing is kept */ }
+    }
+    function clearDraft() { if (DRAFT) { try { localStorage.removeItem(DRAFT); } catch (e) { /* nothing kept */ } } }
+    (function loadDraft() {
+      if (!DRAFT) return;
+      var d = null;
+      try { d = JSON.parse(localStorage.getItem(DRAFT) || 'null'); } catch (e) { d = null; }
+      if (!d || typeof d.at !== 'number' || Date.now() - d.at > 3 * 86400000) { clearDraft(); return; }
+      var g = d.grp || {}, names = roster.map(function (p) { return p.n; });
+      if (typeof g.group === 'string' && groups.indexOf(g.group) !== -1) S.grp.group = g.group;
+      if (typeof g.presenter === 'string') S.grp.presenter = g.presenter.slice(0, 120);
+      if (Array.isArray(g.attendees)) S.grp.attendees = g.attendees.filter(function (n) { return names.indexOf(n) !== -1; });
+      if (Array.isArray(g.manual)) S.grp.manual = g.manual.filter(function (n) { return typeof n === 'string' && n.trim(); }).slice(0, 200);
+      S.grp.presented = g.presented === true;
+      S.ack = d.ack === true;
+      if (d.step === 'complete') S.step = 'complete';
+    })();
+
     /* ---------------- active time: counted only while visible ---------------- */
     var eng = { ms: 0, t0: null, timer: null };
     function startEng() {
@@ -133,8 +162,8 @@
       if (S.finished || typeof o.progress !== 'function') return;
       o.progress({ activeMs: Math.min(activeMs(), 86400000), sectionsViewed: sectionsDone(), format: S.format });
     }
-    function onVis() { if (document.hidden) { stopEng(); ping(); } else startEng(); }
-    function onHide() { stopEng(); ping(); }
+    function onVis() { if (document.hidden) { saveDraft(); stopEng(); ping(); } else startEng(); }
+    function onHide() { saveDraft(); stopEng(); ping(); }
     document.addEventListener('visibilitychange', onVis);
     window.addEventListener('pagehide', onHide);
 
@@ -216,12 +245,12 @@
         '<button type="button" class="tbt-fmtbtn' + (S.format === 'guided' ? ' is-on' : '') +
           '" data-tbt-format="guided">Guided Talk</button></div>';
     }
-    function continueHtml(hint) {
+    function continueHtml(hint, label) {
       if (viewOnly) return '<p class="tbt-note" id="tbtViewOnly">' + esc(o.viewOnlyNote || 'View only. Nothing is recorded from this page.') + '</p>';
       var ready = reviewed();
       return (ready || !hint ? '' : '<p class="tbt-hint" id="tbtHint">' + esc(hint) + '</p>') +
         '<button type="button" class="submit-button" id="tbtToComplete"' + (ready ? '' : ' disabled') +
-        '>Continue to completion</button>' + switchHtml();
+        '>' + esc(label || 'Continue to completion') + '</button>' + switchHtml();
     }
     function wireReview() {
       Array.prototype.forEach.call(el.querySelectorAll('[data-tbt-format]'), function (b) {
@@ -320,15 +349,37 @@
       });
       return root.__tbtYtPromise;
     }
+    /* The backup to the YouTube button: copy the video's address to paste into any browser. If the phone will not
+       copy, the address is shown to press and hold. Copying records nothing. */
+    function copyVideoLink(url) {
+      var out = $('tbtCopyOut');
+      function show(ok) {
+        if (!out) return;
+        out.hidden = false;
+        out.innerHTML = '<p class="tbt-note" id="tbtCopyMsg">' + (ok ? 'Link copied. Paste it into Safari or any web browser.'
+          : 'Copying did not work on this phone. Press and hold the link below to copy it:') + '</p>' +
+          '<input type="text" class="tbt-input tbt-copyurl" id="tbtCopyUrl" readonly value="' + esc(url) + '" aria-label="Video link">';
+        var f = $('tbtCopyUrl');
+        if (f) f.onfocus = function () { this.select(); };
+      }
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(function () { show(true); }, function () { show(false); });
+          return;
+        }
+      } catch (e) { /* falls through to showing the link */ }
+      show(false);
+    }
     function renderVideo() {
       var origin = location.origin && location.origin !== 'null' ? location.origin : '';
       var src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(video.id) +
         '?enablejsapi=1&playsinline=1&rel=0&modestbranding=1' + (origin ? '&origin=' + encodeURIComponent(origin) : '');
       var watchUrl = 'https://www.youtube.com/watch?v=' + encodeURIComponent(video.id);
       var how = viewOnly ? 'Watch the video on YouTube.'
-        : leader ? 'Play the video for your crew on YouTube. Then come back to this page and record who attended.'
-        : 'Watch the video on YouTube. Then come back to this page and record your completion.';
-      var embedHtml = S.video.failed ? ''
+        : leader ? 'After watching with your crew, return here to record attendance.'
+        : 'After watching, return here to record your completion.';
+      // pagePlayer: false (the Choice video, Nov 1): YouTube refused the page player on a real phone, so it is not offered.
+      var embedHtml = S.video.failed || video.pagePlayer === false ? ''
         : !S.video.embed
         ? '<button type="button" class="tbt-btn2 tbt-playhere" id="tbtPlayHere">Or play it on this page</button>'
         : '<div class="tbt-video" style="position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden">' +
@@ -342,14 +393,18 @@
         '<div class="tbt-doc">' +
           '<h3 class="tbt-doc-title">' + esc(talk.title) + '</h3>' +
           '<div class="tbt-doc-sub">Video · ' + mmss(video.seconds) + (o.company ? ' · ' + esc(o.company) : '') + '</div>' +
+          // A new tab, so this page (and anything already picked) stays open behind YouTube. Opening it records nothing.
           '<a class="submit-button tbt-watch" id="tbtWatchYT" href="' + esc(watchUrl) + '" target="_blank" rel="noopener">Watch on YouTube</a>' +
           '<p class="tbt-note tbt-watch-how" id="tbtVideoHow">' + esc(how) + '</p>' +
+          '<button type="button" class="tbt-btn2 tbt-copylink" id="tbtCopyLink">Copy video link</button>' +
+          '<div class="tbt-copyout" id="tbtCopyOut" hidden></div>' +
           embedHtml +
           '<p class="tbt-err" id="tbtVideoErr" role="alert" hidden></p>' +
         '</div>' +
-        continueHtml();
+        continueHtml('', leader ? 'Record attendance' : null);
       shell(body);
       wireReview();
+      $('tbtCopyLink').onclick = function () { copyVideoLink(watchUrl); };
       if ($('tbtPlayHere')) $('tbtPlayHere').onclick = function () { S.video.embed = true; render(); };
       if (!S.video.embed) return;
       if (S.video.failed) { videoFailed(); return; }
@@ -434,7 +489,7 @@
         (o.pinRequired && !S.pinOk ? '<p class="tbt-note">You will confirm with your 4-digit PIN on the next screen.</p>' : '') +
         '<button type="button" class="back-button" id="tbtBackToTalk">&larr; Back to the talk</button>';
       shell(body);
-      $('tbtAck').onchange = function () { S.ack = this.checked; };
+      $('tbtAck').onchange = function () { S.ack = this.checked; saveDraft(); };
       $('tbtBackToTalk').onclick = function () { S.step = 'review'; render(); };
       $('tbtSubmit').onclick = function () {
         if (!S.ack) { $('tbtErr').textContent = 'Tick the box to confirm you reviewed the talk.'; return; }
@@ -450,6 +505,7 @@
       var G = S.grp;
       var list = roster.filter(function (p) { return !G.group || !p.g || p.g === G.group; });
       var picked = G.attendees.length + G.manual.length;
+      saveDraft();
       var body =
         '<div class="tbt-doc" style="padding:12px 14px">' +
           '<div class="tbt-doc-title" style="font-size:16px">' + esc(talk.title) + '</div>' +
@@ -485,7 +541,7 @@
         '<button type="button" class="back-button" id="tbtBackToTalk">&larr; Back to the talk</button>';
       shell(body);
       if ($('tbtGroupSel')) $('tbtGroupSel').onchange = function () { G.group = this.value; G.attendees = []; renderGroup(); };
-      $('tbtPresenter').oninput = function () { G.presenter = this.value; };
+      $('tbtPresenter').oninput = function () { G.presenter = this.value; saveDraft(); };
       if ($('tbtAll')) $('tbtAll').onclick = function () { G.attendees = list.map(function (p) { return p.n; }); renderGroup(); };
       if ($('tbtNone')) $('tbtNone').onclick = function () { G.attendees = []; G.manual = []; renderGroup(); };
       Array.prototype.forEach.call(el.querySelectorAll('[data-tbt-att]'), function (b) {
@@ -504,7 +560,7 @@
         if (G.manual.indexOf(n) === -1 && G.attendees.indexOf(n) === -1) G.manual.push(n);
         renderGroup();
       };
-      $('tbtPresented').onchange = function () { G.presented = this.checked; };
+      $('tbtPresented').onchange = function () { G.presented = this.checked; saveDraft(); };
       $('tbtBackToTalk').onclick = function () { S.step = 'review'; render(); };
       $('tbtSubmitGroup').onclick = function () {
         if (!G.presenter.trim()) { $('tbtErr').textContent = 'Enter who presented the talk.'; return; }
@@ -585,7 +641,7 @@
           renderComplete('That did not go through. Please try again.');
           return;
         }
-        S.finished = true; stop();
+        S.finished = true; stop(); clearDraft();
         renderDone({ submitted_at: rec.submitted_at, active_ms: rec.active_ms != null ? rec.active_ms : args.activeMs,
           format: S.format, sectionsViewed: args.sectionsViewed, group: args.group, presenter: args.presenter,
           attendees: args.attendees, manual: args.manual, attendeesStored: !!rec.attendees_stored });
@@ -626,6 +682,7 @@
 
     function render() {
       if (viewOnly && S.step !== 'review') S.step = 'review';   // a view-only copy never reaches completion
+      saveDraft();
       if (S.step !== 'review') stopVideoTracking();
       if (S.step === 'method') return renderMethod();
       if (S.step === 'complete') return renderComplete();
