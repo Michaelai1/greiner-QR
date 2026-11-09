@@ -617,5 +617,327 @@ window.TBT_LIBRARY = {
         "pgl": "page 3"
       }
     ]
-  }
+  },
+  "Toolbox Talk - Best Practice for Cold Weather Awareness.docx": {
+  "title": "Best Practice for Cold Weather Awareness",
+  "filename": "Toolbox Talk - Best Practice for Cold Weather Awareness.docx",
+  "sourceSha256": "c6e4f5d751c165ce5e58f9115f77ec1914f8795735f94e3cce78db3b5c0b2127",
+  "pages": [
+    {
+      "src": "cold-weather-awareness-nov9/page-01.jpg",
+      "w": 1200,
+      "h": 1553
+    },
+    {
+      "src": "cold-weather-awareness-nov9/page-02.jpg",
+      "w": 1200,
+      "h": 1553
+    },
+    {
+      "src": "cold-weather-awareness-nov9/page-03.jpg",
+      "w": 1200,
+      "h": 1553
+    },
+    {
+      "src": "cold-weather-awareness-nov9/page-04.jpg",
+      "w": 1200,
+      "h": 1553
+    }
+  ],
+  "sections": [
+    {
+      "h": "Best Practice for Cold Weather Awareness",
+      "p": [
+        "Construction workers can be exposed to extreme conditions. This document provides general work practices and standards for working in cold temperatures including cold injury risk factors and warnings signs. It also reviews measurers that employers should take to protect employees from cold stress including:",
+        "•Engineering and administrative controls",
+        "•Proper PPE selection",
+        "•Job safety analysis",
+        "•Training",
+        "Although OSHA does not have a specific standard that covers working in cold environments,",
+        "employers have a responsibility to provide workers with employment and a place of employment",
+        "which are free from recognized hazards, including cold stress, which are causing or are likely to",
+        "cause death or serious physical harm to them.  (General Duty Clause, Section 5(a)(1) of the",
+        "Occupational Safety and Health Act of 1970)."
+      ]
+    },
+    {
+      "h": "Types of Cold Stress:",
+      "p": [
+        "Frost Nip: Local area of frostbite where skin appears red and cold and there may be an",
+        "associated prickling numbness.",
+        "Frostbite: The freezing of body tissue.  It may range from minor injury (frost nip) to complete",
+        "freezing of an extremity.  Untreated frostbitten areas will first become reddened, and then",
+        "become gray or white.  Left untreated the skin becomes numb and dead white.",
+        "Hypothermia: An abnormally low body temperature, often caused by prolonged exposure to",
+        "the cold."
+      ]
+    },
+    {
+      "h": "Cold Injury Risk Factors:",
+      "p": [
+        "All individuals working in extreme cold should be aware of personal risk factors that make",
+        "workers more susceptible to cold injury.",
+        "Employers should consider the following non-comprehensive list of risk factors that could make some workers more susceptible to cold stress:",
+        "•Age",
+        "•Physical condition",
+        "•Circulatory problems",
+        "•Not accustomed or acclimated to cold",
+        "•Previous cold injuries, especially to the extremities or head/facial area",
+        "•Use of Beta blocker drugs for treatment of high blood pressure or heart problems",
+        "•Tobacco use (smoking or chewing tobacco)",
+        "•Diabetes",
+        "•Reynaud’s syndrome-a condition in which cold temperatures or stress cause blood vessel spasms that reduce blood flow to the fingers, toes, ears, and nose",
+        "•Dehydration",
+        "•Wearing wet or damp clothing",
+        "•Contact with fuels or liquids that evaporate",
+        "Cold Injury: The following are common warning signs that an individual is suffering from a cold- related injury.",
+        "•Shivering",
+        "•Frost nip (red, cold skin, prickling)",
+        "•Numbness",
+        "•Superficial frostbite (white, pale skin)",
+        "•Excessive fatigue",
+        "•Drowsiness",
+        "•Irritability",
+        "•Euphoria",
+        "It is the responsibility of all employees working in extreme cold to immediately report these symptoms for themselves or others to site management."
+      ]
+    },
+    {
+      "h": "Job Safety Analysis:",
+      "p": [
+        "A job safety analysis should be completed by all personnel involved in the work being performed to make sure all hazards and conditions of work are covered.",
+        "•Ambient or wind chill temperature",
+        "•Risk factors of crew",
+        "•Proper PPE for winter environment",
+        "•Type of work being performed",
+        "•Work time rotation (if applicable)",
+        "•Distance to break area",
+        "•Vehicles for warming / transporting",
+        "•Adequate shelters setup",
+        "•Proper heat and supplies"
+      ]
+    },
+    {
+      "h": "Engineering Controls:",
+      "p": [
+        "Wind greatly influences temperature effects on skin.  Whenever feasible, employers should implement engineering controls to reduce the impact of extreme cold and wind effects to the job site and personnel.  Consider the following engineering control options:",
+        "•Basic wind block",
+        "•Heated shelter",
+        "•Barriers or insulation placed on metal surfaces to reduce heat loss from extremities"
+      ]
+    },
+    {
+      "h": "Administrative Controls:",
+      "p": [
+        "Administrative controls can help mitigate hazards associated with working in extreme cold temperatures."
+      ]
+    },
+    {
+      "h": "Consider the following administrative controls:",
+      "p": [
+        "Rotational work –The number of workers exposed, and the time intervals for exposure and rest will be based on current site conditions.",
+        "Consideration should be given to the type of task being performed, current weather conditions, distance to warm-up/break area, and individual risk factors for crew members.",
+        "On Site Weather Conditions- The site temperature, wind speed, and other conditions will be monitored routinely in the area where work is to be performed, or when a change in conditions is noticed, or when an affected worker requests an assessment.",
+        "Multiple Vehicles – It is recommended that multiple vehicles be utilized during periods of extreme cold unless a warm shelter is within reasonable proximity to the work site.  Number of vehicles depends on number of employees.",
+        "Warm Liquids - Warm liquids should be considered to combat dehydration and to manage core temperatures.  Note that caffeinated beverages will lessen circulation and are discouraged.",
+        "Adequate Breaks - Break periods will be at least ten (10) minutes long.  While on break personnel should remove outer layers of clothing to ensure adequate warming of the core and extremities. Individuals should assess their physical condition during breaks.  Do not return to work in the cold until adequately warmed. If engineering controls, such as shelters are used, the ambient temperature/wind chill where the work is taking place will be used to determine the work / warm–up schedule."
+      ]
+    },
+    {
+      "h": "Personal Protective Equipment (PPE):",
+      "p": [
+        "Employers should evaluate each work site/job to ensure workers are equipped with and trained on the appropriate use of PPE needed for cold conditions.  It is important to layer clothing when working in an extreme cold environment. The following are recommendations for proper"
+      ]
+    },
+    {
+      "h": "implementation of PPE:",
+      "p": [
+        "•The outer layer of clothing must be fire retardant.",
+        "•The outer most layers should consist of winter clothing (i.e. bibs, bomber or parka, head sock, winter /arctic boots).",
+        "•Under layers (insulation) should consist of one or more thin garments.  Outer winter layers should be removed prior to insulation layers becoming wet with perspiration.",
+        "•Wet clothing should not be worn.   A best practice is to bring extra insulating clothing and change clothes if they become wet.",
+        "•PPE that is in direct contact with the skin should be changed if it becomes wet.",
+        "•Exposed skin shall be avoided in extreme cold temperatures to minimize the risk of",
+        "frostbite.",
+        "•Hand / foot warmers are available on all sites.",
+        "Training: Employers should train their workers on how to protect themselves from cold stress.  The training should include the following",
+        "•Awareness of environmental concerns",
+        "•Signs and symptoms of cold injury",
+        "•Preventive measures including engineering and administrative controls",
+        "•Proper levels of PPE",
+        "•Risks associated with working in cold weather",
+        "•Appropriate response to cold weather related injuries",
+        "The employer and field supervision must ensure that employees are aware of their responsibility to protect themselves and others from cold stress"
+      ]
+    },
+    {
+      "h": "Personal Safety Responsibility",
+      "p": [
+        "This Toolbox Talk supports Greiner Brother’s Safety and Compliance priorities by promoting safe work practices and regulatory compliance. The company provides training, resources, and guidance; however, you are ultimately responsible for your own safety.",
+        "Before starting any task, you are responsible for: Identifying hazards, Understanding the associated risks, and developing and following a safe work plan. For questions about Greiner Brothers Safety and Compliance Program, contact Safety Program Director Tony Sweet."
+      ]
+    }
+  ]
+},
+  "Choice Toolbox Talk - Best Practice for Cold Weather Awareness.docx": {
+  "title": "Best Practice for Cold Weather Awareness",
+  "filename": "Toolbox Talk - Best Practice for Cold Weather Awareness.docx",
+  "sourceSha256": "c6e4f5d751c165ce5e58f9115f77ec1914f8795735f94e3cce78db3b5c0b2127",
+  "pages": [
+    {
+      "src": "choice-cold-weather-awareness-nov9/page-01.jpg",
+      "w": 1200,
+      "h": 1553
+    },
+    {
+      "src": "choice-cold-weather-awareness-nov9/page-02.jpg",
+      "w": 1200,
+      "h": 1553
+    },
+    {
+      "src": "choice-cold-weather-awareness-nov9/page-03.jpg",
+      "w": 1200,
+      "h": 1553
+    },
+    {
+      "src": "choice-cold-weather-awareness-nov9/page-04.jpg",
+      "w": 1200,
+      "h": 1553
+    }
+  ],
+  "sections": [
+    {
+      "h": "Best Practice for Cold Weather Awareness",
+      "p": [
+        "Construction workers can be exposed to extreme conditions. This document provides general work practices and standards for working in cold temperatures including cold injury risk factors and warnings signs. It also reviews measurers that employers should take to protect employees from cold stress including:",
+        "•Engineering and administrative controls",
+        "•Proper PPE selection",
+        "•Job safety analysis",
+        "•Training",
+        "Although OSHA does not have a specific standard that covers working in cold environments,",
+        "employers have a responsibility to provide workers with employment and a place of employment",
+        "which are free from recognized hazards, including cold stress, which are causing or are likely to",
+        "cause death or serious physical harm to them.  (General Duty Clause, Section 5(a)(1) of the",
+        "Occupational Safety and Health Act of 1970)."
+      ]
+    },
+    {
+      "h": "Types of Cold Stress:",
+      "p": [
+        "Frost Nip: Local area of frostbite where skin appears red and cold and there may be an",
+        "associated prickling numbness.",
+        "Frostbite: The freezing of body tissue.  It may range from minor injury (frost nip) to complete",
+        "freezing of an extremity.  Untreated frostbitten areas will first become reddened, and then",
+        "become gray or white.  Left untreated the skin becomes numb and dead white.",
+        "Hypothermia: An abnormally low body temperature, often caused by prolonged exposure to",
+        "the cold."
+      ]
+    },
+    {
+      "h": "Cold Injury Risk Factors:",
+      "p": [
+        "All individuals working in extreme cold should be aware of personal risk factors that make",
+        "workers more susceptible to cold injury.",
+        "Employers should consider the following non-comprehensive list of risk factors that could make some workers more susceptible to cold stress:",
+        "•Age",
+        "•Physical condition",
+        "•Circulatory problems",
+        "•Not accustomed or acclimated to cold",
+        "•Previous cold injuries, especially to the extremities or head/facial area",
+        "•Use of Beta blocker drugs for treatment of high blood pressure or heart problems",
+        "•Tobacco use (smoking or chewing tobacco)",
+        "•Diabetes",
+        "•Reynaud’s syndrome-a condition in which cold temperatures or stress cause blood vessel spasms that reduce blood flow to the fingers, toes, ears, and nose",
+        "•Dehydration",
+        "•Wearing wet or damp clothing",
+        "•Contact with fuels or liquids that evaporate",
+        "Cold Injury: The following are common warning signs that an individual is suffering from a cold- related injury.",
+        "•Shivering",
+        "•Frost nip (red, cold skin, prickling)",
+        "•Numbness",
+        "•Superficial frostbite (white, pale skin)",
+        "•Excessive fatigue",
+        "•Drowsiness",
+        "•Irritability",
+        "•Euphoria",
+        "It is the responsibility of all employees working in extreme cold to immediately report these symptoms for themselves or others to site management."
+      ]
+    },
+    {
+      "h": "Job Safety Analysis:",
+      "p": [
+        "A job safety analysis should be completed by all personnel involved in the work being performed to make sure all hazards and conditions of work are covered.",
+        "•Ambient or wind chill temperature",
+        "•Risk factors of crew",
+        "•Proper PPE for winter environment",
+        "•Type of work being performed",
+        "•Work time rotation (if applicable)",
+        "•Distance to break area",
+        "•Vehicles for warming / transporting",
+        "•Adequate shelters setup",
+        "•Proper heat and supplies"
+      ]
+    },
+    {
+      "h": "Engineering Controls:",
+      "p": [
+        "Wind greatly influences temperature effects on skin.  Whenever feasible, employers should implement engineering controls to reduce the impact of extreme cold and wind effects to the job site and personnel.  Consider the following engineering control options:",
+        "•Basic wind block",
+        "•Heated shelter",
+        "•Barriers or insulation placed on metal surfaces to reduce heat loss from extremities"
+      ]
+    },
+    {
+      "h": "Administrative Controls:",
+      "p": [
+        "Administrative controls can help mitigate hazards associated with working in extreme cold temperatures."
+      ]
+    },
+    {
+      "h": "Consider the following administrative controls:",
+      "p": [
+        "Rotational work –The number of workers exposed, and the time intervals for exposure and rest will be based on current site conditions.",
+        "Consideration should be given to the type of task being performed, current weather conditions, distance to warm-up/break area, and individual risk factors for crew members.",
+        "On Site Weather Conditions- The site temperature, wind speed, and other conditions will be monitored routinely in the area where work is to be performed, or when a change in conditions is noticed, or when an affected worker requests an assessment.",
+        "Multiple Vehicles – It is recommended that multiple vehicles be utilized during periods of extreme cold unless a warm shelter is within reasonable proximity to the work site.  Number of vehicles depends on number of employees.",
+        "Warm Liquids - Warm liquids should be considered to combat dehydration and to manage core temperatures.  Note that caffeinated beverages will lessen circulation and are discouraged.",
+        "Adequate Breaks - Break periods will be at least ten (10) minutes long.  While on break personnel should remove outer layers of clothing to ensure adequate warming of the core and extremities. Individuals should assess their physical condition during breaks.  Do not return to work in the cold until adequately warmed. If engineering controls, such as shelters are used, the ambient temperature/wind chill where the work is taking place will be used to determine the work / warm–up schedule."
+      ]
+    },
+    {
+      "h": "Personal Protective Equipment (PPE):",
+      "p": [
+        "Employers should evaluate each work site/job to ensure workers are equipped with and trained on the appropriate use of PPE needed for cold conditions.  It is important to layer clothing when working in an extreme cold environment. The following are recommendations for proper"
+      ]
+    },
+    {
+      "h": "implementation of PPE:",
+      "p": [
+        "•The outer layer of clothing must be fire retardant.",
+        "•The outer most layers should consist of winter clothing (i.e. bibs, bomber or parka, head sock, winter /arctic boots).",
+        "•Under layers (insulation) should consist of one or more thin garments.  Outer winter layers should be removed prior to insulation layers becoming wet with perspiration.",
+        "•Wet clothing should not be worn.   A best practice is to bring extra insulating clothing and change clothes if they become wet.",
+        "•PPE that is in direct contact with the skin should be changed if it becomes wet.",
+        "•Exposed skin shall be avoided in extreme cold temperatures to minimize the risk of",
+        "frostbite.",
+        "•Hand / foot warmers are available on all sites.",
+        "Training: Employers should train their workers on how to protect themselves from cold stress.  The training should include the following",
+        "•Awareness of environmental concerns",
+        "•Signs and symptoms of cold injury",
+        "•Preventive measures including engineering and administrative controls",
+        "•Proper levels of PPE",
+        "•Risks associated with working in cold weather",
+        "•Appropriate response to cold weather related injuries",
+        "The employer and field supervision must ensure that employees are aware of their responsibility to protect themselves and others from cold stress"
+      ]
+    },
+    {
+      "h": "Personal Safety Responsibility",
+      "p": [
+        "This Toolbox Talk supports Greiner Brother’s Safety and Compliance priorities by promoting safe work practices and regulatory compliance. The company provides training, resources, and guidance; however, you are ultimately responsible for your own safety.",
+        "Before starting any task, you are responsible for: Identifying hazards, Understanding the associated risks, and developing and following a safe work plan. For questions about Greiner Brothers Safety and Compliance Program, contact Safety Program Director Tony Sweet."
+      ]
+    }
+  ]
+}
 };
