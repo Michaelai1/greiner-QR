@@ -10,6 +10,9 @@
    OSHA talk's closing sentence, which points to another company's safety
    director). */
 window.TBT_LIBRARY = {
+"Proper Lifting Technique (video)": {"title": "2 Minute Toolbox Talk: Proper Lifting Technique", "filename": "Proper Lifting Technique (video)", "video": {"provider": "youtube", "id": "Dcf9bT9DK94", "seconds": 137, "pagePlayer": false}, "pages": [], "sections": []},
+"Choice Proper Lifting Technique (video)": {"title": "2 Minute Toolbox Talk: Proper Lifting Technique", "filename": "Choice Proper Lifting Technique (video)", "video": {"provider": "youtube", "id": "Dcf9bT9DK94", "seconds": 137, "pagePlayer": false}, "pages": [], "sections": []},
+"NIOSH Lifting and Carrying.pdf": {"title": "Materials Handling: Lifting and Carrying", "filename": "NIOSH Lifting and Carrying.pdf", "pages": [{"src": "lifting-carrying-nov16/page-1.jpg", "w": 1237, "h": 1600}, {"src": "lifting-carrying-nov16/page-2.jpg", "w": 1237, "h": 1600}], "sections": []},
   "Fall Protection.pdf": {
     "title": "Fall Protection",
     "filename": "Fall Protection.pdf",
